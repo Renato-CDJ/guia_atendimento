@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roteiro de Atendimento</title>
+  <link rel="stylesheet" href="roteiro.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Cabeçalho -->
+    <header>
+  <div>
+    <h1>Roteiro de Atendimento</h1>
+    <p class="muted">Fluxo guiado • Habitacional & Comercial</p>
+  </div>
+  <div class="toolbar">
+    <!-- Campo de pesquisa -->
+    <input type="text" id="searchInput" class="select" placeholder="🔍 Pesquisar..." />
+    <div class="jump">
+      <span class="muted">Telas:</span>
+      <select id="jumpSelect" class="select"></select>
+      <button id="btnJumpBack" class="badge">⏮ Ir</button>
+    </div>
+    <button id="btnToggleMode" class="badge">⚙️ ADM</button>
+    </div>
+    </header>
+
+    <!-- Barra de progresso -->
+    <div class="progress">
+      <div class="progressbar"><div id="bar"></div></div>
+      <div class="progress-text" id="progressText">Passo 1</div>
+    </div>
+
+    <!-- Fluxo -->
+    <main id="flow"></main>
+  </div>
+
+  <!-- Painel ADM -->
+  <aside class="adm" id="admPanel">
+    <header>
+      <div>Painel ADM</div>
+      <button id="btnAdmClose" class="badge">✕</button>
+    </header>
+
+    <div class="tabs">
+      <button data-tab="geral" class="tab active">⚙ Geral</button>
+    </div>
+
+    <!-- Aba Geral -->
+    <div class="tab-content active" id="tab-geral">
+      <label>ID da tela</label>
+      <input type="text" id="fldId">
+      <label>Título da tela</label>
+      <input type="text" id="fldTitle">
+      <label>Texto do script</label>
+      <textarea id="fldBody"></textarea>
+      <label>Tabulação</label>
+      <input type="text" id="fldTab">
+    </div>
+
+    <label>Botões</label>
+<div id="fldButtons"></div>
+<button id="btnAddButton" class="btn-mini">+ Adicionar Botão</button>
+
+    <div class="adm-footer">
+      <button id="btnSave" class="btn-mini primary">Salvar</button>
+      <button id="btnReset" class="btn-mini">Recarregar</button>
+      <button id="btnDelScreen" class="btn-mini danger">Remover Tela</button>
+    </div>
+  </aside>
+
+  <!-- Scripts -->
+  <script src="roteiros.js"></script>
+  <script src="roteiro.js"></script>
+</body>
+
+  <!-- Modal de Tabulação -->
+  <div id="tabModal" class="modal">
+    <div class="modal-content">
+      <span id="closeModal" class="close">&times;</span>
+      <h2>Tabulação</h2>
+      <p id="modalText"></p>
+    </div>
+  </div>
+</body>
+
+</html>
