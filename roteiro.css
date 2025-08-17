@@ -318,3 +318,35 @@ header h1{
 .btn-edit input[type="text"] {
   flex: 1;
 }
+
+
+/* Alerta temporário ao lado externo do ícone */
+.tab-alert {
+  position: absolute;
+  top: 14px;
+  right: -310px; /* joga para fora do quadro */
+  background: #ffeb3b;
+  color: #222;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 19px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 8px rgba(0,0,0,.3);
+  animation: fadeIn 0.5s ease forwards;
+  z-index: 999;
+}
+
+/* Animação de saída */
+.tab-alert.hide {
+  animation: fadeOut 1s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(20px); }
+}

@@ -40,8 +40,8 @@ function buildSystemScreens() {
         <label>Tipo de atendimento
           <select id="selAtendimento">
             <option value="">Selecione...</option>
-            <option value="cobranca">Cobrança</option>
-            <option value="negociacao">Negociação</option>
+            <option value="ativo">Ativo</option>
+            <option value="receptivo">Receptivo</option>
           </select>
         </label>
 
@@ -175,16 +175,37 @@ function renderScreen(def) {
   `;
 
   // Ícone ✔ de Tabulação
-  const tabIcon = document.createElement("button");
-  tabIcon.className = "tab-icon";
-  tabIcon.textContent = "✔";
-  tabIcon.title = def.tab || "Sem tabulação";
-  tabIcon.type = "button";
-  tabIcon.addEventListener("click", () => {
-    const texto = def.tab && def.tab.trim() ? def.tab.trim() : "Sem tabulação";
-    showTabulacao(`✔ ${texto}`);
-  });
-  sec.prepend(tabIcon);
+const tabIcon = document.createElement("button");
+tabIcon.className = "tab-icon";
+tabIcon.textContent = "✔";
+tabIcon.title = def.tab || "Sem tabulação";
+tabIcon.type = "button";
+tabIcon.addEventListener("click", () => {
+  const texto = def.tab && def.tab.trim() ? def.tab.trim() : "Sem tabulação";
+  showTabulacao(`✔ ${texto}`);
+});
+sec.prepend(tabIcon);
+
+// === Mensagem temporária ao lado externo ===
+const tabAlert = document.createElement("div");
+tabAlert.className = "tab-alert";
+tabAlert.innerHTML = `Caso a ligação encerre, <br>verifique a tabulação ao lado`;
+sec.appendChild(tabAlert);
+
+// Função para mostrar/esconder ciclicamente
+function toggleAlert() {
+  tabAlert.classList.remove("hide"); // mostra
+  setTimeout(() => {
+    tabAlert.classList.add("hide");  // esconde
+  }, 5000); // fica visível por 5s
+}
+
+// Executa a cada X segundos (ex.: 15s)
+toggleAlert(); // primeira vez logo ao renderizar
+setInterval(toggleAlert, 15000);
+
+
+
 
   const actions = $(".actions", sec);
 
