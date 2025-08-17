@@ -31,34 +31,29 @@ async function loadRoteirosJSON() {
 
 // Constrói as telas "inicio", "fim" e "nao_confirma"
 function buildSystemScreens() {
-  // Tela de início com selects esperados pelo seu código
+  // Tela de início com chips (balões)
   roteiros.inicio = {
     id: "inicio",
     title: "Início",
     body: `
       <div class="grid-3">
-        <label>Tipo de atendimento
-          <select id="selAtendimento">
-            <option value="">Selecione...</option>
-            <option value="ativo">Ativo</option>
-            <option value="receptivo">Receptivo</option>
-          </select>
-        </label>
+        <label>Tipo de atendimento</label>
+        <div class="chips" id="chipsAtendimento">
+          <button class="chip" data-value="ativo">Ativo</button>
+          <button class="chip" data-value="receptivo">Receptivo</button>
+        </div>
 
-        <label>Produto
-          <select id="selProduto">
-            <option value="">Selecione...</option>
-            <option value="CPJA1">Marca CPJA1</option>
-            <option value="CPJA2">Marca CPJA2</option>
-          </select>
-        </label>
+        <label>Produto</label>
+        <div class="chips" id="chipsProduto">
+          <button class="chip" data-value="CPJA1">Marca CPJA1</button>
+          <button class="chip" data-value="CPJA2">Marca CPJA2</button>
+        </div>
 
-        <label>Pessoa
-          <select id="selPessoa">
-            <option value="">Selecione...</option>
-            <option value="cnpj">CNPJ</option>
-          </select>
-        </label>
+        <label>Pessoa</label>
+        <div class="chips" id="chipsPessoa">
+          <button class="chip" data-value="fisica">Física</button>
+          <button class="chip" data-value="juridica">Jurídica</button>
+        </div>
       </div>
     `,
     tab: "Seleção inicial do fluxo",
@@ -174,38 +169,35 @@ function renderScreen(def) {
     <div class="actions"></div>
   `;
 
-  // Ícone ✔ de Tabulação
-const tabIcon = document.createElement("button");
-tabIcon.className = "tab-icon";
-tabIcon.textContent = "✔";
-tabIcon.title = def.tab || "Sem tabulação";
-tabIcon.type = "button";
-tabIcon.addEventListener("click", () => {
-  const texto = def.tab && def.tab.trim() ? def.tab.trim() : "Sem tabulação";
-  showTabulacao(`✔ ${texto}`);
-});
-sec.prepend(tabIcon);
+  // Ícone ✔ de Tabulação (permanece no lugar original)
+  const tabIcon = document.createElement("button");
+  tabIcon.className = "tab-icon";
+  tabIcon.textContent = "✔";
+  tabIcon.title = def.tab || "Sem tabulação";
+  tabIcon.type = "button";
+  tabIcon.addEventListener("click", () => {
+    const texto = def.tab && def.tab.trim() ? def.tab.trim() : "Sem tabulação";
+    showTabulacao(`✔ ${texto}`);
+  });
+  sec.prepend(tabIcon);
 
-// === Mensagem temporária ao lado externo ===
-const tabAlert = document.createElement("div");
-tabAlert.className = "tab-alert";
-tabAlert.innerHTML = `Caso a ligação encerre, <br>verifique a tabulação ao lado`;
-sec.appendChild(tabAlert);
+  // === Mensagem temporária ao lado externo ===
+  const tabAlert = document.createElement("div");
+  tabAlert.className = "tab-alert";
+  tabAlert.innerHTML = `Caso a ligação encerre, <br>verifique a tabulação ao lado`;
+  sec.appendChild(tabAlert);
 
-// Função para mostrar/esconder ciclicamente
-function toggleAlert() {
-  tabAlert.classList.remove("hide"); // mostra
-  setTimeout(() => {
-    tabAlert.classList.add("hide");  // esconde
-  }, 5000); // fica visível por 5s
-}
+  // Função para mostrar/esconder ciclicamente
+  function toggleAlert() {
+    tabAlert.classList.remove("hide"); // mostra
+    setTimeout(() => {
+      tabAlert.classList.add("hide");  // esconde
+    }, 5000); // fica visível por 5s
+  }
 
-// Executa a cada X segundos (ex.: 15s)
-toggleAlert(); // primeira vez logo ao renderizar
-setInterval(toggleAlert, 15000);
-
-
-
+  // Executa a cada X segundos (ex.: 15s)
+  toggleAlert(); // primeira vez logo ao renderizar
+  setInterval(toggleAlert, 15000);
 
   const actions = $(".actions", sec);
 
@@ -254,23 +246,44 @@ setInterval(toggleAlert, 15000);
 
   flow.appendChild(sec);
 
-  // Lógica especial para tela inicial: ler selects
+  // Lógica especial para tela inicial: ler chips (balões)
   if (def.id === "inicio") {
-    const selAtendimento = $("#selAtendimento", sec);
-    const selProduto     = $("#selProduto", sec);
-    const selPessoa      = $("#selPessoa", sec);
-    const startBtn       = sec.querySelector("#btnStart");
+    const startBtn = sec.querySelector("#btnStart");
 
     function checkReady() {
-      state.atendimento = selAtendimento?.value || "";
-      state.produto     = selProduto?.value || "";
-      state.pessoa      = selPessoa?.value || "";
-      startBtn.disabled = !(state.atendimento && state.produto && state.pessoa);
+      const ok = state.atendimento && state.produto && state.pessoa;
+      if (startBtn) startBtn.disabled = !ok;
     }
 
-    selAtendimento?.addEventListener("change", checkReady);
-    selProduto?.addEventListener("change", checkReady);
-    selPessoa?.addEventListener("change", checkReady);
+    // atendimento
+    $$("#chipsAtendimento .chip", sec).forEach(btn => {
+      btn.onclick = () => {
+        state.atendimento = btn.dataset.value;
+        $$("#chipsAtendimento .chip", sec).forEach(c => c.classList.remove("selected"));
+        btn.classList.add("selected");
+        checkReady();
+      };
+    });
+
+    // produto
+    $$("#chipsProduto .chip", sec).forEach(btn => {
+      btn.onclick = () => {
+        state.produto = btn.dataset.value;
+        $$("#chipsProduto .chip", sec).forEach(c => c.classList.remove("selected"));
+        btn.classList.add("selected");
+        checkReady();
+      };
+    });
+
+    // pessoa
+    $$("#chipsPessoa .chip", sec).forEach(btn => {
+      btn.onclick = () => {
+        state.pessoa = btn.dataset.value;
+        $$("#chipsPessoa .chip", sec).forEach(c => c.classList.remove("selected"));
+        btn.classList.add("selected");
+        checkReady();
+      };
+    });
   }
 }
 
@@ -458,12 +471,16 @@ $("#btnAdmClose")?.addEventListener("click", () => {
 function resetInicioUI() {
   const scr = byId("inicio");
   if (!scr) return;
-  const a  = $("#selAtendimento", scr);
-  const p  = $("#selProduto", scr);
-  const pe = $("#selPessoa", scr);
-  if (a) a.value = "";
-  if (p) p.value = "";
-  if (pe) pe.value = "";
+
+  // limpa seleção dos chips
+  ["chipsAtendimento", "chipsProduto", "chipsPessoa"].forEach(id => {
+    $(`#${id}`, scr)?.querySelectorAll(".chip")?.forEach(c => c.classList.remove("selected"));
+  });
+
+  // limpa estado
+  state = { produto: "", atendimento: "", pessoa: "" };
+
+  // desabilita Start
   const startBtn = scr.querySelector("#btnStart");
   if (startBtn) startBtn.disabled = true;
 }
@@ -473,7 +490,7 @@ function hardReset() {
   flow.innerHTML = "";
   renderScreen(roteiros.inicio);
   go("inicio");                // reabre do início
-  resetInicioUI();             // limpa selects e desabilita Start
+  resetInicioUI();             // limpa chips e desabilita Start
   updateProgress();            // barra volta pra 0%
 }
 
