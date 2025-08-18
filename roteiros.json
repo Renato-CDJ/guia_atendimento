@@ -1,167 +1,250 @@
 {
   "marcas": {
-    "CPJA1": {
+    "HABITACIONAL": {
       "abordagem": {
-        "id": "cpja1_abordagem",
-        "title": "Abordagem (CPJA1)",
-        "body": "Oi, falo com o sócio ou responsável da empresa?<br><br>Que bom que você me atendeu! Eu sou <b>[Nome do operador]</b>, falo em nome da CAIXA, tudo bem com você?<br><br><i>Caso questione:</i> Esse contato é sobre o seu relacionamento com a CAIXA.<br><br><b>Atenção:</b> Em casos de CNPJ sem sócio/responsável: registrar no WEDOO.",
+        "id": "hab_abordagem",
+        "title": "Abordagem (Habitacional)",
+        "body": "Olá, eu sou <b>[Nome do operador]</b>, falo da Central de Negócios da CAIXA, representada pela Roveri Advogados. Você é ou conhece <b>[Primeiro nome do cliente]</b>?<br><br><i>Caso questione:</i> Esse contato é sobre o seu relacionamento com a CAIXA.",
         "buttons": [
-          { "label": "Cliente confirmou", "next": "cpja1_identificacao", "primary": true },
-          { "label": "Não confirmou", "next": "nao_confirma" }
+          {
+            "label": "Cliente confirmou",
+            "next": "hab_identificacao",
+            "primary": true
+          },
+          {
+            "label": "Não confirmou",
+            "next": "nao_confirma"
+          }
         ]
       },
       "identificacao": {
-        "id": "cpja1_identificacao",
-        "title": "Identificação (CPJA1)",
-        "body": "Perfeito! Para sua segurança, essa ligação está sendo gravada.<br><br>Eu falo da Roveri Advogados e, por sigilo bancário, preciso confirmar alguns dados.<br><br>Vou te dizer os <b>5 primeiros números do CNPJ</b> e você completa os demais, ok?",
+        "id": "hab_identificacao",
+        "title": "Identificação (Habitacional)",
+        "body": "Obrigado pela confirmação. Para sua segurança a ligação está sendo gravada.<br><br>Por sigilo bancário, vou falar os <b>6 primeiros números do CPF</b> e você completa os demais, ok?",
         "buttons": [
-          { "label": "Confirmou", "next": "cpja1_apresentacao", "primary": true },
-          { "label": "Não confirmou", "next": "nao_confirma" }
+          {
+            "label": "Confirmou",
+            "next": "hab_apresentacao",
+            "primary": true
+          },
+          {
+            "label": "Não confirmou",
+            "next": "nao_confirma"
+          }
         ]
       },
       "apresentacao": {
-        "id": "cpja1_apresentacao",
-        "title": "Apresentação da Dívida (CPJA1)",
-        "body": "O motivo do meu contato é confirmar o pagamento referente ao empréstimo da sua empresa, com <b>X parcelas vencidas</b>, no valor aproximado de <b>R$ XX,XX</b>.<br><br>Você já fez o pagamento?",
+        "id": "hab_apresentacao",
+        "title": "Apresentação da Dívida (Habitacional)",
+        "body": "O motivo do meu contato é sobre o seu financiamento habitacional, vencido há <b>XX dias</b>, no valor aproximado de <b>R$ XX,XX</b>.<br><br>Você já fez o pagamento?",
         "buttons": [
-          { "label": "Sim", "next": "cpja1_pagamento_efetuado", "primary": true },
-          { "label": "Não", "next": "cpja1_oferta_pausa" }
+          {
+            "label": "Sim",
+            "next": "hab_pagamento_efetuado",
+            "primary": true
+          },
+          {
+            "label": "Não",
+            "next": "hab_negociacao"
+          }
         ]
       },
       "pagamento_efetuado": {
-        "id": "cpja1_pagamento_efetuado",
-        "title": "Pagamento Efetuado (CPJA1)",
-        "body": "Se o pagamento foi realizado há menos de <b>5 dias úteis</b>, pode não ter atualizado.<br><br>Se há mais de 5 dias úteis, oriente o cliente:<br>▪ WhatsApp: 0800 104 0104<br>▪ Site: <a href='https://www.caixa.gov.br/negociar' target='_blank'>caixa.gov.br/negociar</a>",
+        "id": "hab_pagamento_efetuado",
+        "title": "Pagamento Efetuado (Habitacional)",
+        "body": "Caso tenha pago há menos de 5 dias úteis, pode não ter atualizado no sistema.<br><br>Se há mais de 5 dias úteis, oriento entrar em contato:<br>▪ WhatsApp: 0800 104 0104<br>▪ Site: caixa.gov.br/negociar",
         "buttons": [
-          { "label": "Prosseguir", "next": "cpja1_atualizacao_cadastral" },
-          { "label": "Encerrar", "next": "fim" }
+          {
+            "label": "Prosseguir",
+            "next": "hab_atualizacao_cadastral"
+          },
+          {
+            "label": "Encerrar",
+            "next": "fim"
+          }
         ]
       },
-      "oferta_pausa": {
-        "id": "cpja1_oferta_pausa",
-        "title": "Oferta de Negociação (CPJA1)",
-        "body": "A CAIXA tem uma oportunidade:<br><br>▪ Inclusão de todas as parcelas em aberto no saldo devedor<br>▪ Pausa de <b>3 meses</b><br>▪ Juros e encargos incorporados ao contrato<br><br><b>Deseja aproveitar essa proposta?</b>",
+      "negociacao": {
+        "id": "hab_negociacao",
+        "title": "Negociação (Habitacional)",
+        "body": "Podemos negociar seu contrato.<br><br>▪ Pagamento hoje ficaria bom para você?<br>▪ Podemos agendar o pagamento da parcela mais antiga?<br>▪ Você pode utilizar o FGTS para abater até 80% das prestações por 12 meses.<br><br>Deseja aproveitar alguma dessas opções?",
         "buttons": [
-          { "label": "Aceitou", "next": "cpja1_aceite_vocal", "primary": true },
-          { "label": "Recusou", "next": "cpja1_recusa_pausa" }
+          {
+            "label": "Aceitou",
+            "next": "hab_atualizacao_cadastral",
+            "primary": true
+          },
+          {
+            "label": "Recusou",
+            "next": "hab_recusa"
+          }
         ]
       },
-      "aceite_vocal": {
-        "id": "cpja1_aceite_vocal",
-        "title": "Aceite Vocal (CPJA1)",
-        "body": "Para sua segurança, estamos gravando:<br><br>Hoje __/__/____ o(a) Sr(a) _________ autoriza a regularização do contrato nº ________.<br><br>O cliente confirma a proposta?",
+      "recusa": {
+        "id": "hab_recusa",
+        "title": "Recusa da Proposta (Habitacional)",
+        "body": "Seu contrato permanece em aberto até que a dívida seja quitada.<br><br>Enquanto isso, seguem ações de cobrança, como ligações, registro no SPC/Serasa e risco de retomada/leilão do imóvel.",
         "buttons": [
-          { "label": "Confirmou", "next": "cpja1_atualizacao_cadastral" },
-          { "label": "Desistiu", "next": "cpja1_recusa_pausa" }
-        ]
-      },
-      "recusa_pausa": {
-        "id": "cpja1_recusa_pausa",
-        "title": "Recusa da Proposta (CPJA1)",
-        "body": "Informo que a proposta é por tempo limitado.<br><br>Caso mude de ideia:<br>▪ 0800 025 8833<br>▪ 4020-0088<br>▪ WhatsApp: 0800 104 0104<br><br>As ações de cobrança continuam e os juros são diários.",
-        "buttons": [
-          { "label": "Encerrar", "next": "fim" },
-          { "label": "Voltar", "next": "cpja1_apresentacao" }
+          {
+            "label": "Encerrar",
+            "next": "fim"
+          },
+          {
+            "label": "Voltar",
+            "next": "hab_apresentacao"
+          }
         ]
       },
       "atualizacao_cadastral": {
-        "id": "cpja1_atualizacao_cadastral",
-        "title": "Atualização Cadastral (CPJA1)",
-        "body": "Tem algum <b>outro telefone</b> ou <b>e-mail</b> para contato?<br><br>Confirme se os dados atuais estão corretos.",
+        "id": "hab_atualizacao_cadastral",
+        "title": "Atualização Cadastral (Habitacional)",
+        "body": "Tem algum outro telefone ou e-mail para contato?<br><br>Confirme se os dados atuais estão corretos.",
         "buttons": [
-          { "label": "Confirmou", "next": "cpja1_pesquisa_satisfacao", "primary": true },
-          { "label": "Não informou", "next": "cpja1_pesquisa_satisfacao" }
+          {
+            "label": "Confirmou",
+            "next": "hab_pesquisa_satisfacao",
+            "primary": true
+          },
+          {
+            "label": "Não informou",
+            "next": "hab_pesquisa_satisfacao"
+          }
         ]
       },
       "pesquisa_satisfacao": {
-        "id": "cpja1_pesquisa_satisfacao",
-        "title": "Pesquisa de Satisfação (CPJA1)",
+        "id": "hab_pesquisa_satisfacao",
+        "title": "Pesquisa de Satisfação (Habitacional)",
         "body": "Peço que aguarde em linha para avaliar o nosso atendimento.<br><br>A CAIXA agradece, tenha um ótimo dia/tarde/noite.",
         "buttons": [
-          { "label": "Finalizar", "next": "fim", "primary": true }
+          {
+            "label": "Finalizar",
+            "next": "fim",
+            "primary": true
+          }
         ]
       }
     },
-
-    "CPJA2": {
+    "COMERCIAL": {
       "abordagem": {
-        "id": "cpja2_abordagem",
-        "title": "Abordagem (CPJA2)",
-        "body": "Oi, falo com o sócio ou responsável da empresa?<br><br>Que bom que você me atendeu! Eu sou <b>[Nome do operador]</b>, falo em nome da CAIXA, tudo bem com você?<br><br><i>Caso questione:</i> Esse contato é sobre o seu relacionamento com a CAIXA.<br><br><b>Atenção:</b> Em casos de CNPJ sem sócio/responsável: registrar no WEDOO.",
+        "id": "com_abordagem",
+        "title": "Abordagem (Comercial)",
+        "body": "Olá, eu sou <b>[Nome do operador]</b>, falo da Central de Negócios da CAIXA, representada pela Roveri Advogados. Você é ou conhece <b>[Primeiro nome do cliente]</b>?<br><br><i>Caso questione:</i> Esse contato é sobre o seu relacionamento com a CAIXA.",
         "buttons": [
-          { "label": "Cliente confirmou", "next": "cpja2_identificacao", "primary": true },
-          { "label": "Não confirmou", "next": "nao_confirma" }
+          {
+            "label": "Cliente confirmou",
+            "next": "com_identificacao",
+            "primary": true
+          },
+          {
+            "label": "Não confirmou",
+            "next": "nao_confirma"
+          }
         ]
       },
       "identificacao": {
-        "id": "cpja2_identificacao",
-        "title": "Identificação (CPJA2)",
-        "body": "Perfeito! Para sua segurança, essa ligação está sendo gravada.<br><br>Eu falo da Roveri Advogados e, por sigilo bancário, preciso confirmar alguns dados.<br><br>Vou te dizer os <b>5 primeiros números do CNPJ</b> e você completa os demais, ok?",
+        "id": "com_identificacao",
+        "title": "Identificação (Comercial)",
+        "body": "Obrigado pela confirmação. Para sua segurança a ligação está sendo gravada.<br><br>Por sigilo bancário, vou falar os <b>6 primeiros números do CPF</b> e você completa os demais, ok?",
         "buttons": [
-          { "label": "Confirmou", "next": "cpja2_apresentacao", "primary": true },
-          { "label": "Não confirmou", "next": "nao_confirma" }
+          {
+            "label": "Confirmou",
+            "next": "com_apresentacao",
+            "primary": true
+          },
+          {
+            "label": "Não confirmou",
+            "next": "nao_confirma"
+          }
         ]
       },
       "apresentacao": {
-        "id": "cpja2_apresentacao",
-        "title": "Apresentação da Dívida (CPJA2)",
-        "body": "O motivo do meu contato é confirmar o pagamento referente ao empréstimo da sua empresa, com <b>X parcelas vencidas</b>, no valor aproximado de <b>R$ XX,XX</b>.<br><br>Você já fez o pagamento?",
+        "id": "com_apresentacao",
+        "title": "Apresentação da Dívida (Comercial)",
+        "body": "O motivo do meu contato é sobre o seu contrato comercial, vencido há <b>XX dias</b>, no valor aproximado de <b>R$ XX,XX</b>.<br><br>Você já fez o pagamento?",
         "buttons": [
-          { "label": "Sim", "next": "cpja2_pagamento_efetuado", "primary": true },
-          { "label": "Não", "next": "cpja2_oferta_pausa" }
+          {
+            "label": "Sim",
+            "next": "com_pagamento_efetuado",
+            "primary": true
+          },
+          {
+            "label": "Não",
+            "next": "com_negociacao"
+          }
         ]
       },
       "pagamento_efetuado": {
-        "id": "cpja2_pagamento_efetuado",
-        "title": "Pagamento Efetuado (CPJA2)",
-        "body": "Se o pagamento foi realizado há menos de <b>5 dias úteis</b>, pode não ter atualizado.<br><br>Se há mais de 5 dias úteis, oriente o cliente:<br>▪ WhatsApp: 0800 104 0104<br>▪ Site: <a href='https://www.caixa.gov.br/negociar' target='_blank'>caixa.gov.br/negociar</a>",
+        "id": "com_pagamento_efetuado",
+        "title": "Pagamento Efetuado (Comercial)",
+        "body": "Caso tenha pago há menos de 5 dias úteis, pode não ter atualizado no sistema.<br><br>Se há mais de 5 dias úteis, oriento entrar em contato:<br>▪ WhatsApp: 0800 104 0104<br>▪ Site: caixa.gov.br/negociar",
         "buttons": [
-          { "label": "Prosseguir", "next": "cpja2_atualizacao_cadastral" },
-          { "label": "Encerrar", "next": "fim" }
+          {
+            "label": "Prosseguir",
+            "next": "com_atualizacao_cadastral"
+          },
+          {
+            "label": "Encerrar",
+            "next": "fim"
+          }
         ]
       },
-      "oferta_pausa": {
-        "id": "cpja2_oferta_pausa",
-        "title": "Oferta de Negociação (CPJA2)",
-        "body": "A CAIXA tem uma oportunidade:<br><br>▪ Inclusão de todas as parcelas em aberto no saldo devedor<br>▪ Pausa de <b>3 meses</b><br>▪ Juros e encargos incorporados ao contrato<br><br><b>Deseja aproveitar essa proposta?</b>",
+      "negociacao": {
+        "id": "com_negociacao",
+        "title": "Negociação (Comercial)",
+        "body": "Podemos negociar seu contrato.<br><br>▪ Pagamento hoje ficaria bom para você?<br>▪ Podemos agendar o pagamento da parcela mais antiga?<br><br>Deseja aproveitar alguma dessas opções?",
         "buttons": [
-          { "label": "Aceitou", "next": "cpja2_aceite_vocal", "primary": true },
-          { "label": "Recusou", "next": "cpja2_recusa_pausa" }
+          {
+            "label": "Aceitou",
+            "next": "com_atualizacao_cadastral",
+            "primary": true
+          },
+          {
+            "label": "Recusou",
+            "next": "com_recusa"
+          }
         ]
       },
-      "aceite_vocal": {
-        "id": "cpja2_aceite_vocal",
-        "title": "Aceite Vocal (CPJA2)",
-        "body": "Para sua segurança, estamos gravando:<br><br>Hoje __/__/____ o(a) Sr(a) _________ autoriza a regularização do contrato nº ________.<br><br>O cliente confirma a proposta?",
+      "recusa": {
+        "id": "com_recusa",
+        "title": "Recusa da Proposta (Comercial)",
+        "body": "Seu contrato permanece em aberto até que a dívida seja quitada.<br><br>Enquanto isso, seguem ações de cobrança, como ligações, registro no SPC/Serasa e restrições no CPF/CNPJ.",
         "buttons": [
-          { "label": "Confirmou", "next": "cpja2_atualizacao_cadastral" },
-          { "label": "Desistiu", "next": "cpja2_recusa_pausa" }
-        ]
-      },
-      "recusa_pausa": {
-        "id": "cpja2_recusa_pausa",
-        "title": "Recusa da Proposta (CPJA2)",
-        "body": "Informo que a proposta é por tempo limitado.<br><br>Caso mude de ideia:<br>▪ 0800 025 8833<br>▪ 4020-0088<br>▪ WhatsApp: 0800 104 0104<br><br>As ações de cobrança continuam e os juros são diários.",
-        "buttons": [
-          { "label": "Encerrar", "next": "fim" },
-          { "label": "Voltar", "next": "cpja2_apresentacao" }
+          {
+            "label": "Encerrar",
+            "next": "fim"
+          },
+          {
+            "label": "Voltar",
+            "next": "com_apresentacao"
+          }
         ]
       },
       "atualizacao_cadastral": {
-        "id": "cpja2_atualizacao_cadastral",
-        "title": "Atualização Cadastral (CPJA2)",
-        "body": "Tem algum <b>outro telefone</b> ou <b>e-mail</b> para contato?<br><br>Confirme se os dados atuais estão corretos.",
+        "id": "com_atualizacao_cadastral",
+        "title": "Atualização Cadastral (Comercial)",
+        "body": "Tem algum outro telefone ou e-mail para contato?<br><br>Confirme se os dados atuais estão corretos.",
         "buttons": [
-          { "label": "Confirmou", "next": "cpja2_pesquisa_satisfacao", "primary": true },
-          { "label": "Não informou", "next": "cpja2_pesquisa_satisfacao" }
+          {
+            "label": "Confirmou",
+            "next": "com_pesquisa_satisfacao",
+            "primary": true
+          },
+          {
+            "label": "Não informou",
+            "next": "com_pesquisa_satisfacao"
+          }
         ]
       },
       "pesquisa_satisfacao": {
-        "id": "cpja2_pesquisa_satisfacao",
-        "title": "Pesquisa de Satisfação (CPJA2)",
+        "id": "com_pesquisa_satisfacao",
+        "title": "Pesquisa de Satisfação (Comercial)",
         "body": "Peço que aguarde em linha para avaliar o nosso atendimento.<br><br>A CAIXA agradece, tenha um ótimo dia/tarde/noite.",
         "buttons": [
-          { "label": "Finalizar", "next": "fim", "primary": true }
+          {
+            "label": "Finalizar",
+            "next": "fim",
+            "primary": true
+          }
         ]
       }
     }

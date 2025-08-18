@@ -1,5 +1,7 @@
 // =====================================================
-// roteiro.js — versão corrigida (Marcas: CPJA1 / CPJA2)
+// roteiro.js — suporte a 2 JSONs (PF x PJ)
+// Carrega "roteiros.json" (Pessoa Física) ou "roteiros1.json" (Pessoa Jurídica)
+// Mantém painel ADM, busca, progresso, histórico, etc.
 // =====================================================
 
 // Utils
@@ -13,19 +15,26 @@ const progressText = $("#progressText");
 const jumpSelect   = $("#jumpSelect");
 
 // Estado
-let roteiros = {};              // Mapa de telas por ID (inclui CPJA1/CPJA2 + inicio/fim/nao_confirma)
-let startByProduct = {};        // { CPJA1: 'cpja1_abordagem', CPJA2: 'cpja2_abordagem' }
+let roteiros = {};              // Mapa de telas por ID (inclui telas do sistema)
+let startByProduct = {};        // { PRODUTO: 'id_da_tela_abordagem' }
 let historyStack = [];
 let state = { produto: "", atendimento: "", pessoa: "" };
 let isAdmin = false;
 let currentId = null;
 
 /* ============================================
-   Carregamento do JSON e preparação de roteiros
+   Fonte de dados (PF x PJ)
 ============================================ */
-async function loadRoteirosJSON() {
-  const resp = await fetch("roteiros.json", { cache: "no-store" });
-  if (!resp.ok) throw new Error("Não foi possível carregar roteiros.json");
+function sourceFileForPessoa(p) {
+  const v = String(p || "").toLowerCase();
+  if (["juridica", "jurídica", "pj"].includes(v)) return "roteiros1.json"; // PJ
+  return "roteiros.json"; // PF (default)
+}
+
+async function loadRoteirosJSON(pessoa = state.pessoa || "fisica") {
+  const file = sourceFileForPessoa(pessoa);
+  const resp = await fetch(file, { cache: "no-store" });
+  if (!resp.ok) throw new Error(`Não foi possível carregar ${file}`);
   return resp.json();
 }
 
@@ -36,26 +45,23 @@ function buildSystemScreens() {
     id: "inicio",
     title: "Início",
     body: `
-      <div class="grid-3">
-        <label>Tipo de atendimento</label>
-        <div class="chips" id="chipsAtendimento">
-          <button class="chip" data-value="ativo">Ativo</button>
-          <button class="chip" data-value="receptivo">Receptivo</button>
-        </div>
-
-        <label>Produto</label>
-        <div class="chips" id="chipsProduto">
-          <button class="chip" data-value="CPJA1">Marca CPJA1</button>
-          <button class="chip" data-value="CPJA2">Marca CPJA2</button>
-        </div>
-
-        <label>Pessoa</label>
-        <div class="chips" id="chipsPessoa">
-          <button class="chip" data-value="fisica">Física</button>
-          <button class="chip" data-value="juridica">Jurídica</button>
-        </div>
+    <div class="grid-3">
+      <label>Tipo de atendimento</label>
+      <div class="chips" id="chipsAtendimento">
+        <button class="chip" data-value="ativo">Ativo</button>
+        <button class="chip" data-value="receptivo">Receptivo</button>
       </div>
-    `,
+
+      <label>Produto</label>
+      <div class="chips" id="chipsProduto"></div>
+
+      <label>Pessoa</label>
+      <div class="chips" id="chipsPessoa">
+        <button class="chip" data-value="fisica">Física</button>
+        <button class="chip" data-value="juridica">Jurídica</button>
+      </div>
+    </div>
+  `,
     tab: "Seleção inicial do fluxo",
     buttons: [
       { label: "Iniciar", next: "__start", primary: true },
@@ -91,9 +97,10 @@ function buildSystemScreens() {
 // Achata as telas do JSON por ID e marca o produto
 function flattenProducts(json) {
   if (!json?.marcas) throw new Error("JSON inválido: nó 'marcas' ausente.");
-  roteiros = {}; // zera para reconstruir
+  roteiros = {};               // zera para reconstruir
+  startByProduct = {};         // IMPORTANTE: zera mapeamento de início por produto
 
-  // Varre produtos (CPJA1 / CPJA2)
+  // Varre produtos (ex.: HABITACIONAL / COMERCIAL / CPJA1 / CPJA2)
   Object.entries(json.marcas).forEach(([produto, telasObj]) => {
     // tenta achar a tela de "abordagem" como ponto de partida
     const abordagem = telasObj.abordagem || Object.values(telasObj)[0];
@@ -102,8 +109,7 @@ function flattenProducts(json) {
     // insere cada tela usando o seu próprio 'id' como chave
     Object.values(telasObj).forEach(def => {
       if (!def?.id) return;
-      // clona e injeta metadado de produto
-      const novo = { ...def, product: produto };
+      const novo = { ...def, product: produto }; // injeta metadado de produto
       roteiros[def.id] = novo;
     });
   });
@@ -157,6 +163,61 @@ function hideTabulacao() {
 }
 
 /* ============================================
+   Helpers de UI
+============================================ */
+function uniqueProducts() {
+  const set = new Set();
+  Object.values(roteiros).forEach(r => { if (r.product) set.add(r.product); });
+  return [...set];
+}
+function updateStartEnabled() {
+  const startBtn = $("#btnStart");
+  if (startBtn) {
+    const ok = state.atendimento && state.produto && state.pessoa;
+    startBtn.disabled = !ok;
+  }
+}
+function buildProductChips(inicioSection) {
+  const chipsProduto = $("#chipsProduto", inicioSection);
+  if (!chipsProduto) return;
+  chipsProduto.innerHTML = "";
+  uniqueProducts().forEach(produto => {
+    const btn = document.createElement("button");
+    btn.className = "chip";
+    btn.dataset.value = produto;
+    btn.textContent = produto;
+    if (produto === state.produto) btn.classList.add("selected");
+    btn.onclick = () => {
+      state.produto = produto;
+      $$("#chipsProduto .chip", inicioSection).forEach(c => c.classList.remove("selected"));
+      btn.classList.add("selected");
+      updateStartEnabled();
+    };
+    chipsProduto.appendChild(btn);
+  });
+}
+
+async function reloadRoteirosForPessoa(pessoaSel) {
+  const inicioSec = byId("inicio");
+  const chipsProduto = inicioSec ? $("#chipsProduto", inicioSec) : null;
+  if (chipsProduto) chipsProduto.innerHTML = "<span class='muted'>Carregando produtos...</span>";
+
+  // limpa produto ao trocar de pessoa
+  state.produto = "";
+  updateStartEnabled();
+
+  const json = await loadRoteirosJSON(pessoaSel);
+  flattenProducts(json);
+
+  // Reconstroi chips de produto na tela atual de início
+  if (inicioSec) buildProductChips(inicioSec);
+
+  // Como o conjunto de telas mudou, garantimos progresso/calculadoras atualizadas
+  buildJumpList();
+  updateProgress();
+}
+
+/* ============================================
    Renderiza uma tela
 ============================================ */
 function renderScreen(def) {
@@ -187,16 +248,11 @@ function renderScreen(def) {
   tabAlert.innerHTML = `Caso a ligação encerre, <br>verifique a tabulação ao lado`;
   sec.appendChild(tabAlert);
 
-  // Função para mostrar/esconder ciclicamente
   function toggleAlert() {
-    tabAlert.classList.remove("hide"); // mostra
-    setTimeout(() => {
-      tabAlert.classList.add("hide");  // esconde
-    }, 5000); // fica visível por 5s
+    tabAlert.classList.remove("hide");
+    setTimeout(() => { tabAlert.classList.add("hide"); }, 5000);
   }
-
-  // Executa a cada X segundos (ex.: 15s)
-  toggleAlert(); // primeira vez logo ao renderizar
+  toggleAlert();
   setInterval(toggleAlert, 15000);
 
   const actions = $(".actions", sec);
@@ -246,14 +302,10 @@ function renderScreen(def) {
 
   flow.appendChild(sec);
 
-  // Lógica especial para tela inicial: ler chips (balões)
+  // Lógica especial para tela inicial: ler chips
   if (def.id === "inicio") {
-    const startBtn = sec.querySelector("#btnStart");
-
-    function checkReady() {
-      const ok = state.atendimento && state.produto && state.pessoa;
-      if (startBtn) startBtn.disabled = !ok;
-    }
+    // estado do Start
+    updateStartEnabled();
 
     // atendimento
     $$("#chipsAtendimento .chip", sec).forEach(btn => {
@@ -261,27 +313,30 @@ function renderScreen(def) {
         state.atendimento = btn.dataset.value;
         $$("#chipsAtendimento .chip", sec).forEach(c => c.classList.remove("selected"));
         btn.classList.add("selected");
-        checkReady();
+        updateStartEnabled();
       };
     });
 
-    // produto
-    $$("#chipsProduto .chip", sec).forEach(btn => {
-      btn.onclick = () => {
-        state.produto = btn.dataset.value;
-        $$("#chipsProduto .chip", sec).forEach(c => c.classList.remove("selected"));
-        btn.classList.add("selected");
-        checkReady();
-      };
-    });
+    // produto (preenche com base no JSON carregado para a pessoa atual)
+    buildProductChips(sec);
 
     // pessoa
     $$("#chipsPessoa .chip", sec).forEach(btn => {
-      btn.onclick = () => {
+      btn.onclick = async () => {
+        // marca visualmente
         state.pessoa = btn.dataset.value;
         $$("#chipsPessoa .chip", sec).forEach(c => c.classList.remove("selected"));
         btn.classList.add("selected");
-        checkReady();
+
+        // recarrega JSON da pessoa escolhida e reconstrói chips de produto
+        try {
+          await reloadRoteirosForPessoa(state.pessoa);
+        } catch (e) {
+          console.error(e);
+          alert("Erro ao carregar os roteiros da pessoa selecionada.");
+        }
+
+        updateStartEnabled();
       };
     });
   }
@@ -481,13 +536,22 @@ function resetInicioUI() {
   state = { produto: "", atendimento: "", pessoa: "" };
 
   // desabilita Start
-  const startBtn = scr.querySelector("#btnStart");
-  if (startBtn) startBtn.disabled = true;
+  updateStartEnabled();
 }
-function hardReset() {
+async function hardReset() {
   historyStack = [];
   state = { produto: "", atendimento: "", pessoa: "" };
   flow.innerHTML = "";
+
+  // Recarrega PF (default) para a primeira renderização
+  try {
+    const json = await loadRoteirosJSON("fisica");
+    flattenProducts(json);
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao carregar roteiros iniciais (PF).");
+  }
+
   renderScreen(roteiros.inicio);
   go("inicio");                // reabre do início
   resetInicioUI();             // limpa chips e desabilita Start
@@ -500,12 +564,12 @@ function hardReset() {
 async function bootstrap() {
   ensureTabModalInjected();
   try {
-    const json = await loadRoteirosJSON();
+    const json = await loadRoteirosJSON("fisica"); // default PF até o usuário escolher PJ
     flattenProducts(json);     // popula roteiros + startByProduct + telas do sistema
     hardReset();               // abre a UI
   } catch (err) {
     console.error(err);
-    alert("Erro ao carregar os roteiros. Verifique o arquivo roteiros.json.");
+    alert("Erro ao carregar os roteiros. Verifique os arquivos JSON.");
   }
 }
 document.addEventListener("DOMContentLoaded", bootstrap);
