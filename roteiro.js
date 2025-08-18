@@ -51,15 +51,16 @@ function buildSystemScreens() {
         <button class="chip" data-value="ativo">Ativo</button>
         <button class="chip" data-value="receptivo">Receptivo</button>
       </div>
-
-      <label>Produto</label>
-      <div class="chips" id="chipsProduto"></div>
-
+      
       <label>Pessoa</label>
       <div class="chips" id="chipsPessoa">
         <button class="chip" data-value="fisica">Física</button>
         <button class="chip" data-value="juridica">Jurídica</button>
       </div>
+
+      <label>Produto</label>
+      <div class="chips" id="chipsProduto"></div>
+
     </div>
   `,
     tab: "Seleção inicial do fluxo",
