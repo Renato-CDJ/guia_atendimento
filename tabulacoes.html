@@ -6,16 +6,57 @@
   <title>Tabulações</title>
   <style>
     :root {
-      --bg: #0f1113;
-      --panel: #15181b;
-      --panel-2: #1b2024;
-      --muted: #aab0b6;
-      --text: #f5f7fa;
-      --accent: #00c853;
-      --accent-2: #00e676;
-      --danger: #e53935;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-    }
+  /* Tema escuro (padrão) */
+  --bg: #0f1113;
+  --panel: #15181b;
+  --panel-2: #1b2024;
+  --muted: #aab0b6;
+  --text: #f5f7fa;
+  --accent: #00c853;
+  --accent-2: #00e676;
+  --danger: #e53935;
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+/* Tema claro (laranja/branco moderno) */
+body[data-theme="light"] {
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #fafafa;
+  --muted: #555;
+  --text: #1a1a1a;
+  --accent: #ff5722;
+  --accent-2: #ff9800;
+  --danger: #d32f2f;
+  --shadow: 0 8px 20px rgba(0,0,0,.08);
+
+  background:
+    radial-gradient(1000px 1000px at 110% -10%, #ffe0b2 0%, transparent 60%),
+    radial-gradient(1000px 1000px at -10% 110%, #fff3e0 0%, transparent 60%),
+    var(--bg);
+}
+
+/* Ajustes visuais light */
+body[data-theme="light"] .badge {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #333;
+}
+body[data-theme="light"] .badge:hover {
+  background: #eee;
+  border-color: #ccc;
+}
+
+body[data-theme="light"] .screen {
+  background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+body[data-theme="light"] .script {
+  color: #444;
+}
+
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -149,6 +190,8 @@
       </div>
       <div>
         <button onclick="window.location.href='index.html'" class="badge">⬅ Voltar</button>
+        <button id="btnToggleTheme" class="badge">🌗 Tema</button>
+
         <button id="btnToggleAdm" class="badge">⚙️ ADM</button>
       </div>
     </header>
@@ -262,5 +305,24 @@
 
     renderTabulacoes();
   </script>
+
+  <script>
+  // Alternância de tema (dark/light)
+  const themeBtn = document.getElementById("btnToggleTheme");
+
+  // Aplica tema salvo
+  if (localStorage.getItem("theme")) {
+    document.body.setAttribute("data-theme", localStorage.getItem("theme"));
+  }
+
+  themeBtn?.addEventListener("click", () => {
+    const current = document.body.getAttribute("data-theme");
+    const next = current === "light" ? "dark" : "light";
+    document.body.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+  });
+</script>
+
+
 </body>
 </html>
