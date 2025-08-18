@@ -605,3 +605,21 @@ searchInput?.addEventListener("keydown", (e) => {
     }
   }
 });
+
+/* ============================================
+   Tema (Dark / Light)
+============================================ */
+const themeBtn = document.getElementById("btnToggleTheme");
+
+// Carrega tema salvo
+if (localStorage.getItem("theme")) {
+  document.body.setAttribute("data-theme", localStorage.getItem("theme"));
+}
+
+themeBtn?.addEventListener("click", () => {
+  const current = document.body.getAttribute("data-theme");
+  const next = current === "light" ? "dark" : "light";
+  document.body.setAttribute("data-theme", next);
+  localStorage.setItem("theme", next);
+});
+
