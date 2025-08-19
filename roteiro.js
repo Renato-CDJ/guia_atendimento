@@ -246,7 +246,7 @@ function renderScreen(def) {
   // === Mensagem temporária ao lado externo ===
   const tabAlert = document.createElement("div");
   tabAlert.className = "tab-alert";
-  tabAlert.innerHTML = `Caso a ligação encerre, <br>verifique a tabulação ao lado`;
+  tabAlert.innerHTML = `⬅️ Caso a ligação encerre, <br>verifique a tabulação<br> ao lado`;
   sec.appendChild(tabAlert);
 
   function toggleAlert() {
@@ -592,6 +592,12 @@ searchInput?.addEventListener("keydown", (e) => {
       window.location.href = "tabulacoes.html";
       return;
     }
+
+    if (termo.includes("canais")) {
+     window.location.href = "canais.html";
+     return;
+    }
+
 
     const found = Object.values(roteiros).find(r =>
       (r.title || "").toLowerCase().includes(termo) ||
