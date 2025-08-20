@@ -110,18 +110,15 @@ body[data-theme="light"] .progressbar {
   box-shadow: inset 0 0 0 1px #ddd;
 }
 
-
 /* =========================
    Layout básico
 ========================= */
 .container {
   width: 100%;
-  max-width: 1200px;  /* ainda limita para telas enormes */
+  max-width: 1200px;
   margin: 0 auto;
-  padding: clamp(10px, 2vw, 24px); /* padding responsivo */
+  padding: clamp(10px, 2vw, 24px);
 }
-
-
 
 header{
   display: flex;
@@ -132,7 +129,7 @@ header{
 }
 
 header h1{
-  font-size: 22px;
+  font-size: clamp(20px, 2.5vw, 26px);
   color: var(--accent);
   letter-spacing: .3px;
 }
@@ -164,7 +161,7 @@ header h1{
 /* =========================
    Progresso
 ========================= */
-.progress{ margin: 10px 0 18px; }
+.progress{ margin: 10px 0 32px; } /* espaçamento maior entre barra e quadro */
 .progressbar{
   height: 10px;
   border-radius: 999px;
@@ -200,21 +197,14 @@ header h1{
   font-size: clamp(16px, 2vw, 20px);
   margin-bottom: 8px;
 }
-header h1 {
-  font-size: clamp(20px, 2.5vw, 26px);
-}
 
 .script{
   color: #dce3ea;
   line-height: 1.55;
   font-size: 15px;
 }
-.actions{
-  display:flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-}
+
+/* (REMOVIDO) .actions — os botões não ficam mais dentro do quadro */
 
 /* =========================
    Chips de seleção
@@ -253,10 +243,17 @@ header h1 {
   box-shadow: 0 0 0 2px rgba(0,200,83,.25);
 }
 
-
 /* =========================
-   Botões
+   Botões (container externo)
 ========================= */
+#globalActions, .global-actions{
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0 6px; /* abaixo do quadro, centralizado */
+  flex-wrap: wrap;
+}
+
 .btn{
   appearance:none;
   border: 1px solid #2a3138;
@@ -284,7 +281,7 @@ header h1 {
 .adm {
   position: fixed;
   inset: 0 0 0 auto;
-  width: clamp(280px, 28%, 400px); /* largura menor por padrão */
+  width: clamp(280px, 28%, 400px);
   max-width: 100vw;
   background: var(--panel);
   border-left: 1px solid #20262c;
@@ -295,9 +292,7 @@ header h1 {
   z-index: 800;
   overflow-y: auto;
 }
-.adm.open {
-  transform: translateX(0);
-}
+.adm.open { transform: translateX(0); }
 
 .adm > header{
   font-weight: 700;
@@ -398,8 +393,7 @@ header h1 {
 }
 
 /* =========================
-   Modal de Tabulação
-   (injetado via JS, não precisa alterar HTML)
+   Modal de Tabulação (JS injeta HTML)
 ========================= */
 #tabModal{
   display:none;
@@ -407,7 +401,7 @@ header h1 {
   background: rgba(0,0,0,.65);
   backdrop-filter: blur(3px);
   z-index: 1200;
-  animation: fadeIn .25s ease both;
+  animation: fadeInModal .25s ease both;
 }
 #tabModal .rt-modal__content{
   position: absolute; left:50%; top:50%;
@@ -446,9 +440,12 @@ header h1 {
 }
 #tabModal .rt-close:hover{ background:#172027; }
 
-@keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+@keyframes fadeInModal{ from{opacity:0} to{opacity:1} }
 @keyframes scaleIn{ from{opacity:0; transform: translate(-50%,-50%) scale(.92)} to{opacity:1; transform: translate(-50%,-50%) scale(1)} }
 
+/* =========================
+   Editor de botões do ADM
+========================= */
 .btn-edit {
   display: flex;
   gap: 6px;
@@ -459,12 +456,13 @@ header h1 {
   flex: 1;
 }
 
-
-/* Alerta temporário ao lado externo do ícone */
+/* =========================
+   Alerta temporário (fora do quadro)
+========================= */
 .tab-alert {
   position: absolute;
   top: 14px;
-  right: -270px; /* joga para fora do quadro */
+  right: -270px;
   background: #ffeb3b;
   color: #222;
   padding: 6px 12px;
@@ -473,24 +471,25 @@ header h1 {
   font-weight: 600;
   white-space: nowrap;
   box-shadow: 0 4px 8px rgba(0,0,0,.3);
-  animation: fadeIn 0.5s ease forwards;
+  animation: fadeInRight 0.5s ease forwards;
   z-index: 999;
 }
 
 /* Animação de saída */
-.tab-alert.hide {
-  animation: fadeOut 1s ease forwards;
-}
+.tab-alert.hide { animation: fadeOutRight 1s ease forwards; }
 
-@keyframes fadeIn {
+@keyframes fadeInRight {
   from { opacity: 0; transform: translateX(20px); }
   to   { opacity: 1; transform: translateX(0); }
 }
-@keyframes fadeOut {
+@keyframes fadeOutRight {
   from { opacity: 1; transform: translateX(0); }
   to   { opacity: 0; transform: translateX(20px); }
 }
 
+/* =========================
+   Responsividade
+========================= */
 /* Telas padrão da empresa: 1280x1024 */
 @media (max-width: 1280px) {
   .container {
@@ -498,10 +497,10 @@ header h1 {
     padding: 16px;
   }
   header h1 {
-    font-size: 20px;
+    font-size: clamp(18px, 2.2vw, 22px);
   }
   .title {
-    font-size: 16px;
+    font-size: clamp(15px, 1.8vw, 18px);
   }
 }
 
@@ -519,15 +518,7 @@ header h1 {
 
 /* Telas muito pequenas (celular) */
 @media (max-width: 480px) {
-  .screen {
-    padding: 12px;
-    font-size: 14px;
-  }
-  .actions {
-    flex-direction: column;
-  }
-  .btn {
-    width: 100%;
-    text-align: center;
-  }
+  .screen { padding: 12px; font-size: 14px; }
+  #globalActions, .global-actions { flex-direction: column; }
+  .btn { width: 100%; text-align: center; }
 }

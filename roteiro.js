@@ -1,20 +1,28 @@
 // =====================================================
-// roteiro.js — suporte a 2 JSONs (PF x PJ)
-// Carrega "roteiros.json" (Pessoa Física) ou "roteiros1.json" (Pessoa Jurídica)
-// Mantém painel ADM, busca, progresso, histórico, etc.
+// roteiro.js — suporte a 2 JSONs (PF x PJ) + melhorias
+// - Carrega "roteiros.json" (PF) ou "roteiros1.json" (PJ)
+// - Botões ficam fora do quadro do script (em #globalActions / .global-actions)
+// - Painel ADM, busca, progresso, histórico, tema, etc.
 // =====================================================
 
+// ------------------------
 // Utils
+// ------------------------
 const $  = (s, ctx=document) => ctx.querySelector(s);
 const $$ = (s, ctx=document) => [...ctx.querySelectorAll(s)];
 
-// Dom refs globais
-const flow         = $("#flow");
-const bar          = $("#bar");
-const progressText = $("#progressText");
-const jumpSelect   = $("#jumpSelect");
+// ------------------------
+// DOM refs globais
+// ------------------------
+const flow          = $("#flow");
+const bar           = $("#bar");
+const progressText  = $("#progressText");
+const jumpSelect    = $("#jumpSelect");
+const globalActions = document.getElementById("globalActions") || document.querySelector(".global-actions");
 
+// ------------------------
 // Estado
+// ------------------------
 let roteiros = {};              // Mapa de telas por ID (inclui telas do sistema)
 let startByProduct = {};        // { PRODUTO: 'id_da_tela_abordagem' }
 let historyStack = [];
@@ -22,9 +30,9 @@ let state = { produto: "", atendimento: "", pessoa: "" };
 let isAdmin = false;
 let currentId = null;
 
-/* ============================================
-   Fonte de dados (PF x PJ)
-============================================ */
+// =====================================================
+// Fonte de dados (PF x PJ)
+// =====================================================
 function sourceFileForPessoa(p) {
   const v = String(p || "").toLowerCase();
   if (["juridica", "jurídica", "pj"].includes(v)) return "roteiros1.json"; // PJ
@@ -38,31 +46,32 @@ async function loadRoteirosJSON(pessoa = state.pessoa || "fisica") {
   return resp.json();
 }
 
-// Constrói as telas "inicio", "fim" e "nao_confirma"
+// =====================================================
+// Telas do sistema
+// =====================================================
 function buildSystemScreens() {
-  // Tela de início com chips (balões)
+  // Tela de Início
   roteiros.inicio = {
     id: "inicio",
     title: "Início",
     body: `
-    <div class="grid-3">
-      <label>Tipo de atendimento</label>
-      <div class="chips" id="chipsAtendimento">
-        <button class="chip" data-value="ativo">Ativo</button>
-        <button class="chip" data-value="receptivo">Receptivo</button>
-      </div>
-      
-      <label>Pessoa</label>
-      <div class="chips" id="chipsPessoa">
-        <button class="chip" data-value="fisica">Física</button>
-        <button class="chip" data-value="juridica">Jurídica</button>
-      </div>
+      <div class="grid-3">
+        <label>Tipo de atendimento</label>
+        <div class="chips" id="chipsAtendimento">
+          <button class="chip" data-value="ativo">Ativo</button>
+          <button class="chip" data-value="receptivo">Receptivo</button>
+        </div>
 
-      <label>Produto</label>
-      <div class="chips" id="chipsProduto"></div>
+        <label>Pessoa</label>
+        <div class="chips" id="chipsPessoa">
+          <button class="chip" data-value="fisica">Física</button>
+          <button class="chip" data-value="juridica">Jurídica</button>
+        </div>
 
-    </div>
-  `,
+        <label>Produto</label>
+        <div class="chips" id="chipsProduto"></div>
+      </div>
+    `,
     tab: "Seleção inicial do fluxo",
     buttons: [
       { label: "Iniciar", next: "__start", primary: true },
@@ -83,10 +92,7 @@ function buildSystemScreens() {
   roteiros.nao_confirma = {
     id: "nao_confirma",
     title: "Não confirmado",
-    body: `
-      Não foi possível confirmar a identidade do responsável pelo CNPJ.<br>
-      Oriente novo contato em momento oportuno.
-    `,
+    body: `Não foi possível confirmar a identidade do responsável pelo CNPJ.<br>Oriente novo contato em momento oportuno.`,
     tab: "Sem confirmação",
     buttons: [
       { label: "Voltar ao início", next: "inicio", primary: true },
@@ -99,9 +105,8 @@ function buildSystemScreens() {
 function flattenProducts(json) {
   if (!json?.marcas) throw new Error("JSON inválido: nó 'marcas' ausente.");
   roteiros = {};               // zera para reconstruir
-  startByProduct = {};         // IMPORTANTE: zera mapeamento de início por produto
+  startByProduct = {};         // zera mapeamento de início por produto
 
-  // Varre produtos (ex.: HABITACIONAL / COMERCIAL / CPJA1 / CPJA2)
   Object.entries(json.marcas).forEach(([produto, telasObj]) => {
     // tenta achar a tela de "abordagem" como ponto de partida
     const abordagem = telasObj.abordagem || Object.values(telasObj)[0];
@@ -110,8 +115,7 @@ function flattenProducts(json) {
     // insere cada tela usando o seu próprio 'id' como chave
     Object.values(telasObj).forEach(def => {
       if (!def?.id) return;
-      const novo = { ...def, product: produto }; // injeta metadado de produto
-      roteiros[def.id] = novo;
+      roteiros[def.id] = { ...def, product: produto };
     });
   });
 
@@ -119,9 +123,9 @@ function flattenProducts(json) {
   buildSystemScreens();
 }
 
-/* ============================================
-   Modal de Tabulação (injeção + controle)
-============================================ */
+// =====================================================
+// Modal de Tabulação (injeção + controle)
+// =====================================================
 function ensureTabModalInjected() {
   const existing = document.getElementById("tabModal");
   const hasOurStructure = existing && existing.querySelector(".rt-modal__content");
@@ -163,20 +167,15 @@ function hideTabulacao() {
   if (modal) modal.style.display = "none";
 }
 
-/* ============================================
-   Helpers de UI
-============================================ */
+// =====================================================
+// Helpers (produtos, chips, etc.)
+// =====================================================
 function uniqueProducts() {
-  const set = new Set();
-  Object.values(roteiros).forEach(r => { if (r.product) set.add(r.product); });
-  return [...set];
+  return [...new Set(Object.values(roteiros).map(r => r.product).filter(Boolean))];
 }
 function updateStartEnabled() {
   const startBtn = $("#btnStart");
-  if (startBtn) {
-    const ok = state.atendimento && state.produto && state.pessoa;
-    startBtn.disabled = !ok;
-  }
+  if (startBtn) startBtn.disabled = !(state.atendimento && state.produto && state.pessoa);
 }
 function buildProductChips(inicioSection) {
   const chipsProduto = $("#chipsProduto", inicioSection);
@@ -200,8 +199,7 @@ function buildProductChips(inicioSection) {
 
 async function reloadRoteirosForPessoa(pessoaSel) {
   const inicioSec = byId("inicio");
-  const chipsProduto = inicioSec ? $("#chipsProduto", inicioSec) : null;
-  if (chipsProduto) chipsProduto.innerHTML = "<span class='muted'>Carregando produtos...</span>";
+  $("#chipsProduto", inicioSec)?.replaceChildren(document.createTextNode("Carregando..."));
 
   // limpa produto ao trocar de pessoa
   state.produto = "";
@@ -213,14 +211,14 @@ async function reloadRoteirosForPessoa(pessoaSel) {
   // Reconstroi chips de produto na tela atual de início
   if (inicioSec) buildProductChips(inicioSec);
 
-  // Como o conjunto de telas mudou, garantimos progresso/calculadoras atualizadas
+  // Como o conjunto de telas mudou, atualiza jump/progresso
   buildJumpList();
   updateProgress();
 }
 
-/* ============================================
-   Renderiza uma tela
-============================================ */
+// =====================================================
+// Renderização de telas
+// =====================================================
 function renderScreen(def) {
   const sec = document.createElement("section");
   sec.className = "screen";
@@ -228,10 +226,9 @@ function renderScreen(def) {
   sec.innerHTML = `
     <div class="title">${def.title}</div>
     <div class="script">${def.body}</div>
-    <div class="actions"></div>
   `;
 
-  // Ícone ✔ de Tabulação (permanece no lugar original)
+  // Ícone ✔ de Tabulação (no canto do quadro)
   const tabIcon = document.createElement("button");
   tabIcon.className = "tab-icon";
   tabIcon.textContent = "✔";
@@ -243,20 +240,78 @@ function renderScreen(def) {
   });
   sec.prepend(tabIcon);
 
-  // === Mensagem temporária ao lado externo ===
+  // Mensagem temporária ao lado externo (opcional)
   const tabAlert = document.createElement("div");
   tabAlert.className = "tab-alert";
-  tabAlert.innerHTML = `⬅️ Caso a ligação encerre, <br>verifique a tabulação<br> ao lado`;
+  tabAlert.innerHTML = `⬅️ Caso a ligação encerre,<br>verifique a tabulação<br>ao lado`;
   sec.appendChild(tabAlert);
-
-  function toggleAlert() {
+  const toggleAlert = () => {
     tabAlert.classList.remove("hide");
-    setTimeout(() => { tabAlert.classList.add("hide"); }, 5000);
-  }
+    setTimeout(() => tabAlert.classList.add("hide"), 5000);
+  };
   toggleAlert();
   setInterval(toggleAlert, 15000);
 
-  const actions = $(".actions", sec);
+  flow.appendChild(sec);
+
+  // Lógica especial para tela inicial: chips e Start
+  if (def.id === "inicio") {
+    updateStartEnabled();
+
+    // atendimento
+    $$("#chipsAtendimento .chip", sec).forEach(btn => {
+      btn.onclick = () => {
+        state.atendimento = btn.dataset.value;
+        $$("#chipsAtendimento .chip", sec).forEach(c => c.classList.remove("selected"));
+        btn.classList.add("selected");
+        updateStartEnabled();
+      };
+    });
+
+    // produto
+    buildProductChips(sec);
+
+    // pessoa
+    $$("#chipsPessoa .chip", sec).forEach(btn => {
+      btn.onclick = async () => {
+        state.pessoa = btn.dataset.value;
+        $$("#chipsPessoa .chip", sec).forEach(c => c.classList.remove("selected"));
+        btn.classList.add("selected");
+        try {
+          await reloadRoteirosForPessoa(state.pessoa);
+        } catch (e) {
+          console.error(e);
+          alert("Erro ao carregar os roteiros da pessoa selecionada.");
+        }
+        updateStartEnabled();
+      };
+    });
+  }
+}
+
+// Monta os botões no container global (abaixo do quadro)
+function buildGlobalButtons(def) {
+  const container = globalActions;
+  // Fallback: se não houver container global, cria/usa um dentro da tela ativa
+  const useFallback = !container;
+  const host = useFallback ? byId(def.id).querySelector(".actions") || byId(def.id).appendChild(Object.assign(document.createElement("div"),{className:"actions"})) : container;
+
+  if (host) host.innerHTML = "";
+
+  const add = (btn) => host && host.appendChild(btn);
+
+  // Botão Voltar (exceto início)
+  if (def.id !== "inicio") {
+    const backBtn = document.createElement("button");
+    backBtn.className = "btn";
+    backBtn.textContent = "⬅ Voltar";
+    backBtn.onclick = () => {
+      historyStack.pop();
+      const prev = historyStack.pop();
+      go(prev || "inicio");
+    };
+    add(backBtn);
+  }
 
   // Botões definidos pela tela
   (def.buttons || []).forEach(b => {
@@ -270,10 +325,7 @@ function renderScreen(def) {
       btn.onclick = () => {
         const produto = state.produto;
         const startId = startByProduct[produto];
-        if (!produto || !startId) {
-          alert("Selecione um produto válido para iniciar.");
-          return;
-        }
+        if (!produto || !startId) return alert("Selecione um produto válido para iniciar.");
         go(startId);
       };
     } else if (def.id === "inicio" && b.label === "Resetar") {
@@ -284,73 +336,22 @@ function renderScreen(def) {
       btn.onclick = () => go(b.next);
     }
 
-    actions.appendChild(btn);
+    add(btn);
   });
-
-  // Botão voltar (exceto no início)
-  if (def.id !== "inicio") {
-    const backBtn = document.createElement("button");
-    backBtn.className = "btn";
-    backBtn.textContent = "⬅ Voltar";
-    backBtn.onclick = () => {
-      historyStack.pop();
-      const prev = historyStack.pop();
-      if (prev) go(prev);
-      else go("inicio");
-    };
-    actions.insertBefore(backBtn, actions.firstChild);
-  }
-
-  flow.appendChild(sec);
-
-  // Lógica especial para tela inicial: ler chips
-  if (def.id === "inicio") {
-    // estado do Start
-    updateStartEnabled();
-
-    // atendimento
-    $$("#chipsAtendimento .chip", sec).forEach(btn => {
-      btn.onclick = () => {
-        state.atendimento = btn.dataset.value;
-        $$("#chipsAtendimento .chip", sec).forEach(c => c.classList.remove("selected"));
-        btn.classList.add("selected");
-        updateStartEnabled();
-      };
-    });
-
-    // produto (preenche com base no JSON carregado para a pessoa atual)
-    buildProductChips(sec);
-
-    // pessoa
-    $$("#chipsPessoa .chip", sec).forEach(btn => {
-      btn.onclick = async () => {
-        // marca visualmente
-        state.pessoa = btn.dataset.value;
-        $$("#chipsPessoa .chip", sec).forEach(c => c.classList.remove("selected"));
-        btn.classList.add("selected");
-
-        // recarrega JSON da pessoa escolhida e reconstrói chips de produto
-        try {
-          await reloadRoteirosForPessoa(state.pessoa);
-        } catch (e) {
-          console.error(e);
-          alert("Erro ao carregar os roteiros da pessoa selecionada.");
-        }
-
-        updateStartEnabled();
-      };
-    });
-  }
 }
 
-/* ============================================
-   Navegação
-============================================ */
+// =====================================================
+// Navegação
+// =====================================================
 function show(id) {
   $$(".screen", flow).forEach(s => s.classList.toggle("active", s.dataset.id === id));
   if (jumpSelect) jumpSelect.value = id;
   updateProgress();
   if (isAdmin) loadScreen(id);
+
+  // Atualiza os botões globais da tela ativa
+  const def = roteiros[id];
+  if (def) buildGlobalButtons(def);
 }
 function go(id) {
   if (!roteiros[id]) return;
@@ -361,7 +362,7 @@ function go(id) {
 }
 function byId(id) { return $(`.screen[data-id="${id}"]`); }
 
-// Re-render seguro da tela atual (para refletir alterações como botões editados)
+// Re-render seguro da tela atual (para refletir alterações via ADM)
 function rerenderScreen(id) {
   const old = byId(id);
   if (old) old.remove();
@@ -369,9 +370,9 @@ function rerenderScreen(id) {
   show(id);
 }
 
-/* ============================================
-   Progresso (considera somente o produto atual)
-============================================ */
+// =====================================================
+// Progresso (considera somente o produto atual)
+// =====================================================
 function updateProgress() {
   const isStep = (r) => r.id !== "inicio" && r.id !== "fim" && r.id !== "nao_confirma";
   const total = Object.values(roteiros).filter(r => isStep(r) && (!state.produto || r.product === state.produto)).length;
@@ -381,13 +382,13 @@ function updateProgress() {
   }).length;
 
   const percent = total ? Math.round((traversed / total) * 100) : 0;
-  bar.style.width = percent + "%";
-  progressText.textContent = (traversed >= total && total > 0) ? "Concluído" : `Passo ${traversed} de ${total}`;
+  if (bar) bar.style.width = percent + "%";
+  if (progressText) progressText.textContent = (traversed >= total && total > 0) ? "Concluído" : `Passo ${traversed} de ${total}`;
 }
 
-/* ============================================
-   Jump
-============================================ */
+// =====================================================
+// Jump
+// =====================================================
 function buildJumpList() {
   if (!jumpSelect) return;
   jumpSelect.innerHTML = "";
@@ -401,19 +402,19 @@ function buildJumpList() {
   });
 }
 $("#btnJumpBack")?.addEventListener("click", () => {
-  const id = jumpSelect.value;
+  const id = jumpSelect?.value;
   if (id) go(id);
 });
 
-/* ============================================
-   ADM
-============================================ */
-const fldId       = $("#fldId");
-const fldTitle    = $("#fldTitle");
-const fldBody     = $("#fldBody");
-const fldTab      = $("#fldTab");
-const fldButtons  = $("#fldButtons");
-const btnAddButton= $("#btnAddButton");
+// =====================================================
+// ADM
+// =====================================================
+const fldId        = $("#fldId");
+const fldTitle     = $("#fldTitle");
+const fldBody      = $("#fldBody");
+const fldTab       = $("#fldTab");
+const fldButtons   = $("#fldButtons");
+const btnAddButton = $("#btnAddButton");
 
 function loadButtons(def) {
   if (!fldButtons) return;
@@ -449,14 +450,12 @@ function saveButtons(def) {
     };
   });
 }
-if (btnAddButton) {
-  btnAddButton.addEventListener("click", () => {
-    if (!currentId) return;
-    if (!Array.isArray(roteiros[currentId].buttons)) roteiros[currentId].buttons = [];
-    roteiros[currentId].buttons.push({ label: "Novo Botão", next: "inicio", primary: false });
-    loadButtons(roteiros[currentId]);
-  });
-}
+btnAddButton?.addEventListener("click", () => {
+  if (!currentId) return;
+  if (!Array.isArray(roteiros[currentId].buttons)) roteiros[currentId].buttons = [];
+  roteiros[currentId].buttons.push({ label: "Novo Botão", next: "inicio", primary: false });
+  loadButtons(roteiros[currentId]);
+});
 
 function loadScreen(id) {
   if (!roteiros[id]) return;
@@ -521,9 +520,9 @@ $("#btnAdmClose")?.addEventListener("click", () => {
   if (toggle) toggle.textContent = "⚙️ ADM";
 });
 
-/* ============================================
-   Reset completo (UI + estado + progresso)
-============================================ */
+// =====================================================
+// Reset completo (UI + estado + progresso)
+// =====================================================
 function resetInicioUI() {
   const scr = byId("inicio");
   if (!scr) return;
@@ -543,6 +542,7 @@ async function hardReset() {
   historyStack = [];
   state = { produto: "", atendimento: "", pessoa: "" };
   flow.innerHTML = "";
+  globalActions && (globalActions.innerHTML = "");
 
   // Recarrega PF (default) para a primeira renderização
   try {
@@ -559,15 +559,17 @@ async function hardReset() {
   updateProgress();            // barra volta pra 0%
 }
 
-/* ============================================
-   Bootstrap / Init (assíncrono)
-============================================ */
+// =====================================================
+// Bootstrap / Init
+// =====================================================
 async function bootstrap() {
   ensureTabModalInjected();
   try {
     const json = await loadRoteirosJSON("fisica"); // default PF até o usuário escolher PJ
     flattenProducts(json);     // popula roteiros + startByProduct + telas do sistema
-    hardReset();               // abre a UI
+    // render inicial
+    renderScreen(roteiros.inicio);
+    go("inicio");
   } catch (err) {
     console.error(err);
     alert("Erro ao carregar os roteiros. Verifique os arquivos JSON.");
@@ -575,9 +577,9 @@ async function bootstrap() {
 }
 document.addEventListener("DOMContentLoaded", bootstrap);
 
-/* ============================================
-   Pesquisa rápida (Situações + Tabulações)
-============================================ */
+// =====================================================
+// Pesquisa rápida (Situações + Tabulações + Canais)
+// =====================================================
 const searchInput = document.getElementById("searchInput");
 searchInput?.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
@@ -592,29 +594,24 @@ searchInput?.addEventListener("keydown", (e) => {
       window.location.href = "tabulacoes.html";
       return;
     }
-
     if (termo.includes("canais")) {
-     window.location.href = "canais.html";
-     return;
+      window.location.href = "canais.html";
+      return;
     }
-
 
     const found = Object.values(roteiros).find(r =>
       (r.title || "").toLowerCase().includes(termo) ||
       (r.body  || "").toLowerCase().includes(termo)
     );
 
-    if (found) {
-      go(found.id);
-    } else {
-      alert("Nenhuma tela encontrada para: " + termo);
-    }
+    if (found) go(found.id);
+    else alert("Nenhuma tela encontrada para: " + termo);
   }
 });
 
-/* ============================================
-   Tema (Dark / Light)
-============================================ */
+// =====================================================
+// Tema (Dark / Light)
+// =====================================================
 const themeBtn = document.getElementById("btnToggleTheme");
 
 // Carrega tema salvo
@@ -628,4 +625,3 @@ themeBtn?.addEventListener("click", () => {
   document.body.setAttribute("data-theme", next);
   localStorage.setItem("theme", next);
 });
-
