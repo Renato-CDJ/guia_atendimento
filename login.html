@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Login ADM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Estilos internos -->
+  <style>
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      background: linear-gradient(135deg, #0077c8, #00c853);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-box {
+      background: #fff;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #0077c8;
+      font-size: 22px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #0077c8, #00c853);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+    button:hover {
+      filter: brightness(1.1);
+    }
+    .msg {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h1>Acesso ADM</h1>
+    <input type="email" id="email" placeholder="E-mail">
+    <input type="password" id="password" placeholder="Senha">
+    <button id="btnLogin">Entrar</button>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+    // 🔹 Configuração do seu projeto Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDM-cWulKkn5RAT6tns0BktHkRdfFt4-0s",
+      authDomain: "roteiro-a6cb0.firebaseapp.com",
+      projectId: "roteiro-a6cb0",
+      storageBucket: "roteiro-a6cb0.appspot.com",
+      messagingSenderId: "304848084937",
+      appId: "1:304848084937:web:21c4d4ea2dc862e7e05218",
+      measurementId: "G-PLMNPQWVH9"
+    };
+
+    // Inicializa Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const emailInput = document.getElementById("email");
+    const passInput  = document.getElementById("password");
+    const btnLogin   = document.getElementById("btnLogin");
+    const msgBox     = document.getElementById("msg");
+
+    btnLogin.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      const pass  = passInput.value.trim();
+      msgBox.textContent = "";
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        // Se login deu certo → redireciona para index.html
+        window.location.href = "index.html";
+      } catch (e) {
+        msgBox.textContent = "Erro: " + e.message;
+      }
+    });
+
+    // Se já estiver logado, pula login
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+</html>
