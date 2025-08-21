@@ -31,15 +31,20 @@ async function saveScreenToFirebase(def, oldId=null) {
   try {
     if (!__fb_db || !__fs || !def?.id) return;
     const { doc, setDoc, deleteDoc } = __fs;
+
+    // 🔽 remove chaves undefined
+    const safeDef = JSON.parse(JSON.stringify(def));
+
     if (oldId && oldId !== def.id) {
       await deleteDoc(doc(__fb_db, 'roteiros', String(oldId)));
     }
-    await setDoc(doc(__fb_db, 'roteiros', String(def.id)), def, { merge: true });
+    await setDoc(doc(__fb_db, 'roteiros', String(def.id)), safeDef, { merge: true });
     console.log('[Auto-save] Tela salva no Firebase:', def.id);
   } catch (e) {
     console.error('[Auto-save] Erro ao salvar tela:', e);
   }
 }
+
 async function deleteScreenFromFirebase(id) {
   try {
     if (!__fb_db || !__fs || !id) return;
@@ -536,7 +541,8 @@ function applyAdmChanges() {
   def.id    = fldId?.value?.trim()   || def.id;
   def.title = fldTitle?.value?.trim()|| def.title;
   def.body  = fldBody?.value?.trim() || def.body;
-  def.tab   = fldTab?.value?.trim()  || def.tab;
+  def.tab   = (fldTab?.value?.trim() || def.tab || "");
+
   saveButtons(def);
   if (fldFontSizeBody && fldFontSizeBody.value) def.fontSizeBody = fldFontSizeBody.value + "px";
   if (fldFontSizeButtons && fldFontSizeButtons.value) def.fontSizeButtons = fldFontSizeButtons.value + "px";
