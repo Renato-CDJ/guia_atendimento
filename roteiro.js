@@ -1,3 +1,4 @@
+
 // =====================================================
 // roteiro.js — suporte a 2 JSONs (PF x PJ) + melhorias
 // + Integração Auto-Save no Firebase
@@ -97,34 +98,6 @@ async function loadRoteirosJSON(pessoa = state.pessoa || "fisica") {
   if (!resp.ok) throw new Error(`Não foi possível carregar ${file}`);
   return resp.json();
 }
-
-// 🔹 Novo: sempre tenta Firebase primeiro, cai para JSON se vazio
-async function loadRoteirosPreferencial(pessoa = "fisica") {
-  try {
-    const firebaseData = await loadRoteirosFromFirebase();
-    if (firebaseData && Object.keys(firebaseData).length > 0) {
-      roteiros = firebaseData;
-      buildSystemScreens();
-
-      // 🔹 Definir startByProduct a partir dos roteiros salvos no Firestore
-      startByProduct = {};
-      Object.values(roteiros).forEach(def => {
-        if (def.product && !startByProduct[def.product]) {
-          startByProduct[def.product] = def.id; // pega a primeira tela que encontrar do produto
-        }
-      });
-
-      return;
-    }
-  } catch (e) {
-    console.warn("⚠️ Erro ao ler Firestore, usando JSON local:", e);
-  }
-
-  // fallback para JSON
-  const json = await loadRoteirosJSON(pessoa);
-  flattenProducts(json);
-}
-
 
 // Novo: carregar roteiros direto do Firestore
 async function loadRoteirosFromFirebase() {
@@ -278,16 +251,18 @@ function buildProductChips(inicioSection) {
 }
 
 async function reloadRoteirosForPessoa(pessoaSel) {
-  $("#chipsProduto", byId("inicio"))?.replaceChildren(document.createTextNode("Carregando..."));
+  const inicioSec = byId("inicio");
+  $("#chipsProduto", inicioSec)?.replaceChildren(document.createTextNode("Carregando..."));
 
   // limpa produto ao trocar de pessoa
   state.produto = "";
   updateStartEnabled();
 
-  await loadRoteirosPreferencial(pessoaSel);
+  const json = await loadRoteirosJSON(pessoaSel);
+  flattenProducts(json);
 
   // Reconstroi chips de produto na tela atual de início
-  if (byId("inicio")) buildProductChips(byId("inicio"));
+  if (inicioSec) buildProductChips(inicioSec);
 
   // Como o conjunto de telas mudou, atualiza jump/progresso
   buildJumpList();
@@ -299,9 +274,9 @@ async function reloadRoteirosForPessoa(pessoaSel) {
 // =====================================================
 function renderScreen(def) {
   const sec = document.createElement("section");
-  sec.className = "screen";
-  sec.dataset.id = def.id;
-  sec.innerHTML = `
+sec.className = "screen";
+sec.dataset.id = def.id;
+sec.innerHTML = `
   <div class="title" style="font-size:${def.fontSizeTitle || '22px'}">${def.title}</div>
   <div class="script" style="font-size:${def.fontSizeBody || '18px'}; padding:${def.paddingBody || '16px'}">${def.body}</div>
 `;
@@ -644,7 +619,8 @@ async function hardReset() {
 
   // Recarrega PF (default) para a primeira renderização
   try {
-    await loadRoteirosPreferencial("fisica");
+    const json = await loadRoteirosJSON("fisica");
+    flattenProducts(json);
   } catch (e) {
     console.error(e);
     alert("Erro ao carregar roteiros iniciais (PF).");
@@ -662,7 +638,17 @@ async function hardReset() {
 async function bootstrap() {
   ensureTabModalInjected();
   try {
-    await loadRoteirosPreferencial("fisica");
+    const firebaseData = await loadRoteirosFromFirebase();
+    if (firebaseData && Object.keys(firebaseData).length > 0) {
+      // 🔹 Carregamos direto do Firestore
+      roteiros = firebaseData;
+      buildSystemScreens(); // adiciona telas padrão (inicio/fim/nao_confirma)
+    } else {
+      // 🔹 Se não houver dados no Firestore, usa JSON local
+      const json = await loadRoteirosJSON("fisica");
+      flattenProducts(json);
+    }
+
     renderScreen(roteiros.inicio);
     go("inicio");
   } catch (err) {
