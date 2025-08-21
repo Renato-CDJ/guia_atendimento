@@ -105,8 +105,11 @@ async function loadRoteirosFromFirebase() {
   const { collection, getDocs } = __fs;
   const snapshot = await getDocs(collection(__fb_db, "roteiros"));
   const data = {};
-  snapshot.forEach(doc => {
-    data[doc.id] = doc.data();
+  snapshot.forEach(docSnap => {
+    const def = docSnap.data();
+    if (def?.id) {
+      data[def.id] = def;
+    }
   });
   return data;
 }
@@ -635,12 +638,13 @@ async function hardReset() {
 async function bootstrap() {
   ensureTabModalInjected();
   try {
-    // 🔽 Tenta primeiro buscar no Firestore
     const firebaseData = await loadRoteirosFromFirebase();
     if (firebaseData && Object.keys(firebaseData).length > 0) {
+      // 🔹 Carregamos direto do Firestore
       roteiros = firebaseData;
+      buildSystemScreens(); // adiciona telas padrão (inicio/fim/nao_confirma)
     } else {
-      // Se não houver dados no Firestore, usa JSON local
+      // 🔹 Se não houver dados no Firestore, usa JSON local
       const json = await loadRoteirosJSON("fisica");
       flattenProducts(json);
     }
