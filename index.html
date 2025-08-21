@@ -5,26 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Roteiro de Atendimento</title>
   <link rel="stylesheet" href="roteiro.css" />
+  <link rel="icon" href="data:,">
 </head>
 <body>
   <div class="container">
     <!-- Cabeçalho -->
     <header>
-  <div>
-    <h1>Roteiro de Atendimento</h1>
-    <p class="muted">Fluxo guiado • Em desenvolvimento</p>
-  </div>
-  <div class="toolbar">
-    <!-- Campo de pesquisa -->
-    <input type="text" id="searchInput" class="select" placeholder="🔍 Pesquisar..." />
-    <div class="jump">
-      <span class="muted">Telas:</span>
-      <select id="jumpSelect" class="select"></select>
-      <button id="btnJumpBack" class="badge">⏮ Ir</button>
-    </div>
-    <button id="btnToggleTheme" class="badge">🌗 Tema</button>
-    <button id="btnToggleMode" class="badge">⚙️ ADM</button>
-    </div>
+      <div>
+        <h1>Roteiro de Atendimento</h1>
+      </div>
+      <div class="toolbar">
+        <!-- Campo de pesquisa -->
+        <input type="text" id="searchInput" class="select" placeholder="🔍 Pesquisar..." />
+        <div class="jump">
+          <span class="muted">Telas:</span>
+          <select id="jumpSelect" class="select"></select>
+          <button id="btnJumpBack" class="badge">⏮ Ir</button>
+        </div>
+        <button id="btnToggleTheme" class="badge">🌗 Tema</button>
+        <button id="btnToggleMode" class="badge">⚙️ ADM</button>
+      </div>
     </header>
 
     <!-- Barra de progresso -->
@@ -34,50 +34,63 @@
     </div>
 
     <!-- Fluxo -->
-<main id="flow"></main>
+    <main id="flow"></main>
 
-<!-- Container dos botões globais -->
-<div id="globalActions" class="global-actions"></div>
+    <!-- Container dos botões globais -->
+    <div id="globalActions" class="global-actions"></div>
 
+    <!-- Painel ADM -->
+    <aside class="adm" id="admPanel">
+      <header>
+        <div>Painel ADM</div>
+        <button id="btnAdmClose" class="badge">✕</button>
+      </header>
 
-  <!-- Painel ADM -->
-  <aside class="adm" id="admPanel">
-    <header>
-      <div>Painel ADM</div>
-      <button id="btnAdmClose" class="badge">✕</button>
-    </header>
+      <div class="tabs">
+        <button data-tab="geral" class="tab active">⚙ Geral</button>
+      </div>
 
-    <div class="tabs">
-      <button data-tab="geral" class="tab active">⚙ Geral</button>
-    </div>
+      <!-- Aba Geral -->
+      <div class="tab-content active" id="tab-geral">
+        <label>ID da tela</label>
+        <input type="text" id="fldId">
 
-    <!-- Aba Geral -->
-    <div class="tab-content active" id="tab-geral">
-      <label>ID da tela</label>
-      <input type="text" id="fldId">
-      <label>Título da tela</label>
-      <input type="text" id="fldTitle">
-      <label>Texto do script</label>
-      <textarea id="fldBody"></textarea>
-      <label>Tabulação</label>
-      <input type="text" id="fldTab">
-    </div>
+        <label>Título da tela</label>
+        <input type="text" id="fldTitle">
 
-    <label>Botões</label>
-<div id="fldButtons"></div>
-<button id="btnAddButton" class="btn-mini">+ Adicionar Botão</button>
+        <label>Texto do script</label>
+        <textarea id="fldBody"></textarea>
 
-    <div class="adm-footer">
-      <button id="btnSave" class="btn-mini primary">Salvar</button>
-      <button id="btnReset" class="btn-mini">Recarregar</button>
-      <button id="btnDelScreen" class="btn-mini danger">Remover Tela</button>
-    </div>
-  </aside>
+        <label>Tabulação</label>
+        <input type="text" id="fldTab">
 
-  <!-- Scripts -->
-  <script src="roteiros.js"></script>
-  <script src="roteiro.js"></script>
-</body>
+        <!-- NOVOS CAMPOS -->
+        <label>Tamanho do texto (quadro)</label>
+        <input type="number" id="fldFontSizeBody" min="12" max="40" value="18">
+
+        <label>Tamanho do texto (botões)</label>
+        <input type="number" id="fldFontSizeButtons" min="10" max="30" value="16">
+
+        <label>Tamanho do título</label>
+        <input type="number" id="fldFontSizeTitle" min="14" max="50" value="22">
+
+        <!-- FIM NOVOS CAMPOS -->
+      </div>
+
+      <label>Botões</label>
+      <div id="fldButtons"></div>
+      <button id="btnAddButton" class="btn-mini">+ Adicionar Botão</button>
+
+      <div class="adm-footer">
+        <button id="btnSave" class="btn-mini primary">Salvar</button>
+        <button id="btnReset" class="btn-mini">Recarregar</button>
+        <button id="btnDelScreen" class="btn-mini danger">Remover Tela</button>
+      </div>
+    </aside>
+
+    <!-- Scripts -->
+    <script src="roteiro.js"></script>
+  </div>
 
   <!-- Modal de Tabulação -->
   <div id="tabModal" class="modal">
@@ -87,7 +100,5 @@
       <p id="modalText"></p>
     </div>
   </div>
-
 </body>
-
 </html>

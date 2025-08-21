@@ -221,12 +221,13 @@ async function reloadRoteirosForPessoa(pessoaSel) {
 // =====================================================
 function renderScreen(def) {
   const sec = document.createElement("section");
-  sec.className = "screen";
-  sec.dataset.id = def.id;
-  sec.innerHTML = `
-    <div class="title">${def.title}</div>
-    <div class="script">${def.body}</div>
-  `;
+sec.className = "screen";
+sec.dataset.id = def.id;
+sec.innerHTML = `
+  <div class="title" style="font-size:${def.fontSizeTitle || '22px'}">${def.title}</div>
+  <div class="script" style="font-size:${def.fontSizeBody || '18px'}">${def.body}</div>
+`;
+
 
   // Ícone ✔ de Tabulação (no canto do quadro)
   const tabIcon = document.createElement("button");
@@ -409,12 +410,17 @@ $("#btnJumpBack")?.addEventListener("click", () => {
 // =====================================================
 // ADM
 // =====================================================
+
 const fldId        = $("#fldId");
 const fldTitle     = $("#fldTitle");
 const fldBody      = $("#fldBody");
 const fldTab       = $("#fldTab");
 const fldButtons   = $("#fldButtons");
 const btnAddButton = $("#btnAddButton");
+const fldFontSizeBody    = $("#fldFontSizeBody");
+const fldFontSizeButtons = $("#fldFontSizeButtons");
+const fldFontSizeTitle   = $("#fldFontSizeTitle");
+
 
 function loadButtons(def) {
   if (!fldButtons) return;
@@ -467,7 +473,13 @@ function loadScreen(id) {
   if (fldBody)  fldBody.value = def.body || "";
   if (fldTab)   fldTab.value = def.tab || "";
   loadButtons(def);
+
+  if (fldFontSizeBody) fldFontSizeBody.value = parseInt(def.fontSizeBody) || 18;
+  if (fldFontSizeButtons) fldFontSizeButtons.value = parseInt(def.fontSizeButtons) || 16;
+  if (fldFontSizeTitle) fldFontSizeTitle.value = parseInt(def.fontSizeTitle) || 22;
+
 }
+
 
 function applyAdmChanges() {
   if (!currentId) return;
@@ -478,21 +490,42 @@ function applyAdmChanges() {
   def.tab   = fldTab?.value?.trim()  || def.tab;
   saveButtons(def);
 
-  // Se o ID foi alterado, precisamos reindexar
-  if (currentId !== def.id) {
-    roteiros[def.id] = def;
-    delete roteiros[currentId];
-    currentId = def.id;
+  // aplica tamanho de texto do quadro
+  if (fldFontSizeBody && fldFontSizeBody.value) {
+    def.fontSizeBody = fldFontSizeBody.value + "px";
   }
 
-  // Atualiza UI da tela atual (inclui rótulos dos botões)
-  rerenderScreen(currentId);
+  // aplica tamanho de texto dos botões
+  if (fldFontSizeButtons && fldFontSizeButtons.value) {
+    def.fontSizeButtons = fldFontSizeButtons.value + "px";
+  }
 
-  // Atualiza tooltip do ícone de tabulação no novo render
+  // aplica tamanho de texto do título
+  if (fldFontSizeTitle && fldFontSizeTitle.value) {
+  def.fontSizeTitle = fldFontSizeTitle.value + "px";
+  }
+
+  if (def.fontSizeTitle) {
   const screen = byId(currentId);
   if (screen) {
-    const tabBtn = screen.querySelector(".tab-icon");
-    if (tabBtn) tabBtn.title = def.tab || "Sem tabulação";
+    $(".title", screen).style.fontSize = def.fontSizeTitle;
+  }
+}
+
+
+
+  // Atualiza a tela atual
+  rerenderScreen(currentId);
+
+  // aplica estilos na tela renderizada
+  const screen = byId(currentId);
+  if (screen && def.fontSizeBody) {
+    $(".script", screen).style.fontSize = def.fontSizeBody;
+  }
+  if (def.fontSizeButtons) {
+    $$("#globalActions .btn").forEach(btn => {
+      btn.style.fontSize = def.fontSizeButtons;
+    });
   }
 }
 $("#btnSave")?.addEventListener("click", () => { applyAdmChanges(); alert("Alterações aplicadas!"); });

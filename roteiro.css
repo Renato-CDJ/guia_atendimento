@@ -522,3 +522,8 @@ header h1{
   #globalActions, .global-actions { flex-direction: column; }
   .btn { width: 100%; text-align: center; }
 }
+
+.script {
+  padding: 20px;   /* espaço interno */
+  line-height: 1.5; /* melhora a leitura */
+}
