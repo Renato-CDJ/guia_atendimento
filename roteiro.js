@@ -376,6 +376,15 @@ function rerenderScreen(id) {
 // Progresso (considera somente o produto atual)
 // =====================================================
 function updateProgress() {
+  const current = historyStack.at(-1); // tela atual
+
+  // Se for a tela de fim → resetar barra
+  if (current === "fim") {
+    if (bar) bar.style.width = "0%";
+    if (progressText) progressText.textContent = "Passo 0 de 0";
+    return;
+  }
+
   const isStep = (r) => r.id !== "inicio" && r.id !== "fim" && r.id !== "nao_confirma";
   const total = Object.values(roteiros).filter(r => isStep(r) && (!state.produto || r.product === state.produto)).length;
   const traversed = historyStack.filter(x => {
@@ -668,3 +677,11 @@ themeBtn?.addEventListener("click", () => {
   document.body.setAttribute("data-theme", next);
   localStorage.setItem("theme", next);
 });
+
+function adjustField(fieldId, step) {
+  const input = document.getElementById(fieldId);
+  if (!input) return;
+  let val = parseInt(input.value) || 0;
+  val = Math.min(Math.max(val + step, parseInt(input.min) || 0), parseInt(input.max) || 999);
+  input.value = val;
+}

@@ -75,8 +75,8 @@ body[data-theme="light"] .btn:hover {
 }
 body[data-theme="light"] .btn-primary {
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  border: none;
-  color: #fff;
+  border-color: #ccc;
+  color: #1f1e1e;
   text-shadow: none;
 }
 
@@ -275,88 +275,159 @@ header h1{
 .btn-primary:hover{ filter: brightness(1.05); transform: translateY(-1px); }
 .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
 
-/* =========================
-   ADM painel (modernizado)
-========================= */
+/* Painel ADM */
 .adm {
   position: fixed;
-  inset: 0 0 0 auto;
-  width: clamp(280px, 28%, 400px);
-  max-width: 100vw;
-  background: var(--panel);
-  border-left: 1px solid #20262c;
-  box-shadow: -20px 0 40px rgba(0,0,0,.4);
-  padding: 18px 16px 80px;
-  transform: translateX(100%);
-  transition: transform .28s ease;
-  z-index: 800;
-  overflow-y: auto;
-}
-.adm.open { transform: translateX(0); }
-
-.adm > header{
-  font-weight: 700;
-  margin-bottom: 10px;
-  position: sticky;
   top: 0;
-  background: var(--panel);
-  padding: 10px 0;
-  z-index: 10;
-  box-shadow: 0 2px 6px rgba(0,0,0,.2);
-}
-.tabs{ display:flex; gap:8px; margin: 8px 0 10px; }
-.tab{
-  border:1px solid #26303a; background:#161c22; color:var(--text);
-  padding:7px 10px; border-radius:10px; cursor:pointer;
-}
-.tab.active, .tab:hover{ background:#16241b; border-color:#254d39; color:#c9f7df; }
-
-.tab-content{ display:none; }
-.tab-content.active{ display:block; }
-
-.adm section {
-  background: var(--panel-2);
-  padding: 14px;
-  border-radius: 12px;
-  margin-bottom: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  right: -420px;
+  width: 420px;
+  height: 100%;
+  background: #f7f9fb; /* fundo claro */
+  color: #222;
+  box-shadow: -4px 0 25px rgba(0, 0, 0, 0.25);
+  padding: 20px;
+  transition: right 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  border-left: 4px solid #0077c8; /* azul primário */
 }
 
-.adm label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
-.adm input[type="text"], .adm textarea{
-  width:100%; border:1px solid #2a333b; background:#0f1418; color:var(--text);
-  border-radius:10px; padding:8px 10px; outline:none;
-  transition: all .2s ease;
-}
-.adm input[type="text"]:focus, .adm textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(0,200,83,.25);
-}
-.adm textarea{ min-height: 90px; resize: vertical; }
+.adm.open { right: 0; }
 
-.adm-footer{
-  position: sticky;
-  bottom: 0;
-  background: var(--panel);
-  padding: 12px;
-  display:flex;
-  gap:10px;
+.adm header {
+  display: flex;
   justify-content: space-between;
-  border-top: 1px solid #2a333b;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #0077c8;
 }
-.btn-mini{
-  border:1px solid #2a3138; background:#182029; color:var(--text);
-  padding:8px 10px; border-radius:10px; cursor:pointer;
-  transition: all .2s ease;
-}
-.btn-mini:hover{ filter: brightness(1.1); }
-.btn-mini.primary{ background: linear-gradient(90deg, var(--accent), var(--accent-2)); border:none; color:#06140b; }
-.btn-mini.danger{ background:#2a1211; border-color:#542625; color:#ffcfcf; }
 
-@media (max-width: 480px) {
-  .adm-footer { flex-wrap: wrap; gap: 6px; }
-  .adm-footer button { flex: 1 1 calc(50% - 6px); }
+.adm label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 8px 0 4px;
+  color: #333;
 }
+
+/* Inputs e textarea */
+.adm input, 
+.adm textarea, 
+.adm select {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #222;
+  font-size: 0.9rem;
+  transition: border 0.2s;
+}
+
+.adm input:focus,
+.adm textarea:focus {
+  border-color: #0077c8;
+  outline: none;
+}
+
+/* Tabs */
+.adm .tabs {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.adm .tab {
+  flex: 1;
+  background: #eaf3fa;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #0077c8;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.2s ease;
+}
+
+.adm .tab.active {
+  background: #0077c8;
+  color: #fff;
+}
+
+/* Conteúdo de aba */
+.adm .tab-content { display: none; }
+.adm .tab-content.active { display: block; }
+
+/* Footer */
+.adm-footer {
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* Botões pequenos */
+.adm .btn-mini {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.adm .btn-mini.primary {
+  background: #0077c8;
+  color: #fff;
+}
+.adm .btn-mini.primary:hover {
+  background: #005fa3;
+  transform: scale(1.05);
+}
+
+.adm .btn-mini.danger {
+  background: #e74c3c;
+  color: #fff;
+}
+.adm .btn-mini.danger:hover {
+  background: #c0392b;
+  transform: scale(1.05);
+}
+
+.adm .btn-mini:hover {
+  background: #ddd;
+}
+
+/* Grupo com botões de incremento/decremento */
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-group input {
+  flex: 1;
+}
+
+.btn-step {
+  background: #eaf3fa;
+  border: 1px solid #0077c8;
+  color: #0077c8;
+  font-size: 1rem;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-step:hover {
+  background: #0077c8;
+  color: #fff;
+}
+
 
 /* =========================
    Ícone ✔ (Tabulação)

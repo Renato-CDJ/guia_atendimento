@@ -65,17 +65,34 @@
         <input type="text" id="fldTab">
 
         <!-- NOVOS CAMPOS -->
+         
         <label>Tamanho do texto (quadro)</label>
+        <div class="control-group">
+        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeBody', -2)">−</button>
         <input type="number" id="fldFontSizeBody" min="12" max="40" value="18">
+        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeBody', 2)">+</button>
+        </div>
 
         <label>Tamanho do texto (botões)</label>
+        <div class="control-group">
+        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeButtons', -2)">−</button>
         <input type="number" id="fldFontSizeButtons" min="10" max="30" value="16">
+        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeButtons', 2)">+</button>
+        </div>
 
         <label>Tamanho do título</label>
+        <div class="control-group">
+        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeTitle', -2)">−</button>
         <input type="number" id="fldFontSizeTitle" min="14" max="50" value="22">
+        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeTitle', 2)">+</button>
+        </div>
 
         <label>Espaçamento interno (padding)</label>
+        <div class="control-group">
+        <button type="button" class="btn-step" onclick="adjustField('fldPaddingBody', -2)">−</button>
         <input type="number" id="fldPaddingBody" min="0" max="50" value="16">
+        <button type="button" class="btn-step" onclick="adjustField('fldPaddingBody', 2)">+</button>
+        </div>
 
         <!-- FIM NOVOS CAMPOS -->
       </div>
