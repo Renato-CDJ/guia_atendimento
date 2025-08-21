@@ -647,6 +647,7 @@ async function bootstrap() {
   }
 }
 
+document.addEventListener("DOMContentLoaded", bootstrap);
 
 // =====================================================
 // Pesquisa rápida (Situações + Tabulações + Canais)
