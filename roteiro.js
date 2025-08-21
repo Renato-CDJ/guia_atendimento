@@ -1,8 +1,7 @@
+
 // =====================================================
 // roteiro.js — suporte a 2 JSONs (PF x PJ) + melhorias
-// - Carrega "roteiros.json" (PF) ou "roteiros1.json" (PJ)
-// - Botões ficam fora do quadro do script (em #globalActions / .global-actions)
-// - Painel ADM, busca, progresso, histórico, tema, etc.
+// + Integração Auto-Save no Firebase
 // =====================================================
 
 // ------------------------
@@ -10,6 +9,56 @@
 // ------------------------
 const $  = (s, ctx=document) => ctx.querySelector(s);
 const $$ = (s, ctx=document) => [...ctx.querySelectorAll(s)];
+
+// ------------------------
+// Firebase (auto-load) + helpers for auto-save
+// ------------------------
+let __fb_db = null;
+let __fs = null;
+
+(async function initFirebaseForRoteiro() {
+  try {
+    const mod = await import('./firebase.js');
+    __fb_db = mod.db;
+    __fs = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+    console.log('[Firebase] Firestore pronto para auto-save.');
+  } catch (e) {
+    console.warn('[Firebase] Não foi possível carregar Firestore para auto-save:', e);
+  }
+})();
+
+async function saveScreenToFirebase(def, oldId=null) {
+  try {
+    if (!__fb_db || !__fs || !def?.id) return;
+    const { doc, setDoc, deleteDoc } = __fs;
+    if (oldId && oldId !== def.id) {
+      await deleteDoc(doc(__fb_db, 'roteiros', String(oldId)));
+    }
+    await setDoc(doc(__fb_db, 'roteiros', String(def.id)), def, { merge: true });
+    console.log('[Auto-save] Tela salva no Firebase:', def.id);
+  } catch (e) {
+    console.error('[Auto-save] Erro ao salvar tela:', e);
+  }
+}
+async function deleteScreenFromFirebase(id) {
+  try {
+    if (!__fb_db || !__fs || !id) return;
+    const { doc, deleteDoc } = __fs;
+    await deleteDoc(doc(__fb_db, 'roteiros', String(id)));
+    console.log('[Auto-save] Tela removida do Firebase:', id);
+  } catch (e) {
+    console.error('[Auto-save] Erro ao remover tela:', e);
+  }
+}
+
+// Debounce util para evitar excesso de chamadas
+function debounce(fn, ms = 800) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
+}
 
 // ------------------------
 // DOM refs globais
@@ -23,8 +72,8 @@ const globalActions = document.getElementById("globalActions") || document.query
 // ------------------------
 // Estado
 // ------------------------
-let roteiros = {};              // Mapa de telas por ID (inclui telas do sistema)
-let startByProduct = {};        // { PRODUTO: 'id_da_tela_abordagem' }
+let roteiros = {};             
+let startByProduct = {};       
 let historyStack = [];
 let state = { produto: "", atendimento: "", pessoa: "" };
 let isAdmin = false;
@@ -35,10 +84,9 @@ let currentId = null;
 // =====================================================
 function sourceFileForPessoa(p) {
   const v = String(p || "").toLowerCase();
-  if (["juridica", "jurídica", "pj"].includes(v)) return "roteiros1.json"; // PJ
-  return "roteiros.json"; // PF (default)
+  if (["juridica", "jurídica", "pj"].includes(v)) return "roteiros1.json"; 
+  return "roteiros.json"; 
 }
-
 async function loadRoteirosJSON(pessoa = state.pessoa || "fisica") {
   const file = sourceFileForPessoa(pessoa);
   const resp = await fetch(file, { cache: "no-store" });
@@ -50,7 +98,6 @@ async function loadRoteirosJSON(pessoa = state.pessoa || "fisica") {
 // Telas do sistema
 // =====================================================
 function buildSystemScreens() {
-  // Tela de Início
   roteiros.inicio = {
     id: "inicio",
     title: "Início",
@@ -61,13 +108,11 @@ function buildSystemScreens() {
           <button class="chip" data-value="ativo">Ativo</button>
           <button class="chip" data-value="receptivo">Receptivo</button>
         </div>
-
         <label>Pessoa</label>
         <div class="chips" id="chipsPessoa">
           <button class="chip" data-value="fisica">Física</button>
           <button class="chip" data-value="juridica">Jurídica</button>
         </div>
-
         <label>Produto</label>
         <div class="chips" id="chipsProduto"></div>
       </div>
@@ -78,8 +123,6 @@ function buildSystemScreens() {
       { label: "Resetar", next: "inicio" }
     ]
   };
-
-  // Tela de fim
   roteiros.fim = {
     id: "fim",
     title: "Fim",
@@ -87,8 +130,6 @@ function buildSystemScreens() {
     tab: "Encerramento",
     buttons: [{ label: "Voltar ao início", next: "inicio", primary: true }]
   };
-
-  // Fallback quando a identificação não confirma
   roteiros.nao_confirma = {
     id: "nao_confirma",
     title: "Não confirmado",
@@ -100,26 +141,18 @@ function buildSystemScreens() {
     ]
   };
 }
-
-// Achata as telas do JSON por ID e marca o produto
 function flattenProducts(json) {
   if (!json?.marcas) throw new Error("JSON inválido: nó 'marcas' ausente.");
-  roteiros = {};               // zera para reconstruir
-  startByProduct = {};         // zera mapeamento de início por produto
-
+  roteiros = {};               
+  startByProduct = {};         
   Object.entries(json.marcas).forEach(([produto, telasObj]) => {
-    // tenta achar a tela de "abordagem" como ponto de partida
     const abordagem = telasObj.abordagem || Object.values(telasObj)[0];
     if (abordagem?.id) startByProduct[produto] = abordagem.id;
-
-    // insere cada tela usando o seu próprio 'id' como chave
     Object.values(telasObj).forEach(def => {
       if (!def?.id) return;
       roteiros[def.id] = { ...def, product: produto };
     });
   });
-
-  // adiciona telas do sistema
   buildSystemScreens();
 }
 
@@ -227,8 +260,6 @@ sec.innerHTML = `
   <div class="title" style="font-size:${def.fontSizeTitle || '22px'}">${def.title}</div>
   <div class="script" style="font-size:${def.fontSizeBody || '18px'}; padding:${def.paddingBody || '16px'}">${def.body}</div>
 `;
-
-
 
   // Ícone ✔ de Tabulação (no canto do quadro)
   const tabIcon = document.createElement("button");
@@ -418,9 +449,8 @@ $("#btnJumpBack")?.addEventListener("click", () => {
 });
 
 // =====================================================
-// ADM
+// ADM + Auto-save
 // =====================================================
-
 const fldId        = $("#fldId");
 const fldTitle     = $("#fldTitle");
 const fldBody      = $("#fldBody");
@@ -431,7 +461,6 @@ const fldFontSizeBody    = $("#fldFontSizeBody");
 const fldFontSizeButtons = $("#fldFontSizeButtons");
 const fldFontSizeTitle   = $("#fldFontSizeTitle");
 const fldPaddingBody     = $("#fldPaddingBody");
-
 
 function loadButtons(def) {
   if (!fldButtons) return;
@@ -445,7 +474,6 @@ function loadButtons(def) {
       <label><input type="checkbox" class="btn-primary" ${b.primary ? "checked" : ""}> Primário</label>
       <button type="button" class="btn-mini danger">✕</button>
     `;
-    // remover botão
     wrapper.querySelector("button").onclick = () => {
       def.buttons.splice(i, 1);
       loadButtons(def);
@@ -478,80 +506,52 @@ function loadScreen(id) {
   if (!roteiros[id]) return;
   currentId = id;
   const def = roteiros[id];
-
   if (fldId)    fldId.value = def.id || "";
   if (fldTitle) fldTitle.value = def.title || "";
   if (fldBody)  fldBody.value = def.body || "";
   if (fldTab)   fldTab.value = def.tab || "";
   loadButtons(def);
-
   if (fldFontSizeBody)    fldFontSizeBody.value = parseInt(def.fontSizeBody) || 18;
   if (fldFontSizeButtons) fldFontSizeButtons.value = parseInt(def.fontSizeButtons) || 16;
   if (fldFontSizeTitle)   fldFontSizeTitle.value = parseInt(def.fontSizeTitle) || 22;
   if (fldPaddingBody)     fldPaddingBody.value = parseInt(def.paddingBody) || 16;
-
-
 }
-
 
 function applyAdmChanges() {
   if (!currentId) return;
   const def = roteiros[currentId];
+  const oldId = def.id;
   def.id    = fldId?.value?.trim()   || def.id;
   def.title = fldTitle?.value?.trim()|| def.title;
   def.body  = fldBody?.value?.trim() || def.body;
   def.tab   = fldTab?.value?.trim()  || def.tab;
   saveButtons(def);
-
-  // aplica tamanho de texto do quadro
-  if (fldFontSizeBody && fldFontSizeBody.value) {
-    def.fontSizeBody = fldFontSizeBody.value + "px";
-  }
-
-  // aplica tamanho de texto dos botões
-  if (fldFontSizeButtons && fldFontSizeButtons.value) {
-    def.fontSizeButtons = fldFontSizeButtons.value + "px";
-  }
-
-  // aplica tamanho de texto do título
-  if (fldFontSizeTitle && fldFontSizeTitle.value) {
-  def.fontSizeTitle = fldFontSizeTitle.value + "px";
-  }
-
-  if (def.fontSizeTitle) {
-  const screen = byId(currentId);
-  if (screen) {
-    $(".title", screen).style.fontSize = def.fontSizeTitle;
-  }
-  }
-
-  // aplica padding interno do texto
-  if (fldPaddingBody && fldPaddingBody.value) {
-  def.paddingBody = fldPaddingBody.value + "px";
-  }
-
-  // Atualiza a tela atual
+  if (fldFontSizeBody && fldFontSizeBody.value) def.fontSizeBody = fldFontSizeBody.value + "px";
+  if (fldFontSizeButtons && fldFontSizeButtons.value) def.fontSizeButtons = fldFontSizeButtons.value + "px";
+  if (fldFontSizeTitle && fldFontSizeTitle.value) def.fontSizeTitle = fldFontSizeTitle.value + "px";
+  if (fldPaddingBody && fldPaddingBody.value) def.paddingBody = fldPaddingBody.value + "px";
   rerenderScreen(currentId);
-
-  // aplica estilos na tela renderizada
-  const screen = byId(currentId);
-  if (screen && def.fontSizeBody) {
-    $(".script", screen).style.fontSize = def.fontSizeBody;
-  }
-  if (screen && def.paddingBody) {
-  $(".script", screen).style.padding = def.paddingBody;
-  }
-  if (def.fontSizeButtons) {
-    $$("#globalActions .btn").forEach(btn => {
-      btn.style.fontSize = def.fontSizeButtons;
-    });
-  }
+  try { saveScreenToFirebase(roteiros[currentId], oldId); } catch (_) {}
 }
+const __autoSave = debounce(applyAdmChanges, 1000);
+[fldId, fldTitle, fldBody, fldTab, fldFontSizeBody, fldFontSizeButtons, fldFontSizeTitle, fldPaddingBody]
+  .filter(Boolean)
+  .forEach(el => {
+    el.addEventListener('input', __autoSave);
+    el.addEventListener('change', __autoSave);
+  });
+if (fldButtons) {
+  fldButtons.addEventListener('input', __autoSave);
+  fldButtons.addEventListener('change', __autoSave);
+}
+
 $("#btnSave")?.addEventListener("click", () => { applyAdmChanges(); alert("Alterações aplicadas!"); });
 $("#btnReset")?.addEventListener("click", () => loadScreen(currentId));
 $("#btnDelScreen")?.addEventListener("click", () => {
   if (currentId && confirm("Deseja realmente remover esta tela?")) {
+    const delId = currentId;
     delete roteiros[currentId];
+    try { deleteScreenFromFirebase(delId); } catch(_) {}
     alert("Tela removida.");
     buildJumpList();
     $("#admPanel")?.classList.remove("open");
