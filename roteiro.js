@@ -94,6 +94,18 @@ async function loadRoteirosJSON(pessoa = state.pessoa || "fisica") {
   return resp.json();
 }
 
+// Novo: carregar roteiros direto do Firestore
+async function loadRoteirosFromFirebase() {
+  if (!__fb_db || !__fs) return null;
+  const { collection, getDocs } = __fs;
+  const snapshot = await getDocs(collection(__fb_db, "roteiros"));
+  const data = {};
+  snapshot.forEach(doc => {
+    data[doc.id] = doc.data();
+  });
+  return data;
+}
+
 // =====================================================
 // Telas do sistema
 // =====================================================
@@ -617,17 +629,24 @@ async function hardReset() {
 async function bootstrap() {
   ensureTabModalInjected();
   try {
-    const json = await loadRoteirosJSON("fisica"); // default PF até o usuário escolher PJ
-    flattenProducts(json);     // popula roteiros + startByProduct + telas do sistema
-    // render inicial
+    // 🔽 Tenta primeiro buscar no Firestore
+    const firebaseData = await loadRoteirosFromFirebase();
+    if (firebaseData && Object.keys(firebaseData).length > 0) {
+      roteiros = firebaseData;
+    } else {
+      // Se não houver dados no Firestore, usa JSON local
+      const json = await loadRoteirosJSON("fisica");
+      flattenProducts(json);
+    }
+
     renderScreen(roteiros.inicio);
     go("inicio");
   } catch (err) {
     console.error(err);
-    alert("Erro ao carregar os roteiros. Verifique os arquivos JSON.");
+    alert("Erro ao carregar os roteiros. Verifique os arquivos JSON ou Firebase.");
   }
 }
-document.addEventListener("DOMContentLoaded", bootstrap);
+
 
 // =====================================================
 // Pesquisa rápida (Situações + Tabulações + Canais)
