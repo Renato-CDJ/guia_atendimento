@@ -225,8 +225,9 @@ sec.className = "screen";
 sec.dataset.id = def.id;
 sec.innerHTML = `
   <div class="title" style="font-size:${def.fontSizeTitle || '22px'}">${def.title}</div>
-  <div class="script" style="font-size:${def.fontSizeBody || '18px'}">${def.body}</div>
+  <div class="script" style="font-size:${def.fontSizeBody || '18px'}; padding:${def.paddingBody || '16px'}">${def.body}</div>
 `;
+
 
 
   // Ícone ✔ de Tabulação (no canto do quadro)
@@ -420,6 +421,7 @@ const btnAddButton = $("#btnAddButton");
 const fldFontSizeBody    = $("#fldFontSizeBody");
 const fldFontSizeButtons = $("#fldFontSizeButtons");
 const fldFontSizeTitle   = $("#fldFontSizeTitle");
+const fldPaddingBody     = $("#fldPaddingBody");
 
 
 function loadButtons(def) {
@@ -474,9 +476,11 @@ function loadScreen(id) {
   if (fldTab)   fldTab.value = def.tab || "";
   loadButtons(def);
 
-  if (fldFontSizeBody) fldFontSizeBody.value = parseInt(def.fontSizeBody) || 18;
+  if (fldFontSizeBody)    fldFontSizeBody.value = parseInt(def.fontSizeBody) || 18;
   if (fldFontSizeButtons) fldFontSizeButtons.value = parseInt(def.fontSizeButtons) || 16;
-  if (fldFontSizeTitle) fldFontSizeTitle.value = parseInt(def.fontSizeTitle) || 22;
+  if (fldFontSizeTitle)   fldFontSizeTitle.value = parseInt(def.fontSizeTitle) || 22;
+  if (fldPaddingBody)     fldPaddingBody.value = parseInt(def.paddingBody) || 16;
+
 
 }
 
@@ -510,9 +514,12 @@ function applyAdmChanges() {
   if (screen) {
     $(".title", screen).style.fontSize = def.fontSizeTitle;
   }
-}
+  }
 
-
+  // aplica padding interno do texto
+  if (fldPaddingBody && fldPaddingBody.value) {
+  def.paddingBody = fldPaddingBody.value + "px";
+  }
 
   // Atualiza a tela atual
   rerenderScreen(currentId);
@@ -521,6 +528,9 @@ function applyAdmChanges() {
   const screen = byId(currentId);
   if (screen && def.fontSizeBody) {
     $(".script", screen).style.fontSize = def.fontSizeBody;
+  }
+  if (screen && def.paddingBody) {
+  $(".script", screen).style.padding = def.paddingBody;
   }
   if (def.fontSizeButtons) {
     $$("#globalActions .btn").forEach(btn => {
