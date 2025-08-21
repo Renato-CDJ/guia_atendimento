@@ -105,6 +105,15 @@ async function loadRoteirosPreferencial(pessoa = "fisica") {
     if (firebaseData && Object.keys(firebaseData).length > 0) {
       roteiros = firebaseData;
       buildSystemScreens();
+
+      // 🔹 Definir startByProduct a partir dos roteiros salvos no Firestore
+      startByProduct = {};
+      Object.values(roteiros).forEach(def => {
+        if (def.product && !startByProduct[def.product]) {
+          startByProduct[def.product] = def.id; // pega a primeira tela que encontrar do produto
+        }
+      });
+
       return;
     }
   } catch (e) {
@@ -115,6 +124,7 @@ async function loadRoteirosPreferencial(pessoa = "fisica") {
   const json = await loadRoteirosJSON(pessoa);
   flattenProducts(json);
 }
+
 
 // Novo: carregar roteiros direto do Firestore
 async function loadRoteirosFromFirebase() {
