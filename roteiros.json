@@ -64,7 +64,7 @@
       "identificacao": {
         "id": "hab_identificacao",
         "title": "Identificação Positiva CPF",
-        "body": "Para sua segurança a ligação está sendo gravada.<br><br>Por sigilo bancário, vou falar os <b>6 primeiros números do CPF</b> e você completa os demais, ok?",
+        "body": "Para sua segurança a ligação é gravada. Por questões de sigilo bancário, preciso confirmar alguns dados.<br>Eu vou falar os 6 primeiros números do seu CPF e você fala só o restante",
         "buttons": [
           { "label": "CONFIRMOU CPF", "next": "nome_completo_cliente", "primary": true },
           { "label": "RECUSOU CONFIRMAR", "next": "hab_nao_confirma" }
@@ -100,7 +100,7 @@
       "nome_completo_cliente": {
         "id": "nome_completo_cliente",
         "title": "Nome completo do cliente",
-        "body": "Obrigado pela confirmação. Seu nome completo é (Nome completo do cliente)?",
+        "body": "Obrigado(a), pela confirmação. Seu nome completo é (nome completo do cliente)?",
         "buttons": [
           { "label": "APRESENTAR DIVIDA", "next": "hab_apresentacao", "primary": true }
         ]
@@ -108,7 +108,7 @@
       "apresentacao": {
         "id": "hab_apresentacao",
         "title": "Apresentação da Dívida",
-        "body": "O motivo do meu contato é sobre o seu financiamento habitacional, vencido há <b>XX dias</b>, no valor aproximado de <b>R$ XX,XX</b>.<br><br>Você já fez o pagamento?",
+        "body": "ATRASO DE ATÉ 15 DIAS:<br>O motivo do meu contato é para avisar sobre o vencimento do seu financiamento habitacional, vencido há XX dias no valor aproximado de R$XX,XX.<br>Já houve o pagamento?<br><br>ATRASO ACIMA DE 15 DIAS:<br>O motivo do meu contato é para confirmar o pagamento do seu financiamento habitacional, vencido há XX dias no valor aproximado de R$XX,XX.<br>Já houve o pagamento?",
         "buttons": [
           { "label": "SIM", "next": "hab_pagamento_efetuado", "primary": true },
           { "label": "NÃO", "next": "hab_negociacao" }
@@ -117,7 +117,7 @@
       "pagamento_efetuado": {
         "id": "hab_pagamento_efetuado",
         "title": "Fraseologia de Pagamento Efetuado",
-        "body": "Caso tenha pago há menos de 5 dias úteis, pode não ter atualizado no sistema.<br><br>Se há mais de 5 dias úteis, oriento entrar em contato:<br>▪ WhatsApp: 0800 104 0104<br>▪ Site: caixa.gov.br/negociar",
+        "body": "Caso seu pagamento tenha sido efetuado há menos de 5 dias úteis, possivelmente não foi atualizado pelo sistema, mas caso tenha mais de 5 dias úteis você pode esclarecer pelo WhatsApp 0800 104 0104.ATENÇÃO!<br><br>Não pergunte qual foi a forma de pagamento e nem a data em que foi realizado, pois o script já informa o necessário.",
         "buttons": [
           { "label": "IR PARA ATUALIZAÇÃO CADASTRAL", "next": "hab_atualizacao_cadastral" }
         ]
