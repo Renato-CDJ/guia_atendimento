@@ -2,9 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Login ADM</title>
+  <title>Acesso ao Sistema</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Estilos internos -->
   <style>
     body {
       font-family: system-ui, Arial, sans-serif;
@@ -17,124 +16,171 @@
     }
     .login-box {
       background: #fff;
-      padding: 32px;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      padding: 40px;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
       width: 100%;
-      max-width: 360px;
+      max-width: 380px;
       text-align: center;
+      animation: fadeIn 0.6s ease;
     }
     h1 {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       color: #0077c8;
-      font-size: 22px;
+      font-size: 24px;
     }
-    input {
+    .role-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, filter 0.2s;
+    }
+    .role-btn:hover {
+      transform: scale(1.02);
+      filter: brightness(1.1);
+    }
+    .op-btn {
+      background: linear-gradient(90deg, #00c853, #009624);
+      color: #fff;
+    }
+    .adm-btn {
+      background: linear-gradient(90deg, #0077c8, #004ba0);
+      color: #fff;
+    }
+    .adm-form {
+      display: none;
+      margin-top: 20px;
+      text-align: left;
+      animation: fadeIn 0.4s ease;
+    }
+    .adm-form label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+    .adm-form input {
       width: 100%;
       padding: 10px;
-      margin: 8px 0;
+      margin: 6px 0 14px;
       border-radius: 6px;
       border: 1px solid #ccc;
       font-size: 15px;
     }
-    button {
+    .adm-form button {
       width: 100%;
       padding: 12px;
       border: none;
       border-radius: 6px;
-      background: linear-gradient(90deg, #0077c8, #00c853);
+      background: linear-gradient(90deg, #0077c8, #004ba0);
       color: #fff;
       font-weight: bold;
       cursor: pointer;
       font-size: 16px;
       transition: 0.2s;
     }
-    button:hover {
-      filter: brightness(1.1);
-    }
+    .adm-form button:hover { filter: brightness(1.1); }
     .msg {
       margin-top: 12px;
       font-size: 14px;
       color: #d32f2f;
+      text-align: center;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
   <div class="login-box">
-    <h1>Acesso ADM</h1>
-    <input type="email" id="email" placeholder="E-mail">
-    <input type="password" id="password" placeholder="Senha">
-    <button id="btnLogin">Entrar</button>
-    <div class="msg" id="msg"></div>
+    <h1>Acesso ao Sistema</h1>
+
+    <!-- Botões principais -->
+    <button class="role-btn op-btn" id="btnOperador">Sou Operador</button>
+    <button class="role-btn adm-btn" id="btnAdm">Sou Administrador</button>
+
+    <!-- Formulário ADM -->
+    <div class="adm-form" id="admForm">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" placeholder="Digite seu e-mail">
+      <label for="password">Senha</label>
+      <input type="password" id="password" placeholder="Digite sua senha">
+      <button id="btnLoginAdm">Entrar como ADM</button>
+      <div class="msg" id="msg"></div>
+    </div>
   </div>
 
-  <!-- Firebase -->
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import { 
-    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut 
-  } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-  // 🔹 Configuração Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyDM-cWulKkn5RAT6tns0BktHkRdfFt4-0s",
-    authDomain: "roteiro-a6cb0.firebaseapp.com",
-    projectId: "roteiro-a6cb0",
-    storageBucket: "roteiro-a6cb0.appspot.com",
-    messagingSenderId: "304848084937",
-    appId: "1:304848084937:web:21c4d4ea2dc862e7e05218",
-    measurementId: "G-PLMNPQWVH9"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDM-cWulKkn5RAT6tns0BktHkRdfFt4-0s",
+      authDomain: "roteiro-a6cb0.firebaseapp.com",
+      projectId: "roteiro-a6cb0",
+      storageBucket: "roteiro-a6cb0.appspot.com",
+      messagingSenderId: "304848084937",
+      appId: "1:304848084937:web:21c4d4ea2dc862e7e05218",
+      measurementId: "G-PLMNPQWVH9"
+    };
 
-  // Inicializa Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-  // 🔒 Lista de emails de administradores permitidos
-  const ADM_EMAILS = [
-    "seuemail@dominio.com", 
-    "rcalixto@admin.com"
-  ];
+    const ADM_EMAILS = [
+      "seuemail@dominio.com", 
+      "rcalixto@admin.com"
+    ];
 
-  const emailInput = document.getElementById("email");
-  const passInput  = document.getElementById("password");
-  const btnLogin   = document.getElementById("btnLogin");
-  const msgBox     = document.getElementById("msg");
+    const btnOperador = document.getElementById("btnOperador");
+    const btnAdm = document.getElementById("btnAdm");
+    const admForm = document.getElementById("admForm");
+    const btnLoginAdm = document.getElementById("btnLoginAdm");
+    const emailInput = document.getElementById("email");
+    const passInput  = document.getElementById("password");
+    const msgBox     = document.getElementById("msg");
 
-  // 🔹 Login
-  btnLogin.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
-    const pass  = passInput.value.trim();
-    msgBox.textContent = "";
-    try {
-      const cred = await signInWithEmailAndPassword(auth, email, pass);
+    // Se clicar em Operador → vai direto (sem login)
+btnOperador.addEventListener("click", () => {
+  window.location.href = "operador.html";
+});
 
-      // ✅ Verifica se email é de ADM
-      if (!ADM_EMAILS.includes(cred.user.email)) {
-        msgBox.textContent = "Acesso negado: você não é administrador.";
-        await signOut(auth);
-        return;
-      }
+// Se clicar em ADM → mostra form de login
+btnAdm.addEventListener("click", () => {
+  admForm.style.display = "block";
+  btnAdm.style.display = "none";
+  btnOperador.style.display = "none";
+});
 
-      // Se for ADM → redireciona
-      window.location.href = "index.html";
-    } catch (e) {
-      msgBox.textContent = "Erro: " + e.message;
+// Login ADM
+btnLoginAdm.addEventListener("click", async () => {
+  try {
+    const cred = await signInWithEmailAndPassword(auth, emailInput.value, passInput.value);
+    if (!ADM_EMAILS.includes(cred.user.email)) {
+      msgBox.textContent = "Acesso negado: você não é administrador.";
+      await signOut(auth);
+      return;
     }
-  });
+    window.location.href = "index.html";
+  } catch (e) {
+    msgBox.textContent = "Erro: " + e.message;
+  }
+});
 
-  // 🔹 Se já estiver logado → verifica se é ADM
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      if (ADM_EMAILS.includes(user.email)) {
-        window.location.href = "index.html";
-      } else {
-        msgBox.textContent = "Acesso negado.";
-        await signOut(auth);
-      }
-    }
-  });
-</script>
+// 🔹 Auto redireciona apenas se já estiver logado como ADM
+onAuthStateChanged(auth, (user) => {
+  if (user && ADM_EMAILS.includes(user.email)) {
+    window.location.href = "index.html";
+  }
+});
 
+  </script>
 </body>
 </html>

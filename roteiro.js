@@ -1,7 +1,7 @@
-
 // =====================================================
 // roteiro.js — suporte a 2 JSONs (PF x PJ) + melhorias
 // + Integração Auto-Save no Firebase
+// + 🔒 Modo Operador: bloqueio total de recursos ADM
 // =====================================================
 
 // ------------------------
@@ -9,6 +9,12 @@
 // ------------------------
 const $  = (s, ctx=document) => ctx.querySelector(s);
 const $$ = (s, ctx=document) => [...ctx.querySelectorAll(s)];
+
+// Detecta se estamos na página do Operador (trava ADM)
+const IS_OPERADOR_PAGE =
+  /operador\.html(\?|$)/.test(location.pathname || "") ||
+  document.body?.dataset?.role === "operador" ||
+  document.documentElement?.dataset?.role === "operador";
 
 // ------------------------
 // Firebase (auto-load) + helpers for auto-save
@@ -27,6 +33,7 @@ let __fs = null;
   }
 })();
 
+// (original) salva tela no Firebase
 async function saveScreenToFirebase(def, oldId=null) {
   try {
     if (!__fb_db || !__fs || !def?.id) return;
@@ -77,20 +84,38 @@ const globalActions = document.getElementById("globalActions") || document.query
 // ------------------------
 // Estado
 // ------------------------
-let roteiros = {};             
-let startByProduct = {};       
+let roteiros = {};
+let startByProduct = {};
 let historyStack = [];
 let state = { produto: "", atendimento: "", pessoa: "" };
 let isAdmin = false;
 let currentId = null;
 
 // =====================================================
+// 🔒 BLOQUEIO: Neutraliza funções de ADM no modo Operador
+// =====================================================
+if (IS_OPERADOR_PAGE) {
+  // Blindagem: impede mutação de telas no Firestore
+  const noOp = async () => { /* bloqueado no modo Operador */ };
+  saveScreenToFirebase  = noOp;
+  deleteScreenFromFirebase = noOp;
+
+  // Impede alternar para ADM por devtools
+  Object.defineProperty(window, 'forceAdmin', {
+    configurable: false,
+    enumerable: false,
+    get: () => false,
+    set: () => {/* ignore */}
+  });
+}
+
+// =====================================================
 // Fonte de dados (PF x PJ)
 // =====================================================
 function sourceFileForPessoa(p) {
   const v = String(p || "").toLowerCase();
-  if (["juridica", "jurídica", "pj"].includes(v)) return "roteiros1.json"; 
-  return "roteiros.json"; 
+  if (["juridica", "jurídica", "pj"].includes(v)) return "roteiros1.json";
+  return "roteiros.json";
 }
 async function loadRoteirosJSON(pessoa = state.pessoa || "fisica") {
   const file = sourceFileForPessoa(pessoa);
@@ -163,8 +188,8 @@ function buildSystemScreens() {
 }
 function flattenProducts(json) {
   if (!json?.marcas) throw new Error("JSON inválido: nó 'marcas' ausente.");
-  roteiros = {};               
-  startByProduct = {};         
+  roteiros = {};
+  startByProduct = {};
   Object.entries(json.marcas).forEach(([produto, telasObj]) => {
     const abordagem = telasObj.abordagem || Object.values(telasObj)[0];
     if (abordagem?.id) startByProduct[produto] = abordagem.id;
@@ -274,9 +299,9 @@ async function reloadRoteirosForPessoa(pessoaSel) {
 // =====================================================
 function renderScreen(def) {
   const sec = document.createElement("section");
-sec.className = "screen";
-sec.dataset.id = def.id;
-sec.innerHTML = `
+  sec.className = "screen";
+  sec.dataset.id = def.id;
+  sec.innerHTML = `
   <div class="title" style="font-size:${def.fontSizeTitle || '22px'}">${def.title}</div>
   <div class="script" style="font-size:${def.fontSizeBody || '18px'}; padding:${def.paddingBody || '16px'}">${def.body}</div>
 `;
@@ -292,8 +317,6 @@ sec.innerHTML = `
     showTabulacao(`✔ ${texto}`);
   });
   sec.prepend(tabIcon);
-
-  
 
   flow.appendChild(sec);
 
@@ -360,6 +383,7 @@ function buildGlobalButtons(def) {
   (def.buttons || []).forEach(b => {
     const btn = document.createElement("button");
     btn.className = "btn" + (b.primary ? " btn-primary" : "");
+
     btn.textContent = b.label;
 
     if (def.id === "inicio" && b.next === "__start") {
@@ -390,7 +414,7 @@ function show(id) {
   $$(".screen", flow).forEach(s => s.classList.toggle("active", s.dataset.id === id));
   if (jumpSelect) jumpSelect.value = id;
   updateProgress();
-  if (isAdmin) loadScreen(id);
+  if (isAdmin && !IS_OPERADOR_PAGE) loadScreen(id); // só carrega no ADM
 
   // Atualiza os botões globais da tela ativa
   const def = roteiros[id];
@@ -506,7 +530,7 @@ function saveButtons(def) {
   });
 }
 btnAddButton?.addEventListener("click", () => {
-  if (!currentId) return;
+  if (!currentId || IS_OPERADOR_PAGE) return; // bloqueado para operador
   if (!Array.isArray(roteiros[currentId].buttons)) roteiros[currentId].buttons = [];
   roteiros[currentId].buttons.push({ label: "Novo Botão", next: "inicio", primary: false });
   loadButtons(roteiros[currentId]);
@@ -528,7 +552,7 @@ function loadScreen(id) {
 }
 
 function applyAdmChanges() {
-  if (!currentId) return;
+  if (!currentId || IS_OPERADOR_PAGE) return; // bloqueado para operador
   const def = roteiros[currentId];
   const oldId = def.id;
   def.id    = fldId?.value?.trim()   || def.id;
@@ -545,20 +569,31 @@ function applyAdmChanges() {
   try { saveScreenToFirebase(roteiros[currentId], oldId); } catch (_) {}
 }
 const __autoSave = debounce(applyAdmChanges, 1000);
-[fldId, fldTitle, fldBody, fldTab, fldFontSizeBody, fldFontSizeButtons, fldFontSizeTitle, fldPaddingBody]
-  .filter(Boolean)
-  .forEach(el => {
-    el.addEventListener('input', __autoSave);
-    el.addEventListener('change', __autoSave);
-  });
-if (fldButtons) {
-  fldButtons.addEventListener('input', __autoSave);
-  fldButtons.addEventListener('change', __autoSave);
+
+// Eventos de auto-save — só se não for Operador
+if (!IS_OPERADOR_PAGE) {
+  [fldId, fldTitle, fldBody, fldTab, fldFontSizeBody, fldFontSizeButtons, fldFontSizeTitle, fldPaddingBody]
+    .filter(Boolean)
+    .forEach(el => {
+      el.addEventListener('input', __autoSave);
+      el.addEventListener('change', __autoSave);
+    });
+  if (fldButtons) {
+    fldButtons.addEventListener('input', __autoSave);
+    fldButtons.addEventListener('change', __autoSave);
+  }
 }
 
-$("#btnSave")?.addEventListener("click", () => { applyAdmChanges(); alert("Alterações aplicadas!"); });
-$("#btnReset")?.addEventListener("click", () => loadScreen(currentId));
+$("#btnSave")?.addEventListener("click", () => {
+  if (IS_OPERADOR_PAGE) return; // bloqueado
+  applyAdmChanges(); alert("Alterações aplicadas!");
+});
+$("#btnReset")?.addEventListener("click", () => {
+  if (IS_OPERADOR_PAGE) return; // bloqueado
+  loadScreen(currentId);
+});
 $("#btnDelScreen")?.addEventListener("click", () => {
+  if (IS_OPERADOR_PAGE) return; // bloqueado
   if (currentId && confirm("Deseja realmente remover esta tela?")) {
     const delId = currentId;
     delete roteiros[currentId];
@@ -570,6 +605,7 @@ $("#btnDelScreen")?.addEventListener("click", () => {
 });
 
 $("#btnToggleMode")?.addEventListener("click", () => {
+  if (IS_OPERADOR_PAGE) return; // bloqueado
   isAdmin = !isAdmin;
   $("#admPanel")?.classList.toggle("open", isAdmin);
   const toggle = $("#btnToggleMode");
@@ -577,6 +613,7 @@ $("#btnToggleMode")?.addEventListener("click", () => {
   if (isAdmin) loadScreen(historyStack.at(-1) || "inicio");
 });
 $("#btnAdmClose")?.addEventListener("click", () => {
+  if (IS_OPERADOR_PAGE) return; // bloqueado
   isAdmin = false;
   $("#admPanel")?.classList.remove("open");
   const toggle = $("#btnToggleMode");
@@ -627,6 +664,14 @@ async function hardReset() {
 // =====================================================
 async function bootstrap() {
   ensureTabModalInjected();
+
+  // Se por algum motivo existir botão/painel ADM numa página de operador, remove
+  if (IS_OPERADOR_PAGE) {
+    $("#btnToggleMode")?.remove();
+    $("#admPanel")?.remove();
+    isAdmin = false;
+  }
+
   try {
     const firebaseData = await loadRoteirosFromFirebase();
     if (firebaseData && Object.keys(firebaseData).length > 0) {
@@ -661,7 +706,6 @@ function startTabAlert() {
   setInterval(toggleAlert, 15000);
 }
 document.addEventListener("DOMContentLoaded", startTabAlert);
-
 
 // =====================================================
 // Pesquisa rápida (Situações + Tabulações + Canais)
@@ -719,3 +763,16 @@ function adjustField(fieldId, step) {
   val = Math.min(Math.max(val + step, parseInt(input.min) || 0), parseInt(input.max) || 999);
   input.value = val;
 }
+
+// =====================================================
+// Atalhos do rodapé (Operador/ADM)
+// =====================================================
+document.getElementById("btnTab")?.addEventListener("click", () => {
+  go("inicio"); // volta para a tela inicial do roteiro
+});
+document.getElementById("btnSit")?.addEventListener("click", () => {
+  go("inicio"); // ou poderia abrir modal específica de situações
+});
+document.getElementById("btnCanal")?.addEventListener("click", () => {
+  go("inicio"); // idem acima
+});
