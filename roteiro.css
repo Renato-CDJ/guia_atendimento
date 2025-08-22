@@ -587,14 +587,133 @@ header h1{
   }
 }
 
-/* Telas muito pequenas (celular) */
-@media (max-width: 480px) {
-  .screen { padding: 12px; font-size: 14px; }
-  #globalActions, .global-actions { flex-direction: column; }
-  .btn { width: 100%; text-align: center; }
-}
-
 .script {
   padding: 20px;   /* espaço interno */
   line-height: 1.5; /* melhora a leitura */
+}
+
+/* =========================
+   Atalhos inferiores (mesmo visual dos chips Ativo/Receptivo)
+========================= */
+.bottom-shortcuts{
+  position: fixed;
+  left: 50%;
+  bottom: clamp(12px, 2.5vh, 22px);
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 2000;
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .bottom-shortcuts{ bottom: calc(12px + env(safe-area-inset-bottom)); }
+}
+
+/* Botões como chips */
+.bottom-shortcuts a,
+.bottom-shortcuts button#noteToggle {
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,.15);
+}
+
+/* Tema escuro (pílula invertida) */
+body:not([data-theme="light"]) .bottom-shortcuts a,
+body:not([data-theme="light"]) .bottom-shortcuts button#noteToggle {
+  border: 1px solid #2a333b;
+  background: linear-gradient(180deg, #141a1f 0%, #0f1418 100%);
+  color: var(--text);
+  box-shadow: 0 2px 4px rgba(0,0,0,.25);
+}
+
+/* Hover */
+.bottom-shortcuts a:hover,
+.bottom-shortcuts button#noteToggle:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,.25);
+}
+
+/* Estado selecionado/ativo */
+.bottom-shortcuts a.selected,
+.bottom-shortcuts button#noteToggle.selected {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border: none;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* =========================
+   Painel de Notas (sidebar à esquerda)
+========================= */
+#notePanel {
+  position: fixed;
+  top: 80px;
+  left: -380px;   /* fica totalmente fora da tela */
+  width: 360px;
+  height: 90%;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 4px 0 20px rgba(0,0,0,0.35);
+  border-right: 1px solid rgba(255,255,255,0.15);
+  display: flex;
+  flex-direction: column;
+  transition: left 0.3s ease-in-out;
+  z-index: 3500;
+}
+
+#notePanel.active {
+  left: 0; /* desliza e aparece */
+}
+
+/* Toolbar */
+#noteToolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.2);
+}
+#noteToolbar button {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--text);
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+#noteToolbar button:hover {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #fff;
+  border: none;
+}
+/* B, I, U, Lista = expansivos */
+#noteToolbar button:not(#noteClose) { flex: 1; }
+/* X compacto */
+#noteClose { flex: 0 0 auto; width: 32px; }
+
+/* Editor */
+#noteEditor {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.5;
+}
+#noteEditor:empty::before {
+  content: "Digite suas notas aqui...";
+  color: var(--muted);
+  font-style: italic;
 }

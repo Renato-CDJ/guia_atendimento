@@ -122,6 +122,25 @@
     </div>
   </div>
 
+  <div class="bottom-shortcuts">
+    <a href="tabulacoes.html">📑 Tabulações</a>
+    <a href="situacoes.html">📝 Situações</a>
+    <a href="canais.html">📞 Canais</a>
+    <button id="noteToggle">📝 Notas</button>
+  </div>
+
+<!-- Painel de Notas -->
+  <div id="notePanel">
+  <div id="noteToolbar">
+    <button onclick="formatNote('bold')"><b>B</b></button>
+    <button onclick="formatNote('italic')"><i>I</i></button>
+    <button onclick="formatNote('underline')"><u>U</u></button>
+    <button onclick="formatNote('insertUnorderedList')">• Lista</button>
+    <button id="noteClose">✕</button>
+  </div>
+    <div id="noteEditor" contenteditable="true"></div>
+  </div>
+
   <script type="module">
   import { getAuth, signOut, onAuthStateChanged } 
     from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
@@ -145,6 +164,64 @@
       alert("Erro ao sair: " + e.message);
     }
   });
+</script>
+
+<script type="module">
+  import { db } from "./firebase.js";
+  import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+  const noteToggle = document.getElementById("noteToggle");
+  const notePanel  = document.getElementById("notePanel");
+  const noteEditor = document.getElementById("noteEditor");
+  const noteClose  = document.getElementById("noteClose");
+
+  // Abrir/fechar painel
+  noteToggle.addEventListener("click", () => {
+    notePanel.classList.toggle("active");
+  });
+  noteClose?.addEventListener("click", () => {
+  notePanel.classList.remove("active");
+  });
+
+
+  // Formatação
+  window.formatNote = (cmd) => {
+    document.execCommand(cmd, false, null);
+    saveNotes();
+  };
+
+  // === Firestore ===
+  const noteDocRef = doc(db, "anotacoes", "usuario1"); 
+  // ⚠️ Troque "usuario1" pelo uid real quando integrar com Auth
+
+  async function saveNotes() {
+    try {
+      await setDoc(noteDocRef, {
+        conteudo: noteEditor.innerHTML,
+        atualizado: new Date().toISOString()
+      });
+      console.log("Nota salva no Firestore!");
+    } catch (e) {
+      console.error("Erro ao salvar nota:", e);
+    }
+  }
+
+  async function loadNotes() {
+    try {
+      const snap = await getDoc(noteDocRef);
+      if (snap.exists()) {
+        noteEditor.innerHTML = snap.data().conteudo || "";
+      }
+    } catch (e) {
+      console.error("Erro ao carregar nota:", e);
+    }
+  }
+
+  // Auto-save
+  noteEditor.addEventListener("input", saveNotes);
+
+  // Carregar ao abrir
+  loadNotes();
 </script>
 
 </body>
