@@ -293,17 +293,7 @@ sec.innerHTML = `
   });
   sec.prepend(tabIcon);
 
-  // Mensagem temporária ao lado externo (opcional)
-  const tabAlert = document.createElement("div");
-  tabAlert.className = "tab-alert";
-  tabAlert.innerHTML = `⬅️ Caso a ligação encerre,<br>verifique a tabulação<br>ao lado`;
-  sec.appendChild(tabAlert);
-  const toggleAlert = () => {
-    tabAlert.classList.remove("hide");
-    setTimeout(() => tabAlert.classList.add("hide"), 5000);
-  };
-  toggleAlert();
-  setInterval(toggleAlert, 15000);
+  
 
   flow.appendChild(sec);
 
@@ -658,6 +648,20 @@ async function bootstrap() {
 }
 
 document.addEventListener("DOMContentLoaded", bootstrap);
+
+// Mostra e esconde o alerta global em loop
+function startTabAlert() {
+  const tabAlert = document.getElementById("tabAlert");
+  if (!tabAlert) return;
+  const toggleAlert = () => {
+    tabAlert.classList.remove("hide");
+    setTimeout(() => tabAlert.classList.add("hide"), 5000);
+  };
+  toggleAlert();
+  setInterval(toggleAlert, 15000);
+}
+document.addEventListener("DOMContentLoaded", startTabAlert);
+
 
 // =====================================================
 // Pesquisa rápida (Situações + Tabulações + Canais)
