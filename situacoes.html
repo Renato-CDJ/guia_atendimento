@@ -5,324 +5,230 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Situações de Atendimento</title>
   <style>
-    :root {
-  /* Tema escuro (padrão) */
-  --bg: #0f1113;
-  --panel: #15181b;
-  --panel-2: #1b2024;
-  --muted: #aab0b6;
-  --text: #f5f7fa;
-  --accent: #00c853;
-  --accent-2: #00e676;
-  --danger: #e53935;
-  --shadow: 0 10px 30px rgba(0,0,0,.35);
-}
-
-/* Tema claro (laranja/branco moderno) */
-body[data-theme="light"] {
-  --bg: #ffffff;
-  --panel: #ffffff;
-  --panel-2: #fafafa;
-  --muted: #555;
-  --text: #1a1a1a;
-  --accent: #ff5722;
-  --accent-2: #ff9800;
-  --danger: #d32f2f;
-  --shadow: 0 8px 20px rgba(0,0,0,.08);
-
-  background:
-    radial-gradient(1000px 1000px at 110% -10%, #ffe0b2 0%, transparent 60%),
-    radial-gradient(1000px 1000px at -10% 110%, #fff3e0 0%, transparent 60%),
-    var(--bg);
-}
-
-/* Ajustes visuais light */
-body[data-theme="light"] .badge {
-  background: #f5f5f5;
-  border: 1px solid #ddd;
-  color: #333;
-}
-body[data-theme="light"] .badge:hover {
-  background: #eee;
-  border-color: #ccc;
-}
-
-body[data-theme="light"] .screen {
-  background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
-  border: 1px solid #ddd;
-  color: #333;
-}
-
-body[data-theme="light"] .script {
-  color: #444;
-}
-
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 70px;
-      height: 100%;
-      border-right: 2px solid var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .sidebar a {
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      text-decoration: none;
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 18px;
-      transition: color 0.2s ease, transform 0.2s ease;
-    }
-    .sidebar a:hover {
-      color: var(--accent-2);
-      transform: rotate(180deg) scale(1.05);
-    }
-
-    /* Container */
-    .container {
-      margin-left: 90px;
-      max-width: 900px;
+      font-family: system-ui, Arial, sans-serif;
+      background: #0f1113;
+      color: #f5f7fa;
+      margin: 0;
       padding: 20px;
-      flex: 1;
     }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    header h1 { font-size: 22px; color: var(--accent); }
-    .muted { color: var(--muted); }
-    .badge {
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: #21272d;
-      color: var(--text);
-      border: 1px solid #2a3138;
-      cursor: pointer;
-    }
-    .badge:hover {
-      background: #263039;
-      border-color: #35424e;
-    }
-
-    /* Card Situação */
+    h1 { color: #00c853; }
     .screen {
-      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
-      border: 1px solid #22292f;
-      border-radius: 16px;
-      padding: 18px 16px;
-      box-shadow: var(--shadow);
-      margin-top: 20px;
+      background: #15181b;
+      padding: 16px;
+      border-radius: 12px;
+      margin: 12px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,.4);
     }
-    .title { font-weight: 700; font-size: 18px; margin-bottom: 12px; }
-    .script { color: #dce3ea; line-height: 1.55; font-size: 15px; }
-    ul { margin: 12px 0; padding-left: 20px; }
-    ul li { margin-bottom: 6px; }
+    .title { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+    .script { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
+    .badge {
+      background: #21272d;
+      border: 1px solid #2a3138;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 4px;
+      font-size: 13px;
+    }
+    .badge:hover { background: #263039; }
 
-    /* Painel ADM */
+    /* Painel ADM (padrão index.html) */
     .adm {
-      position: fixed; inset: 0 0 0 auto;
-      width: 320px; max-width: 90vw;
-      background: #0f1418;
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 340px; max-width: 90vw;
+      background: #15181b;
       border-left: 1px solid #20262c;
       box-shadow: -20px 0 40px rgba(0,0,0,.4);
       padding: 14px 14px 70px;
       transform: translateX(100%);
       transition: transform .28s ease;
       z-index: 1200;
+      display: none;
     }
-    .adm.open { transform: translateX(0); }
+    .adm.open { transform: translateX(0); display: block; }
     .adm > header {
       font-weight: 700;
       margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
-    .adm label { display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
-    .adm input[type="text"], .adm textarea {
-      width:100%; border:1px solid #2a333b; background:#0f1418; color:var(--text);
-      border-radius:10px; padding:8px 10px; outline:none;
+    .adm label {
+      display:block; font-size:12px; color:#aab0b6; margin:10px 0 6px;
+    }
+    .adm input, .adm textarea {
+      width:100%;
+      border:1px solid #2a333b;
+      background:#0f1113;
+      color:#f5f7fa;
+      border-radius:10px;
+      padding:8px 10px;
+      outline:none;
     }
     .adm textarea { min-height: 90px; resize: vertical; }
-    .adm-footer {
-      position: absolute; left:14px; right:14px; bottom:12px;
-      display:flex; gap:8px; justify-content: space-between;
+    .adm .actions {
+      display:flex; gap:8px; margin-top:16px;
     }
-    .btn-mini {
-      border:1px solid #2a3138; background:#182029; color:var(--text);
-      padding:8px 10px; border-radius:10px; cursor:pointer;
+    .adm button {
+      flex:1;
+      border:none;
+      border-radius:10px;
+      padding:10px;
+      font-weight:700;
+      cursor:pointer;
     }
-    .btn-mini.primary { background: linear-gradient(90deg, var(--accent), var(--accent-2)); border:none; color:#06140b; }
-    .btn-mini.danger { background:#2a1211; border-color:#542625; color:#ffcfcf; }
+    .adm .primary {
+      background: linear-gradient(90deg, #00c853, #00e676);
+      color:#06140b;
+    }
+    .adm .danger {
+      background:#e53935;
+      color:#fff;
+    }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <nav class="sidebar">
-    <a href="#">Situações</a>
-  </nav>
+  <h1>Situações de Atendimento</h1>
+  <p>Lista de situações abaixo (público):</p>
 
-  <!-- Conteúdo -->
-  <div class="container">
-    <!-- Cabeçalho -->
-    <header>
-      <div>
-        <h1>Situações de Atendimento</h1>
-        <p class="muted">Fluxo guiado • </p>
-      </div>
-      <div>
-        <button onclick="window.location.href='index.html'" class="badge">⬅ Voltar</button>
-        <button id="btnToggleTheme" class="badge">🌗 Tema</button>
+  <!-- Lista de situações -->
+  <main id="situacoesList"></main>
 
-        <button id="btnToggleAdm" class="badge">⚙️ ADM</button>
-      </div>
-    </header>
-
-    <!-- Lista de situações -->
-    <main id="situacoesList"></main>
-  </div>
+  <!-- Botão ADM -->
+  <button id="btnToggleAdm" class="badge">⚙️ ADM</button>
 
   <!-- Painel ADM -->
   <aside class="adm" id="admPanel">
     <header>
-      <div>Painel ADM</div>
+      <div id="admTitle">Nova Situação</div>
       <button id="btnAdmClose" class="badge">✕</button>
     </header>
 
-    <label>Título da Situação</label>
-    <input type="text" id="fldTitulo">
+    <label for="fldTitulo">Título</label>
+    <input type="text" id="fldTitulo" placeholder="Ex: Cliente recusa negociação">
 
-    <label>Descrição</label>
-    <textarea id="fldDescricao"></textarea>
+    <label for="fldDescricao">Descrição</label>
+    <textarea id="fldDescricao" placeholder="Digite aqui a descrição..."></textarea>
 
-    <div class="adm-footer">
-      <button id="btnSave" class="btn-mini primary">Salvar</button>
-      <button id="btnDel" class="btn-mini danger">Excluir</button>
+    <div class="actions">
+      <button id="btnSave" class="primary">Salvar</button>
+      <button id="btnDel" class="danger" style="display:none;">Excluir</button>
     </div>
   </aside>
 
-  <script>
-    // Array de situações
-    let situacoes = [
-      { id: 1, titulo: "Cliente não confirma dados", descricao: "Oriente sobre segurança e ofereça canais oficiais." },
-      { id: 2, titulo: "Cliente recusa negociação", descricao: "Explique consequências e ofereça alternativas." },
-      { id: 3, titulo: "Solicitação de boleto", descricao: "Disponibilize via e-mail ou WhatsApp autorizado." },
-      { id: 4, titulo: "Encerramento do atendimento", descricao: "Agradeça e oriente sobre próximos passos." }
-    ];
-
-    let editId = null;
+  <!-- Firebase / Firestore -->
+  <script type="module">
+    import { db, auth } from "./firebase.js";
+    import { 
+      collection, addDoc, setDoc, deleteDoc, doc, 
+      onSnapshot, query, orderBy 
+    } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
     const list = document.getElementById("situacoesList");
+    const btnToggleAdm = document.getElementById("btnToggleAdm");
     const admPanel = document.getElementById("admPanel");
     const fldTitulo = document.getElementById("fldTitulo");
     const fldDescricao = document.getElementById("fldDescricao");
+    const btnSave = document.getElementById("btnSave");
+    const btnDel = document.getElementById("btnDel");
+    const admTitle = document.getElementById("admTitle");
+    const btnAdmClose = document.getElementById("btnAdmClose");
 
-    // Renderizar lista
-    function renderSituacoes() {
+    let isAdmin = false;
+    let editId = null;
+
+    // Controle de login ADM
+    onAuthStateChanged(auth, (user) => {
+      isAdmin = !!user;
+      btnToggleAdm.style.display = isAdmin ? "" : "none";
+    });
+
+    // Abrir painel para NOVA situação
+    btnToggleAdm.addEventListener("click", () => {
+      if (!isAdmin) return alert("Somente administradores podem usar o painel.");
+      editId = null;
+      fldTitulo.value = "";
+      fldDescricao.value = "";
+      admTitle.textContent = "Nova Situação";
+      btnDel.style.display = "none";
+      admPanel.classList.add("open");
+    });
+
+    // Fechar painel
+    btnAdmClose.addEventListener("click", () => {
+      admPanel.classList.remove("open");
+    });
+
+    // Salvar (criar/editar)
+    btnSave.addEventListener("click", async () => {
+      if (!isAdmin) return;
+      const titulo = fldTitulo.value.trim();
+      const descricao = fldDescricao.value.trim();
+      if (!titulo) return alert("Informe um título.");
+
+      try {
+        if (editId) {
+          await setDoc(doc(db, "situacoes", editId), { titulo, descricao }, { merge: true });
+        } else {
+          await addDoc(collection(db, "situacoes"), { titulo, descricao });
+        }
+        admPanel.classList.remove("open");
+      } catch (e) {
+        console.error("Erro ao salvar:", e);
+        alert("Erro ao salvar, veja o console.");
+      }
+    });
+
+    // Excluir
+    btnDel.addEventListener("click", async () => {
+      if (!isAdmin || !editId) return;
+      if (!confirm("Excluir esta situação?")) return;
+      try {
+        await deleteDoc(doc(db, "situacoes", editId));
+        admPanel.classList.remove("open");
+      } catch (e) {
+        console.error("Erro ao excluir:", e);
+        alert("Erro ao excluir, veja o console.");
+      }
+    });
+
+    // Leitura em tempo real (público)
+    const q = query(collection(db, "situacoes"), orderBy("titulo"));
+    onSnapshot(q, (snap) => {
       list.innerHTML = "";
-      situacoes.forEach(s => {
+      snap.forEach(d => {
+        const s = d.data();
         const card = document.createElement("section");
         card.className = "screen";
         card.innerHTML = `
           <div class="title">${s.titulo}</div>
           <div class="script">${s.descricao}</div>
-          <button class="badge" onclick="editSituacao(${s.id})">✏️ Editar</button>
+          ${isAdmin ? `<button class="badge" data-edit="${d.id}">✏️ Editar</button>` : ""}
         `;
         list.appendChild(card);
       });
-    }
 
-    // Editar situação
-    window.editSituacao = (id) => {
-      const s = situacoes.find(x => x.id === id);
-      if (!s) return;
-      editId = id;
-      fldTitulo.value = s.titulo;
-      fldDescricao.value = s.descricao;
-      admPanel.classList.add("open");
-    };
-
-    // Salvar
-    document.getElementById("btnSave").onclick = () => {
-      if (editId) {
-        const s = situacoes.find(x => x.id === editId);
-        s.titulo = fldTitulo.value;
-        s.descricao = fldDescricao.value;
-      } else {
-        situacoes.push({
-          id: Date.now(),
-          titulo: fldTitulo.value,
-          descricao: fldDescricao.value
+      // Ações de edição (somente ADM)
+      if (isAdmin) {
+        document.querySelectorAll("[data-edit]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-edit");
+            const item = snap.docs.find(doc => doc.id === id)?.data();
+            if (!item) return;
+            editId = id;
+            fldTitulo.value = item.titulo;
+            fldDescricao.value = item.descricao;
+            admTitle.textContent = "Editar Situação";
+            btnDel.style.display = "inline-block";
+            admPanel.classList.add("open");
+          });
         });
       }
-      admPanel.classList.remove("open");
-      renderSituacoes();
-      resetForm();
-    };
-
-    // Excluir
-    document.getElementById("btnDel").onclick = () => {
-      if (editId) {
-        situacoes = situacoes.filter(x => x.id !== editId);
-        renderSituacoes();
-        resetForm();
-        admPanel.classList.remove("open");
-      }
-    };
-
-    // ADM Toggle
-    document.getElementById("btnToggleAdm").onclick = () => {
-      editId = null;
-      resetForm();
-      admPanel.classList.add("open");
-    };
-    document.getElementById("btnAdmClose").onclick = () => {
-      admPanel.classList.remove("open");
-    };
-
-    function resetForm() {
-      fldTitulo.value = "";
-      fldDescricao.value = "";
-      editId = null;
-    }
-
-    renderSituacoes();
+    });
   </script>
-
-  <script>
-  // Alternância de tema (dark/light)
-  const themeBtn = document.getElementById("btnToggleTheme");
-
-  // Aplica tema salvo
-  if (localStorage.getItem("theme")) {
-    document.body.setAttribute("data-theme", localStorage.getItem("theme"));
-  }
-
-  themeBtn?.addEventListener("click", () => {
-    const current = document.body.getAttribute("data-theme");
-    const next = current === "light" ? "dark" : "light";
-    document.body.setAttribute("data-theme", next);
-    localStorage.setItem("theme", next);
-  });
-</script>
-
 </body>
 </html>

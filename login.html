@@ -70,49 +70,71 @@
 
   <!-- Firebase -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
-      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { 
+    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut 
+  } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-    // 🔹 Configuração do seu projeto Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDM-cWulKkn5RAT6tns0BktHkRdfFt4-0s",
-      authDomain: "roteiro-a6cb0.firebaseapp.com",
-      projectId: "roteiro-a6cb0",
-      storageBucket: "roteiro-a6cb0.appspot.com",
-      messagingSenderId: "304848084937",
-      appId: "1:304848084937:web:21c4d4ea2dc862e7e05218",
-      measurementId: "G-PLMNPQWVH9"
-    };
+  // 🔹 Configuração Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDM-cWulKkn5RAT6tns0BktHkRdfFt4-0s",
+    authDomain: "roteiro-a6cb0.firebaseapp.com",
+    projectId: "roteiro-a6cb0",
+    storageBucket: "roteiro-a6cb0.appspot.com",
+    messagingSenderId: "304848084937",
+    appId: "1:304848084937:web:21c4d4ea2dc862e7e05218",
+    measurementId: "G-PLMNPQWVH9"
+  };
 
-    // Inicializa Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+  // Inicializa Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-    const emailInput = document.getElementById("email");
-    const passInput  = document.getElementById("password");
-    const btnLogin   = document.getElementById("btnLogin");
-    const msgBox     = document.getElementById("msg");
+  // 🔒 Lista de emails de administradores permitidos
+  const ADM_EMAILS = [
+    "seuemail@dominio.com", 
+    "outro.adm@dominio.com"
+  ];
 
-    btnLogin.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      const pass  = passInput.value.trim();
-      msgBox.textContent = "";
-      try {
-        await signInWithEmailAndPassword(auth, email, pass);
-        // Se login deu certo → redireciona para index.html
-        window.location.href = "index.html";
-      } catch (e) {
-        msgBox.textContent = "Erro: " + e.message;
+  const emailInput = document.getElementById("email");
+  const passInput  = document.getElementById("password");
+  const btnLogin   = document.getElementById("btnLogin");
+  const msgBox     = document.getElementById("msg");
+
+  // 🔹 Login
+  btnLogin.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const pass  = passInput.value.trim();
+    msgBox.textContent = "";
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+
+      // ✅ Verifica se email é de ADM
+      if (!ADM_EMAILS.includes(cred.user.email)) {
+        msgBox.textContent = "Acesso negado: você não é administrador.";
+        await signOut(auth);
+        return;
       }
-    });
 
-    // Se já estiver logado, pula login
-    onAuthStateChanged(auth, user => {
-      if (user) {
+      // Se for ADM → redireciona
+      window.location.href = "index.html";
+    } catch (e) {
+      msgBox.textContent = "Erro: " + e.message;
+    }
+  });
+
+  // 🔹 Se já estiver logado → verifica se é ADM
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      if (ADM_EMAILS.includes(user.email)) {
         window.location.href = "index.html";
+      } else {
+        msgBox.textContent = "Acesso negado.";
+        await signOut(auth);
       }
-    });
-  </script>
+    }
+  });
+</script>
+
 </body>
 </html>
