@@ -532,7 +532,7 @@ header h1{
 ========================= */
 .tab-alert {
   position: relative;
-  margin: 14px 0 0 582px; /* empurra 80px pra direita */
+  margin: 14px 0 0 379px; /* empurra 80px pra direita */
   display: flex;
   align-items: center;
   gap: 8px;
