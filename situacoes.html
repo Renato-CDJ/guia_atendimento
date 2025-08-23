@@ -12,16 +12,34 @@
       margin: 0;
       padding: 20px;
     }
-    h1 { color: #00c853; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    h1 { color: #00c853; margin: 0; }
+    .muted { color:#aaa; margin: 4px 0 0; }
+    .toolbar { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
     .screen {
       background: #15181b;
       padding: 16px;
       border-radius: 12px;
       margin: 12px 0;
       box-shadow: 0 4px 12px rgba(0,0,0,.4);
+      text-align: left; /* alinhamento à esquerda */
     }
-    .title { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
-    .script { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
+    .title { 
+      font-size: 18px; 
+      font-weight: bold; 
+      margin-bottom: 6px; 
+    }
+    .script { 
+      font-size: 15px; 
+      line-height: 1.5; 
+      margin-bottom: 10px; 
+    }
     .badge {
       background: #21272d;
       border: 1px solid #2a3138;
@@ -29,12 +47,20 @@
       padding: 6px 10px;
       border-radius: 8px;
       cursor: pointer;
-      margin: 4px;
       font-size: 13px;
     }
     .badge:hover { background: #263039; }
+    .select {
+      border: 1px solid #2a3138;
+      background: #0f1113;
+      color: #f5f7fa;
+      padding: 6px 10px;
+      border-radius: 8px;
+      min-width: 240px;
+      outline: none;
+    }
 
-    /* Painel ADM (padrão index.html) */
+    /* Painel ADM */
     .adm {
       position: fixed;
       top: 0; right: 0; bottom: 0;
@@ -91,14 +117,20 @@
   </style>
 </head>
 <body>
-  <h1>Situações de Atendimento</h1>
-  <p>Lista de situações abaixo (público):</p>
+  <header>
+    <div>
+      <h1>Situações de Atendimento</h1>
+      <p class="muted">Lista de situações abaixo (público)</p>
+    </div>
+    <div class="toolbar">
+      <input type="text" id="searchInput" class="select" placeholder="🔍 Pesquisar situação..." />
+      <button id="btnToggleTheme" class="badge">🌗 Tema</button>
+      <button id="btnToggleAdm" class="badge">⚙️ ADM</button>
+    </div>
+  </header>
 
-  <!-- Lista de situações -->
+  <!-- Lista -->
   <main id="situacoesList"></main>
-
-  <!-- Botão ADM -->
-  <button id="btnToggleAdm" class="badge">⚙️ ADM</button>
 
   <!-- Painel ADM -->
   <aside class="adm" id="admPanel">
@@ -137,9 +169,11 @@
     const btnDel = document.getElementById("btnDel");
     const admTitle = document.getElementById("admTitle");
     const btnAdmClose = document.getElementById("btnAdmClose");
+    const searchInput = document.getElementById("searchInput");
 
     let isAdmin = false;
     let editId = null;
+    let cacheDocs = [];
 
     // Controle de login ADM
     onAuthStateChanged(auth, (user) => {
@@ -163,7 +197,7 @@
       admPanel.classList.remove("open");
     });
 
-    // Salvar (criar/editar)
+    // Salvar
     btnSave.addEventListener("click", async () => {
       if (!isAdmin) return;
       const titulo = fldTitulo.value.trim();
@@ -196,11 +230,10 @@
       }
     });
 
-    // Leitura em tempo real (público)
-    const q = query(collection(db, "situacoes"), orderBy("titulo"));
-    onSnapshot(q, (snap) => {
+    // Renderizador
+    function renderSituacoes(docs) {
       list.innerHTML = "";
-      snap.forEach(d => {
+      docs.forEach(d => {
         const s = d.data();
         const card = document.createElement("section");
         card.className = "screen";
@@ -212,22 +245,37 @@
         list.appendChild(card);
       });
 
-      // Ações de edição (somente ADM)
       if (isAdmin) {
         document.querySelectorAll("[data-edit]").forEach(btn => {
           btn.addEventListener("click", () => {
-            const id = btn.getAttribute("data-edit");
-            const item = snap.docs.find(doc => doc.id === id)?.data();
-            if (!item) return;
-            editId = id;
-            fldTitulo.value = item.titulo;
-            fldDescricao.value = item.descricao;
+            editId = btn.dataset.edit;
+            const docData = docs.find(dd => dd.id === editId)?.data();
+            if (!docData) return;
+            fldTitulo.value = docData.titulo || "";
+            fldDescricao.value = docData.descricao || "";
             admTitle.textContent = "Editar Situação";
             btnDel.style.display = "inline-block";
             admPanel.classList.add("open");
           });
         });
       }
+    }
+
+    // Assinar mudanças
+    const q = query(collection(db, "situacoes"), orderBy("titulo"));
+    onSnapshot(q, (snap) => {
+      cacheDocs = snap.docs;
+      renderSituacoes(cacheDocs);
+    });
+
+    // Filtro de pesquisa
+    searchInput.addEventListener("input", () => {
+      const term = searchInput.value.toLowerCase();
+      const filtered = cacheDocs.filter(d => 
+        d.data().titulo.toLowerCase().includes(term) || 
+        d.data().descricao.toLowerCase().includes(term)
+      );
+      renderSituacoes(filtered);
     });
   </script>
 </body>
