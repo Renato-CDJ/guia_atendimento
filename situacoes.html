@@ -1,282 +1,468 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Situações de Atendimento</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Situações</title>
   <style>
-    body {
-      font-family: system-ui, Arial, sans-serif;
-      background: #0f1113;
-      color: #f5f7fa;
-      margin: 0;
-      padding: 20px;
+    :root{
+      --bg:#0f1113; --panel:#15181b; --panel-2:#1b2024; --text:#f5f7fa; --muted:#aab0b6;
+      --border:#22292f; --badge-bg:#21272d; --badge-border:#2a3138;
+      --accent:#00c853; --accent-2:#00e676; --shadow:0 12px 34px rgba(0,0,0,.35);
     }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    h1 { color: #00c853; margin: 0; }
-    .muted { color:#aaa; margin: 4px 0 0; }
-    .toolbar { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
-    .screen {
-      background: #15181b;
-      padding: 16px;
-      border-radius: 12px;
-      margin: 12px 0;
-      box-shadow: 0 4px 12px rgba(0,0,0,.4);
-      text-align: left; /* alinhamento à esquerda */
-    }
-    .title { 
-      font-size: 18px; 
-      font-weight: bold; 
-      margin-bottom: 6px; 
-    }
-    .script { 
-      font-size: 15px; 
-      line-height: 1.5; 
-      margin-bottom: 10px; 
-    }
-    .badge {
-      background: #21272d;
-      border: 1px solid #2a3138;
-      color: #fff;
-      padding: 6px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .badge:hover { background: #263039; }
-    .select {
-      border: 1px solid #2a3138;
-      background: #0f1113;
-      color: #f5f7fa;
-      padding: 6px 10px;
-      border-radius: 8px;
-      min-width: 240px;
-      outline: none;
+    body[data-theme="light"]{
+      --bg:#fff; --panel:#fff; --panel-2:#f7f7f8; --text:#1b1f24; --muted:#666;
+      --border:#e5e7eb; --badge-bg:#f3f4f6; --badge-border:#e5e7eb;
+      --accent:#ff6d00; --accent-2:#ffa000; --shadow:0 8px 20px rgba(0,0,0,.08);
     }
 
-    /* Painel ADM */
-    .adm {
-      position: fixed;
-      top: 0; right: 0; bottom: 0;
-      width: 340px; max-width: 90vw;
-      background: #15181b;
-      border-left: 1px solid #20262c;
-      box-shadow: -20px 0 40px rgba(0,0,0,.4);
-      padding: 14px 14px 70px;
-      transform: translateX(100%);
-      transition: transform .28s ease;
-      z-index: 1200;
-      display: none;
+    *{ box-sizing:border-box }
+    body{
+      margin:0; font-family:system-ui,Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--text);
+      min-height:100vh; padding:20px; display:flex; justify-content:center;
     }
-    .adm.open { transform: translateX(0); display: block; }
-    .adm > header {
-      font-weight: 700;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .container{ width:100%; max-width:1000px }
+
+    header{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:16px }
+    header h1{ margin:0; font-size:22px; color:var(--accent) }
+    .muted{ color:var(--muted); margin:0 }
+
+    .toolbar{ display:flex; gap:8px; flex-wrap:wrap }
+    .select,.badge{
+      border:1px solid var(--badge-border); background:var(--panel-2); color:var(--text);
+      padding:8px 12px; border-radius:10px; cursor:pointer;
     }
-    .adm label {
-      display:block; font-size:12px; color:#aab0b6; margin:10px 0 6px;
+
+    /* ===== GRID ===== */
+    .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px }
+    .card{
+      background:var(--panel); border:1px solid var(--border);
+      border-radius:12px; padding:14px 18px;
+      cursor:pointer; transition:background .25s ease, transform .2s ease;
+      position:relative; overflow:hidden;
     }
-    .adm input, .adm textarea {
-      width:100%;
-      border:1px solid #2a333b;
-      background:#0f1113;
-      color:#f5f7fa;
-      border-radius:10px;
-      padding:8px 10px;
-      outline:none;
+    .card:hover{ background:var(--panel-2); transform:translateY(-2px) }
+
+    .card h3{ margin:0 0 6px; font-size:18px; color:var(--accent) }
+    .card .meta{ font-size:12px; color:var(--muted); margin-bottom:6px }
+    .card p{ margin:0; font-size:14px; line-height:1.45; color:var(--text); max-height:60px; overflow:hidden; text-overflow:ellipsis }
+
+    .item-actions{ position:absolute; top:10px; right:10px; display:flex; gap:6px; opacity:0; transition:opacity .25s }
+    .card:hover .item-actions{ opacity:1 }
+    .action-btn{ border:none; background:transparent; color:var(--muted); cursor:pointer; font-size:16px; padding:4px; border-radius:6px }
+    .action-btn:hover{ background:var(--badge-bg); color:var(--accent) }
+
+    /* ===== MODAL ===== */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.75);
+      display:none; align-items:center; justify-content:center; z-index:2000; padding:20px;
     }
-    .adm textarea { min-height: 90px; resize: vertical; }
-    .adm .actions {
-      display:flex; gap:8px; margin-top:16px;
+    .modal-backdrop.open{ display:flex }
+    .modal{
+      background:var(--panel); border-radius:20px; padding:28px 24px;
+      max-width:900px; width:100%; max-height:85vh; overflow-y:auto; box-shadow:var(--shadow);
+      animation:fadeIn .25s ease;
     }
-    .adm button {
-      flex:1;
-      border:none;
-      border-radius:10px;
-      padding:10px;
-      font-weight:700;
-      cursor:pointer;
+    .modal h2{ margin-top:0; font-size:24px; color:var(--accent) }
+    .modal .meta{ margin:0 0 12px }
+    .modal p{ margin:14px 0 0; line-height:1.75; font-size:16px; white-space:pre-wrap }
+    .modal footer{ margin-top:18px; display:flex; gap:8px; justify-content:flex-end }
+    .btn{ border:1px solid var(--badge-border); background:var(--badge-bg); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer }
+    .btn.primary{ background:linear-gradient(90deg,var(--accent),var(--accent-2)); border:none; color:#06140b }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(12px) scale(.98)} to{opacity:1; transform:translateY(0) scale(1)} }
+
+    /* ===== PAINEL ADM ===== */
+    .adm{
+      position:fixed; top:0; right:0; bottom:0; width:340px; max-width:90vw;
+      background:var(--panel); border-left:1px solid var(--border);
+      box-shadow:-20px 0 40px rgba(0,0,0,.35);
+      padding:14px 14px 70px; transform:translateX(100%); transition:transform .28s ease;
+      z-index:2200; display:none;
     }
-    .adm .primary {
-      background: linear-gradient(90deg, #00c853, #00e676);
-      color:#06140b;
+    .adm.open{ transform:translateX(0); display:block }
+    .adm > header{ font-weight:700; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center }
+    .adm input,.adm textarea,.adm select{
+      width:100%; border:1px solid var(--badge-border); background:var(--panel-2); color:var(--text);
+      border-radius:10px; padding:8px 10px; outline:none;
     }
-    .adm .danger {
-      background:#e53935;
-      color:#fff;
-    }
+    .adm textarea{ min-height:120px; resize:vertical }
+    .adm-footer{ position:absolute; left:14px; right:14px; bottom:12px; display:flex; gap:8px }
+    .btn-mini{ border:1px solid var(--badge-border); background:var(--badge-bg); color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer }
+    .btn-mini.primary{ background:linear-gradient(90deg,var(--accent),var(--accent-2)); border:none; color:#06140b }
+    .btn-mini.danger{ background:#2a1211; border-color:#542625; color:#ffdede }
   </style>
 </head>
 <body>
-  <header>
-    <div>
-      <h1>Situações de Atendimento</h1>
-      <p class="muted">Lista de situações abaixo (público)</p>
-    </div>
-    <div class="toolbar">
-      <input type="text" id="searchInput" class="select" placeholder="🔍 Pesquisar situação..." />
-      <button id="btnToggleTheme" class="badge">🌗 Tema</button>
-      <button id="btnToggleAdm" class="badge">⚙️ ADM</button>
-    </div>
-  </header>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Situações</h1>
+        <p class="muted">Consulta de situações por campanha</p>
+      </div>
+      <div class="toolbar">
+        <!-- 🔹 filtro de categorias -->
+        <select id="filterCategoria" class="select"></select>
+        <input id="searchInput" class="select" type="text" placeholder="🔍 Pesquisar..." />
+        <button id="btnToggleTheme" class="badge">🌗 Tema</button>
+        <button id="btnToggleAdm" class="badge" style="display:none;">⚙️ ADM</button>
+        <button id="btnCategorias" class="badge" style="display:none;">📂 Categorias</button>
+      </div>
+    </header>
 
-  <!-- Lista -->
-  <main id="situacoesList"></main>
+    <main id="situacoesList" class="grid"></main>
+  </div>
 
-  <!-- Painel ADM -->
+  <!-- Modal -->
+  <div id="modalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <h2 id="modalTitle"></h2>
+      <div id="modalMeta" class="meta"></div>
+      <p id="modalDesc"></p>
+      <footer>
+        <button id="btnEditFromModal" class="btn" style="display:none;">Editar</button>
+        <button id="btnCloseModal" class="btn">Fechar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Painel ADM (Situações) -->
   <aside class="adm" id="admPanel">
     <header>
       <div id="admTitle">Nova Situação</div>
-      <button id="btnAdmClose" class="badge">✕</button>
+      <button id="btnAdmClose" class="btn">✕</button>
     </header>
 
-    <label for="fldTitulo">Título</label>
-    <input type="text" id="fldTitulo" placeholder="Ex: Cliente recusa negociação">
+    <label>Título</label>
+    <input type="text" id="fldTitulo" />
 
-    <label for="fldDescricao">Descrição</label>
-    <textarea id="fldDescricao" placeholder="Digite aqui a descrição..."></textarea>
+    <label style="margin-top:8px;">Descrição</label>
+    <textarea id="fldDescricao"></textarea>
 
-    <div class="actions">
-      <button id="btnSave" class="primary">Salvar</button>
-      <button id="btnDel" class="danger" style="display:none;">Excluir</button>
+    <label style="margin-top:8px;">Categoria</label>
+    <select id="fldCategoria"></select>
+
+    <div class="adm-footer">
+      <button id="btnSave" class="btn-mini primary">Salvar</button>
+      <button id="btnDel" class="btn-mini danger" style="display:none;">Excluir</button>
     </div>
   </aside>
 
-  <!-- Firebase / Firestore -->
+  <!-- Painel ADM (Categorias) -->
+  <aside class="adm" id="catPanel">
+    <header>
+      <div id="catTitle">Categorias</div>
+      <button id="btnCatClose" class="btn">✕</button>
+    </header>
+
+    <label>Nome da categoria</label>
+    <input type="text" id="fldCatNome" placeholder="Ex: Habitacional" />
+
+    <div class="adm-footer">
+      <button id="btnCatSave" class="btn-mini primary">Salvar</button>
+      <button id="btnCatDel" class="btn-mini danger" style="display:none;">Excluir</button>
+    </div>
+
+    <div id="catList" style="margin-top:20px; display:flex; flex-direction:column; gap:6px;"></div>
+  </aside>
+
   <script type="module">
     import { db, auth } from "./firebase.js";
-    import { 
-      collection, addDoc, setDoc, deleteDoc, doc, 
-      onSnapshot, query, orderBy 
-    } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+    import { collection, query, orderBy, onSnapshot, addDoc, setDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
+    /* refs */
     const list = document.getElementById("situacoesList");
+    const searchInput = document.getElementById("searchInput");
+    const filterCategoria = document.getElementById("filterCategoria");
+    const btnToggleTheme = document.getElementById("btnToggleTheme");
     const btnToggleAdm = document.getElementById("btnToggleAdm");
+    const btnCategorias = document.getElementById("btnCategorias");
+
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalMeta = document.getElementById("modalMeta");
+    const modalDesc = document.getElementById("modalDesc");
+    const btnCloseModal = document.getElementById("btnCloseModal");
+    const btnEditFromModal = document.getElementById("btnEditFromModal");
+
     const admPanel = document.getElementById("admPanel");
-    const fldTitulo = document.getElementById("fldTitulo");
-    const fldDescricao = document.getElementById("fldDescricao");
-    const btnSave = document.getElementById("btnSave");
-    const btnDel = document.getElementById("btnDel");
     const admTitle = document.getElementById("admTitle");
     const btnAdmClose = document.getElementById("btnAdmClose");
-    const searchInput = document.getElementById("searchInput");
+    const btnSave = document.getElementById("btnSave");
+    const btnDel = document.getElementById("btnDel");
+    const fldTitulo = document.getElementById("fldTitulo");
+    const fldDescricao = document.getElementById("fldDescricao");
+    const fldCategoria = document.getElementById("fldCategoria");
 
+    const catPanel = document.getElementById("catPanel");
+    const btnCatClose = document.getElementById("btnCatClose");
+    const btnCatSave = document.getElementById("btnCatSave");
+    const btnCatDel = document.getElementById("btnCatDel");
+    const fldCatNome = document.getElementById("fldCatNome");
+    const catList = document.getElementById("catList");
+
+    /* state */
+    let cacheDocs = [];
+    let cacheCats = [];
     let isAdmin = false;
     let editId = null;
-    let cacheDocs = [];
+    let catEditId = null;
+    let modalDocId = null;
+    let modalDocData = null;
 
-    // Controle de login ADM
-    onAuthStateChanged(auth, (user) => {
+    /* auth */
+    onAuthStateChanged(auth, user=>{
       isAdmin = !!user;
       btnToggleAdm.style.display = isAdmin ? "" : "none";
+      btnCategorias.style.display = isAdmin ? "" : "none";
+      btnEditFromModal.style.display = isAdmin ? "" : "none";
     });
 
-    // Abrir painel para NOVA situação
-    btnToggleAdm.addEventListener("click", () => {
-      if (!isAdmin) return alert("Somente administradores podem usar o painel.");
-      editId = null;
-      fldTitulo.value = "";
-      fldDescricao.value = "";
-      admTitle.textContent = "Nova Situação";
-      btnDel.style.display = "none";
-      admPanel.classList.add("open");
+    /* categorias firestore */
+    const qCats = query(collection(db,"categorias"), orderBy("nome"));
+    onSnapshot(qCats,(snap)=>{
+      cacheCats = snap.docs;
+      renderCategoriasSelect();
+      renderCategoriasList();
     });
 
-    // Fechar painel
-    btnAdmClose.addEventListener("click", () => {
-      admPanel.classList.remove("open");
-    });
+    function renderCategoriasSelect(){
+      // filtro
+      filterCategoria.innerHTML = "";
+      const optAll = document.createElement("option");
+      optAll.value = "todas";
+      optAll.textContent = "Todas as campanhas";
+      filterCategoria.appendChild(optAll);
 
-    // Salvar
-    btnSave.addEventListener("click", async () => {
-      if (!isAdmin) return;
-      const titulo = fldTitulo.value.trim();
-      const descricao = fldDescricao.value.trim();
-      if (!titulo) return alert("Informe um título.");
+      // selects
+      fldCategoria.innerHTML = "";
+      cacheCats.forEach(c=>{
+        const opt=document.createElement("option");
+        opt.value=c.id;
+        opt.textContent=c.data().nome;
+        fldCategoria.appendChild(opt);
 
-      try {
-        if (editId) {
-          await setDoc(doc(db, "situacoes", editId), { titulo, descricao }, { merge: true });
-        } else {
-          await addDoc(collection(db, "situacoes"), { titulo, descricao });
-        }
-        admPanel.classList.remove("open");
-      } catch (e) {
-        console.error("Erro ao salvar:", e);
-        alert("Erro ao salvar, veja o console.");
-      }
-    });
-
-    // Excluir
-    btnDel.addEventListener("click", async () => {
-      if (!isAdmin || !editId) return;
-      if (!confirm("Excluir esta situação?")) return;
-      try {
-        await deleteDoc(doc(db, "situacoes", editId));
-        admPanel.classList.remove("open");
-      } catch (e) {
-        console.error("Erro ao excluir:", e);
-        alert("Erro ao excluir, veja o console.");
-      }
-    });
-
-    // Renderizador
-    function renderSituacoes(docs) {
-      list.innerHTML = "";
-      docs.forEach(d => {
-        const s = d.data();
-        const card = document.createElement("section");
-        card.className = "screen";
-        card.innerHTML = `
-          <div class="title">${s.titulo}</div>
-          <div class="script">${s.descricao}</div>
-          ${isAdmin ? `<button class="badge" data-edit="${d.id}">✏️ Editar</button>` : ""}
-        `;
-        list.appendChild(card);
+        const opt2=document.createElement("option");
+        opt2.value=c.id;
+        opt2.textContent=c.data().nome;
+        filterCategoria.appendChild(opt2);
       });
-
-      if (isAdmin) {
-        document.querySelectorAll("[data-edit]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            editId = btn.dataset.edit;
-            const docData = docs.find(dd => dd.id === editId)?.data();
-            if (!docData) return;
-            fldTitulo.value = docData.titulo || "";
-            fldDescricao.value = docData.descricao || "";
-            admTitle.textContent = "Editar Situação";
-            btnDel.style.display = "inline-block";
-            admPanel.classList.add("open");
-          });
-        });
-      }
+      filterCategoria.value="todas";
     }
 
-    // Assinar mudanças
-    const q = query(collection(db, "situacoes"), orderBy("titulo"));
-    onSnapshot(q, (snap) => {
-      cacheDocs = snap.docs;
-      renderSituacoes(cacheDocs);
+    function renderCategoriasList(){
+      catList.innerHTML = "";
+      cacheCats.forEach(c=>{
+        const div=document.createElement("div");
+        div.style.display="flex";
+        div.style.justifyContent="space-between";
+        div.style.alignItems="center";
+        div.style.background="var(--panel-2)";
+        div.style.padding="6px 10px";
+        div.style.borderRadius="8px";
+        div.innerHTML=`<span>${c.data().nome}</span>
+          <div>
+            <button data-edit="${c.id}" class="btn-mini">✏️</button>
+            <button data-del="${c.id}" class="btn-mini danger">🗑️</button>
+          </div>`;
+        catList.appendChild(div);
+      });
+
+      catList.querySelectorAll("[data-edit]").forEach(btn=>{
+        btn.onclick=()=>{
+          const id=btn.dataset.edit;
+          const data=cacheCats.find(c=>c.id===id)?.data();
+          if(!data) return;
+          catEditId=id;
+          fldCatNome.value=data.nome;
+          btnCatDel.style.display="";
+          catPanel.classList.add("open");
+        };
+      });
+      catList.querySelectorAll("[data-del]").forEach(btn=>{
+        btn.onclick=async()=>{
+          const id=btn.dataset.del;
+          if(confirm("Excluir esta categoria?")){
+            await deleteDoc(doc(db,"categorias",id));
+          }
+        };
+      });
+    }
+
+    btnCategorias.addEventListener("click",()=>{
+      fldCatNome.value="";
+      catEditId=null;
+      btnCatDel.style.display="none";
+      catPanel.classList.add("open");
+    });
+    btnCatClose.addEventListener("click",()=>catPanel.classList.remove("open"));
+    btnCatSave.addEventListener("click",async()=>{
+      const nome=fldCatNome.value.trim();
+      if(!nome) return alert("Informe um nome.");
+      if(catEditId){
+        await setDoc(doc(db,"categorias",catEditId),{nome},{merge:true});
+      }else{
+        await addDoc(collection(db,"categorias"),{nome});
+      }
+      catPanel.classList.remove("open");
+    });
+    btnCatDel.addEventListener("click",async()=>{
+      if(!catEditId) return;
+      if(confirm("Excluir esta categoria?")){
+        await deleteDoc(doc(db,"categorias",catEditId));
+        catPanel.classList.remove("open");
+      }
     });
 
-    // Filtro de pesquisa
-    searchInput.addEventListener("input", () => {
-      const term = searchInput.value.toLowerCase();
-      const filtered = cacheDocs.filter(d => 
-        d.data().titulo.toLowerCase().includes(term) || 
-        d.data().descricao.toLowerCase().includes(term)
-      );
-      renderSituacoes(filtered);
+    /* situações firestore */
+    const q = query(collection(db,"situacoes"), orderBy("titulo"));
+    onSnapshot(q,(snap)=>{
+      cacheDocs = snap.docs;
+      render();
     });
+
+    /* render */
+    function render(){
+      const term = searchInput.value.toLowerCase();
+      const filtroCat = filterCategoria.value;
+
+      const docs = cacheDocs.filter(d=>{
+        const t=d.data();
+        const matchSearch = (t.titulo||"").toLowerCase().includes(term) || (t.descricao||"").toLowerCase().includes(term);
+        const matchCategoria = (filtroCat==="todas") || (t.categoria === filtroCat);
+        return matchSearch && matchCategoria;
+      });
+
+      list.innerHTML = "";
+      docs.forEach(d=>{
+        const t = d.data();
+        const cat = cacheCats.find(c=>c.id===t.categoria)?.data()?.nome || "Sem categoria";
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${t.titulo || "(sem título)"}</h3>
+          <div class="meta">Categoria: ${cat}</div>
+          <p>${t.descricao || ""}</p>
+          ${isAdmin ? `
+            <div class="item-actions">
+              <button class="action-btn" title="Editar">✏️</button>
+              <button class="action-btn" title="Excluir">🗑️</button>
+            </div>` : ""}
+        `;
+
+        card.addEventListener("click", e=>{
+          if(e.target.closest(".action-btn")) return;
+          openModal(d.id,t,cat);
+        });
+
+        if(isAdmin){
+          const [btnEdit, btnDelBtn] = card.querySelectorAll(".action-btn");
+          btnEdit.addEventListener("click", e=>{
+            e.stopPropagation();
+            openAdmForEdit(d.id,t);
+          });
+          btnDelBtn.addEventListener("click", async e=>{
+            e.stopPropagation();
+            if(confirm("Excluir esta situação?")){
+              await deleteDoc(doc(db,"situacoes",d.id));
+            }
+          });
+        }
+
+        list.appendChild(card);
+      });
+    }
+
+    /* modal */
+    function openModal(id,data,catNome){
+      modalDocId=id;
+      modalDocData=data;
+      modalTitle.textContent = data.titulo || "(sem título)";
+      modalDesc.textContent = data.descricao || "";
+      modalMeta.textContent = "Categoria: " + (catNome || "Sem categoria");
+      modalBackdrop.classList.add("open");
+    }
+    btnCloseModal.addEventListener("click", ()=> modalBackdrop.classList.remove("open"));
+    modalBackdrop.addEventListener("click", e=>{
+      if(e.target===modalBackdrop) modalBackdrop.classList.remove("open");
+    });
+    btnEditFromModal.addEventListener("click", ()=>{
+      if(!isAdmin||!modalDocId) return;
+      openAdmForEdit(modalDocId,modalDocData);
+      modalBackdrop.classList.remove("open");
+    });
+
+    /* ADM Situações */
+    btnToggleAdm.addEventListener("click", ()=>{
+      if(!isAdmin) return alert("Somente administradores podem usar o painel.");
+      openAdmForNew();
+    });
+    btnAdmClose.addEventListener("click", ()=> admPanel.classList.remove("open"));
+
+    function openAdmForNew(){
+      editId=null;
+      admTitle.textContent="Nova Situação";
+      fldTitulo.value="";
+      fldDescricao.value="";
+      fldCategoria.value=cacheCats[0]?.id||"";
+      btnDel.style.display="none";
+      admPanel.classList.add("open");
+    }
+    function openAdmForEdit(id,data){
+      editId=id;
+      admTitle.textContent="Editar Situação";
+      fldTitulo.value=data.titulo||"";
+      fldDescricao.value=data.descricao||"";
+      fldCategoria.value=data.categoria||"";
+      btnDel.style.display="";
+      admPanel.classList.add("open");
+    }
+
+    btnSave.addEventListener("click", async()=>{
+      if(!isAdmin) return;
+      const titulo=fldTitulo.value.trim();
+      const descricao=fldDescricao.value.trim();
+      const categoria=fldCategoria.value;
+      if(!titulo) return alert("Informe um título.");
+      try{
+        if(editId){
+          await setDoc(doc(db,"situacoes",editId),{titulo,descricao,categoria},{merge:true});
+        }else{
+          await addDoc(collection(db,"situacoes"),{titulo,descricao,categoria});
+        }
+        admPanel.classList.remove("open");
+      }catch(e){ console.error(e); alert("Erro ao salvar."); }
+    });
+
+    btnDel.addEventListener("click", async()=>{
+      if(!isAdmin||!editId) return;
+      if(!confirm("Excluir esta situação?")) return;
+      try{
+        await deleteDoc(doc(db,"situacoes",editId));
+        admPanel.classList.remove("open");
+      }catch(e){ console.error(e); alert("Erro ao excluir."); }
+    });
+
+    /* tema */
+    (function(){
+      const stored=localStorage.getItem("theme");
+      if(stored) document.body.setAttribute("data-theme",stored);
+      else if(window.matchMedia("(prefers-color-scheme: light)").matches)
+        document.body.setAttribute("data-theme","light");
+      else document.body.setAttribute("data-theme","dark");
+
+      btnToggleTheme.addEventListener("click",()=>{
+        const cur=document.body.getAttribute("data-theme");
+        const next=cur==="light"?"dark":"light";
+        document.body.setAttribute("data-theme",next);
+        localStorage.setItem("theme",next);
+      });
+    })();
+
+    /* search + filtro */
+    searchInput.addEventListener("input", render);
+    filterCategoria.addEventListener("change", render);
   </script>
 </body>
 </html>
