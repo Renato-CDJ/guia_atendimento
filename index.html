@@ -17,7 +17,7 @@
       <div class="toolbar">
         <!-- Campo de pesquisa -->
         <input type="text" id="searchInput" class="select" placeholder="🔍 Pesquisar..." />
-        <div class="jump">
+        <div class="jump" id="jumpWrapper">
           <span class="muted">Telas:</span>
           <select id="jumpSelect" class="select"></select>
           <button id="btnJumpBack" class="badge">⏮ Ir</button>
@@ -39,8 +39,6 @@
     </div>
       <span class="arrow"></span>
     </div>
-
-
 
     <!-- Fluxo -->
     <main id="flow"></main>
@@ -74,7 +72,7 @@
         <input type="text" id="fldTab">
 
         <!-- NOVOS CAMPOS -->
-         
+        
         <label>Tamanho do texto (quadro)</label>
         <div class="control-group">
         <button type="button" class="btn-step" onclick="adjustField('fldFontSizeBody', -2)">−</button>
@@ -102,6 +100,9 @@
         <input type="number" id="fldPaddingBody" min="0" max="50" value="16">
         <button type="button" class="btn-step" onclick="adjustField('fldPaddingBody', 2)">+</button>
         </div>
+
+        <!-- Checkbox para mostrar/ocultar Telas -->
+        <label><input type="checkbox" id="chkShowJump"> Mostrar opção de Telas</label>
 
         <!-- FIM NOVOS CAMPOS -->
       </div>

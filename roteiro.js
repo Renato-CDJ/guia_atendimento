@@ -2,6 +2,7 @@
 // roteiro.js — suporte a 2 JSONs (PF x PJ) + melhorias
 // + Integração Auto-Save no Firebase
 // + 🔒 Modo Operador: bloqueio total de recursos ADM
+// + 👁️ Opção de mostrar/ocultar seletor de Telas no ADM
 // =====================================================
 
 // ------------------------
@@ -78,8 +79,11 @@ function debounce(fn, ms = 800) {
 const flow          = $("#flow");
 const bar           = $("#bar");
 const progressText  = $("#progressText");
+const jumpWrapper   = $("#jumpWrapper");
 const jumpSelect    = $("#jumpSelect");
+const btnJumpBack   = $("#btnJumpBack");
 const globalActions = document.getElementById("globalActions") || document.querySelector(".global-actions");
+const chkShowJump   = $("#chkShowJump");
 
 // ------------------------
 // Estado
@@ -290,7 +294,7 @@ async function reloadRoteirosForPessoa(pessoaSel) {
   if (inicioSec) buildProductChips(inicioSec);
 
   // Como o conjunto de telas mudou, atualiza jump/progresso
-  buildJumpList();
+  if (isAdmin) buildJumpList();
   updateProgress();
 }
 
@@ -412,7 +416,7 @@ function buildGlobalButtons(def) {
 // =====================================================
 function show(id) {
   $$(".screen", flow).forEach(s => s.classList.toggle("active", s.dataset.id === id));
-  if (jumpSelect) jumpSelect.value = id;
+  if (isAdmin && jumpSelect) jumpSelect.value = id;
   updateProgress();
   if (isAdmin && !IS_OPERADOR_PAGE) loadScreen(id); // só carrega no ADM
 
@@ -424,7 +428,7 @@ function go(id) {
   if (!roteiros[id]) return;
   if (!byId(id)) renderScreen(roteiros[id]);
   historyStack.push(id);
-  buildJumpList();
+  if (isAdmin) buildJumpList();
   show(id);
 }
 function byId(id) { return $(`.screen[data-id="${id}"]`); }
@@ -463,10 +467,10 @@ function updateProgress() {
 }
 
 // =====================================================
-// Jump
+// Jump (somente para ADM)
 // =====================================================
 function buildJumpList() {
-  if (!jumpSelect) return;
+  if (!isAdmin || !jumpSelect) return; // 🔒 só ADM
   jumpSelect.innerHTML = "";
   historyStack.forEach(id => {
     if (roteiros[id]) {
@@ -477,9 +481,44 @@ function buildJumpList() {
     }
   });
 }
-$("#btnJumpBack")?.addEventListener("click", () => {
+btnJumpBack?.addEventListener("click", () => {
+  if (!isAdmin) return;
   const id = jumpSelect?.value;
   if (id) go(id);
+});
+
+// =====================================================
+// Preferência de visibilidade do Jump (ADM)
+// =====================================================
+function getStoredShowJump() {
+  const v = localStorage.getItem("showJump");
+  return v === null ? true : v !== "0"; // default: mostrar
+}
+function applyJumpVisibility(visibleParam) {
+  if (!jumpWrapper) return;
+  const visible = (typeof visibleParam === 'boolean')
+    ? visibleParam
+    : (chkShowJump ? !!chkShowJump.checked : getStoredShowJump());
+  jumpWrapper.style.display = visible ? "" : "none";
+  // salva apenas quando soubermos o estado booleano
+  if (typeof visible === 'boolean') localStorage.setItem("showJump", visible ? "1" : "0");
+}
+function updateJumpAdminVisibility() {
+  if (!jumpWrapper) return;
+  if (IS_OPERADOR_PAGE || !isAdmin) {
+    jumpWrapper.style.display = "none"; // nunca mostra para operador / fora do ADM
+  } else {
+    applyJumpVisibility(); // respeita preferência do ADM
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (chkShowJump) {
+    chkShowJump.checked = getStoredShowJump();
+    chkShowJump.addEventListener("change", () => applyJumpVisibility());
+  }
+  // Aplica estado inicial do jump (considerando admin/operador)
+  updateJumpAdminVisibility();
 });
 
 // =====================================================
@@ -599,7 +638,7 @@ $("#btnDelScreen")?.addEventListener("click", () => {
     delete roteiros[currentId];
     try { deleteScreenFromFirebase(delId); } catch(_) {}
     alert("Tela removida.");
-    buildJumpList();
+    if (isAdmin) buildJumpList();
     $("#admPanel")?.classList.remove("open");
   }
 });
@@ -610,7 +649,12 @@ $("#btnToggleMode")?.addEventListener("click", () => {
   $("#admPanel")?.classList.toggle("open", isAdmin);
   const toggle = $("#btnToggleMode");
   if (toggle) toggle.textContent = isAdmin ? "👤 Operador" : "⚙️ ADM";
-  if (isAdmin) loadScreen(historyStack.at(-1) || "inicio");
+  updateJumpAdminVisibility();
+  if (isAdmin) {
+    loadScreen(historyStack.at(-1) || "inicio");
+    buildJumpList();
+    if (jumpSelect) jumpSelect.value = historyStack.at(-1) || "inicio";
+  }
 });
 $("#btnAdmClose")?.addEventListener("click", () => {
   if (IS_OPERADOR_PAGE) return; // bloqueado
@@ -618,6 +662,7 @@ $("#btnAdmClose")?.addEventListener("click", () => {
   $("#admPanel")?.classList.remove("open");
   const toggle = $("#btnToggleMode");
   if (toggle) toggle.textContent = "⚙️ ADM";
+  updateJumpAdminVisibility();
 });
 
 // =====================================================
@@ -669,6 +714,7 @@ async function bootstrap() {
   if (IS_OPERADOR_PAGE) {
     $("#btnToggleMode")?.remove();
     $("#admPanel")?.remove();
+    jumpWrapper?.remove();   // 👉 remove seletor de telas no operador
     isAdmin = false;
   }
 
@@ -690,6 +736,9 @@ async function bootstrap() {
     console.error(err);
     alert("Erro ao carregar os roteiros. Verifique os arquivos JSON ou Firebase.");
   }
+
+  // Ajusta a visibilidade do Jump conforme modo atual
+  updateJumpAdminVisibility();
 }
 
 document.addEventListener("DOMContentLoaded", bootstrap);
