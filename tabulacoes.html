@@ -5,171 +5,132 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tabulações</title>
   <style>
-    :root {
-      --bg: #0f1113;
-      --panel: #15181b;
-      --panel-2: #1b2024;
-      --text: #f5f7fa;
-      --muted: #aab0b6;
-      --border: #22292f;
-      --badge-bg: #21272d;
-      --badge-border: #2a3138;
-      --accent: #00c853;
-      --accent-2: #00e676;
-      --shadow: 0 12px 34px rgba(0,0,0,.35);
+    :root{
+      --bg:#0f1113; --panel:#15181b; --panel-2:#1b2024; --text:#f5f7fa; --muted:#aab0b6;
+      --border:#22292f; --badge-bg:#21272d; --badge-border:#2a3138;
+      --accent:#00c853; --accent-2:#00e676; --shadow:0 12px 34px rgba(0,0,0,.35);
     }
-    body[data-theme="light"] {
-      --bg: #ffffff;
-      --panel: #ffffff;
-      --panel-2: #f7f7f8;
-      --text: #1b1f24;
-      --muted: #666;
-      --border: #e5e7eb;
-      --badge-bg: #f3f4f6;
-      --badge-border: #e5e7eb;
-      --accent: #ff6d00;
-      --accent-2: #ffa000;
-      --shadow: 0 8px 20px rgba(0,0,0,.08);
+    body[data-theme="light"]{
+      --bg:#fff; --panel:#fff; --panel-2:#f7f7f8; --text:#1b1f24; --muted:#666;
+      --border:#e5e7eb; --badge-bg:#f3f4f6; --badge-border:#e5e7eb;
+      --accent:#ff6d00; --accent-2:#ffa000; --shadow:0 8px 20px rgba(0,0,0,.08);
     }
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color: var(--text);
-      background: var(--bg);
-      min-height: 100vh;
-      padding: 24px;
-      display: flex;
-      justify-content: center;
+    *{ box-sizing:border-box }
+    body{
+      margin:0; font-family:system-ui,Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--text);
+      min-height:100vh; display:flex; justify-content:center; padding:20px;
     }
-    .container { width: 100%; max-width: 760px; }
+    .container{ width:100%; max-width:760px }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    header h1 { margin: 0; font-size: 22px; color: var(--accent); }
-    .muted { color: var(--muted); margin: 4px 0 0; }
+    header{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px }
+    header h1{ margin:0; font-size:22px; color:var(--accent) }
+    .muted{ color:var(--muted) }
 
-    .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .select {
-      border: 1px solid var(--badge-border);
-      background: var(--panel-2);
-      color: var(--text);
-      padding: 8px 12px;
-      border-radius: 10px;
-      min-width: 260px;
-      outline: none;
-    }
-    .badge {
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: var(--badge-bg);
-      color: var(--text);
-      border: 1px solid var(--badge-border);
-      cursor: pointer;
-      font-weight: 600;
+    .toolbar{ display:flex; gap:8px; flex-wrap:wrap }
+    .select,.badge{
+      border:1px solid var(--badge-border); background:var(--panel-2); color:var(--text);
+      padding:8px 12px; border-radius:10px; cursor:pointer;
     }
 
-    main { margin-top: 6px; }
-    .item {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      margin: 12px 0;
-      text-align: center;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-      transition: background .2s;
-    }
-    .item:hover { background: var(--panel-2); }
-    .item-title { font-weight: 700; font-size: 18px; }
+    main{ margin-top:10px }
 
-    /* ====== Modal ====== */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.75);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 20px;
+    /* ===== LISTA ===== */
+.list-container{ display:flex; flex-direction:column; gap:12px }
+.list-item{
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:12px; padding:14px 18px; cursor:pointer;
+  transition:background .25s ease, box-shadow .25s ease;
+  position:relative;
 }
-.modal-backdrop.open { display: flex; }
+.list-item:hover{ background:var(--panel-2); box-shadow:0 4px 14px rgba(0,0,0,.15) }
+.list-item h3{ margin:0 0 6px; font-size:18px; color:var(--accent) }
+.list-item p{ margin:0; font-size:14px; line-height:1.5; color:var(--muted) }
 
-.modal {
-  background: var(--panel);
-  border-radius: 20px;
-  padding: 32px 28px;
-  max-width: 900px;     /* maior largura */
-  width: 100%;
-  max-height: 85vh;     /* limita altura pra não sair da tela */
-  overflow-y: auto;     /* rolagem caso texto seja muito grande */
-  box-shadow: var(--shadow);
-  animation: fadeIn .25s ease;
+.item-actions{
+  position:absolute; top:10px; right:10px;
+  display:flex; gap:6px; opacity:0; transition:opacity .25s ease;
 }
+.list-item:hover .item-actions{ opacity:1 }
 
-.modal h2 {
-  margin-top: 0;
-  font-size: 26px;
-  color: var(--accent);
+.action-btn{
+  border:none; background:transparent; color:var(--muted);
+  cursor:pointer; font-size:16px; padding:4px; border-radius:6px;
+  transition:background .2s;
 }
-.modal p {
-  line-height: 1.8;
-  font-size: 17px;
-  white-space: pre-wrap;
-  margin-top: 16px;
-}
-.modal footer {
-  margin-top: 24px;
-  text-align: right;
-}
-.modal footer .badge {
-  padding: 10px 16px;
-  font-size: 14px;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px) scale(.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
+.action-btn:hover{ background:var(--badge-bg); color:var(--accent) }
 
 
-    /* ====== Painel ADM ====== */
-    .adm {
-      position: fixed; top: 0; right: 0; bottom: 0;
-      width: 340px; max-width: 90vw;
-      background: var(--panel);
-      border-left: 1px solid var(--border);
-      box-shadow: -20px 0 40px rgba(0,0,0,.35);
-      padding: 14px 14px 70px;
-      transform: translateX(100%);
-      transition: transform .28s ease;
-      z-index: 1200;
-      display: none;
+    /* ===== BLOCO ===== */
+    .stack-stage{ min-height:calc(100vh - 160px); display:grid; place-items:center }
+    .stack-container{
+      position:relative; width:100%; max-width:820px; height:60vh;
+      display:flex; justify-content:center; margin:0 auto;
     }
-    .adm.open { transform: translateX(0); display: block; }
-    .adm > header {
-      font-weight: 700; margin-bottom: 10px;
-      display: flex; justify-content: space-between; align-items: center;
+    .tab-card{
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:50%; max-width:640px; min-width:280px;
+      min-height:260px; max-height:70vh; overflow-y:auto;
+
+      background:var(--panel);
+      border:3px solid var(--accent);            /* borda dinâmica (verde/laranja) */
+      border-radius:36px;                         /* cantos ovais */
+      padding:32px 24px;
+      text-align:center;
+      box-shadow:0 22px 40px rgba(0,0,0,.28);
+      transition:transform .35s ease, opacity .35s ease;
+      cursor:grab; z-index:1;
     }
-    .adm input, .adm textarea {
-      width:100%; border:1px solid var(--badge-border);
-      background: var(--panel-2); color: var(--text);
+    .tab-card:active{ cursor:grabbing }
+    .tab-card h3{ margin:0 0 16px; font-size:24px; font-weight:700; color:var(--accent); text-align:center }
+    .tab-card p{ margin:0; font-size:16px; line-height:1.65; text-align:left; color:var(--text); white-space:pre-wrap }
+
+    /* sobreposição visual elegante */
+    .stack-container .tab-card:nth-child(2){
+      transform:translate(-48%,-50%) scale(0.97); opacity:.85;
+    }
+    .stack-container .tab-card:nth-child(3){
+      transform:translate(-46%,-50%) scale(0.94); opacity:.7;
+    }
+
+    /* ===== MODAL (visualização) ===== */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.75);
+      display:none; align-items:center; justify-content:center; z-index:2000; padding:20px;
+    }
+    .modal-backdrop.open{ display:flex }
+    .modal{
+      background:var(--panel); border-radius:20px; padding:28px 24px;
+      max-width:900px; width:100%; max-height:85vh; overflow-y:auto; box-shadow:var(--shadow);
+      animation:fadeIn .25s ease;
+    }
+    .modal h2{ margin-top:0; font-size:24px; color:var(--accent) }
+    .modal p{ margin:14px 0 0; line-height:1.75; font-size:16px; white-space:pre-wrap }
+    .modal footer{ margin-top:18px; display:flex; gap:8px; justify-content:flex-end }
+    .btn{ border:1px solid var(--badge-border); background:var(--badge-bg); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer }
+    .btn.primary{ background:linear-gradient(90deg,var(--accent),var(--accent-2)); border:none; color:#06140b }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(12px) scale(.98)} to{opacity:1; transform:translateY(0) scale(1)} }
+
+    /* ===== PAINEL ADM ===== */
+    .adm{
+      position:fixed; top:0; right:0; bottom:0; width:340px; max-width:90vw;
+      background:var(--panel); border-left:1px solid var(--border);
+      box-shadow:-20px 0 40px rgba(0,0,0,.35);
+      padding:14px 14px 70px; transform:translateX(100%); transition:transform .28s ease;
+      z-index:2200; display:none;
+    }
+    .adm.open{ transform:translateX(0); display:block }
+    .adm > header{ font-weight:700; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center }
+    .adm input,.adm textarea{
+      width:100%; border:1px solid var(--badge-border); background:var(--panel-2); color:var(--text);
       border-radius:10px; padding:8px 10px; outline:none;
     }
-    .adm textarea { min-height: 90px; resize: vertical; }
-    .adm-footer { position:absolute; left:14px; right:14px; bottom:12px; display:flex; gap:8px; }
-    .btn-mini { border:1px solid var(--badge-border); background: var(--badge-bg); color: var(--text); padding:8px 10px; border-radius:10px; cursor:pointer; }
-    .btn-mini.primary { background: linear-gradient(90deg, var(--accent), var(--accent-2)); border:none; color:#06140b; }
-    .btn-mini.danger  { background:#2a1211; border-color:#542625; color:#ffdede; }
+    .adm textarea{ min-height:120px; resize:vertical }
+    .adm-footer{ position:absolute; left:14px; right:14px; bottom:12px; display:flex; gap:8px }
+    .btn-mini{ border:1px solid var(--badge-border); background:var(--badge-bg); color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer }
+    .btn-mini.primary{ background:linear-gradient(90deg,var(--accent),var(--accent-2)); border:none; color:#06140b }
+    .btn-mini.danger{ background:#2a1211; border-color:#542625; color:#ffdede }
   </style>
 </head>
 <body>
@@ -180,22 +141,27 @@
         <p class="muted">Painel de registro e edição</p>
       </div>
       <div class="toolbar">
-        <input id="searchInput" class="select" type="text" placeholder="🔍 Pesquisar tabulação..." />
+        <input id="searchInput" class="select" type="text" placeholder="🔍 Pesquisar..." />
+        <select id="viewMode" class="select">
+          <option value="lista">📋 Lista</option>
+          <option value="blocos">🗂 Blocos</option>
+        </select>
         <button id="btnToggleTheme" class="badge">🌗 Tema</button>
-        <button id="btnToggleAdm" class="badge">⚙️ ADM</button>
+        <button id="btnToggleAdm" class="badge" style="display:none;">⚙️ ADM</button>
       </div>
     </header>
 
     <main id="tabulacoesList"></main>
   </div>
 
-  <!-- Modal -->
+  <!-- Modal de visualização -->
   <div id="modalBackdrop" class="modal-backdrop">
     <div class="modal">
       <h2 id="modalTitle"></h2>
       <p id="modalDesc"></p>
       <footer>
-        <button id="btnCloseModal" class="badge">Fechar</button>
+        <button id="btnEditFromModal" class="btn" style="display:none;">Editar</button>
+        <button id="btnCloseModal" class="btn">Fechar</button>
       </footer>
     </div>
   </div>
@@ -204,12 +170,14 @@
   <aside class="adm" id="admPanel">
     <header>
       <div id="admTitle">Nova Tabulação</div>
-      <button id="btnAdmClose" class="badge">✕</button>
+      <button id="btnAdmClose" class="btn">✕</button>
     </header>
+
     <label>Nome</label>
     <input type="text" id="fldTitulo" placeholder="Ex: Cliente desligou" />
-    <label>Descrição</label>
+    <label style="margin-top:8px;">Descrição</label>
     <textarea id="fldDescricao" placeholder="Texto/roteiro da tabulação"></textarea>
+
     <div class="adm-footer">
       <button id="btnSave" class="btn-mini primary">Salvar</button>
       <button id="btnDel" class="btn-mini danger" style="display:none;">Excluir</button>
@@ -219,122 +187,285 @@
   <script type="module">
     import { db, auth } from "./firebase.js";
     import {
-      collection, addDoc, setDoc, deleteDoc, doc,
-      onSnapshot, query, orderBy
+      collection, query, orderBy, onSnapshot,
+      addDoc, setDoc, deleteDoc, doc
     } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
+    /* ===== refs ===== */
     const list = document.getElementById("tabulacoesList");
+    const viewMode = document.getElementById("viewMode");
     const searchInput = document.getElementById("searchInput");
-    const admPanel = document.getElementById("admPanel");
-    const fldTitulo = document.getElementById("fldTitulo");
-    const fldDescricao = document.getElementById("fldDescricao");
+    const btnToggleTheme = document.getElementById("btnToggleTheme");
     const btnToggleAdm = document.getElementById("btnToggleAdm");
-    const btnAdmClose = document.getElementById("btnAdmClose");
-    const btnSave = document.getElementById("btnSave");
-    const btnDel = document.getElementById("btnDel");
-    const admTitle = document.getElementById("admTitle");
 
     const modalBackdrop = document.getElementById("modalBackdrop");
     const modalTitle = document.getElementById("modalTitle");
     const modalDesc = document.getElementById("modalDesc");
     const btnCloseModal = document.getElementById("btnCloseModal");
+    const btnEditFromModal = document.getElementById("btnEditFromModal");
 
+    const admPanel = document.getElementById("admPanel");
+    const admTitle = document.getElementById("admTitle");
+    const btnAdmClose = document.getElementById("btnAdmClose");
+    const btnSave = document.getElementById("btnSave");
+    const btnDel = document.getElementById("btnDel");
+    const fldTitulo = document.getElementById("fldTitulo");
+    const fldDescricao = document.getElementById("fldDescricao");
+
+    /* ===== state ===== */
+    let cacheDocs = [];
     let isAdmin = false;
     let editId = null;
-    let cacheDocs = [];
+    let modalDocId = null;
+    let modalDocData = null;
 
-    onAuthStateChanged(auth, (user) => {
+    /* ===== auth ===== */
+    onAuthStateChanged(auth, user => {
       isAdmin = !!user;
       btnToggleAdm.style.display = isAdmin ? "" : "none";
+      btnEditFromModal.style.display = isAdmin ? "" : "none";
     });
 
-    btnToggleAdm.addEventListener("click", () => {
-      if (!isAdmin) return alert("Somente administradores podem usar o painel.");
-      editId = null;
-      fldTitulo.value = "";
-      fldDescricao.value = "";
-      admTitle.textContent = "Nova Tabulação";
-      btnDel.style.display = "none";
-      admPanel.classList.add("open");
-    });
-    btnAdmClose.addEventListener("click", () => admPanel.classList.remove("open"));
-
-    btnSave.addEventListener("click", async () => {
-      if (!isAdmin) return;
-      const titulo = fldTitulo.value.trim();
-      const descricao = fldDescricao.value.trim();
-      if (!titulo) return alert("Informe um título.");
-      try {
-        if (editId) {
-          await setDoc(doc(db, "tabulacoes", editId), { titulo, descricao }, { merge: true });
-        } else {
-          await addDoc(collection(db, "tabulacoes"), { titulo, descricao });
-        }
-        admPanel.classList.remove("open");
-      } catch (e) { console.error(e); }
-    });
-
-    btnDel.addEventListener("click", async () => {
-      if (!isAdmin || !editId) return;
-      if (!confirm("Excluir esta tabulação?")) return;
-      try {
-        await deleteDoc(doc(db, "tabulacoes", editId));
-        admPanel.classList.remove("open");
-      } catch (e) { console.error(e); }
-    });
-
-    function render(docs) {
-      list.innerHTML = "";
-      docs.forEach(d => {
-        const t = d.data();
-        const card = document.createElement("div");
-        card.className = "item";
-        card.innerHTML = `<div class="item-title">${t.titulo || "(sem título)"}</div>`;
-        card.addEventListener("click", () => {
-          modalTitle.textContent = t.titulo || "(sem título)";
-          modalDesc.textContent = t.descricao || "";
-          modalBackdrop.classList.add("open");
-        });
-        list.appendChild(card);
-      });
-    }
-
+    /* ===== Firestore live ===== */
     const q = query(collection(db, "tabulacoes"), orderBy("titulo"));
     onSnapshot(q, (snap) => {
       cacheDocs = snap.docs;
-      applyFilter();
+      render();
     });
 
-    function applyFilter() {
+    /* ===== render ===== */
+    function render(){
       const term = searchInput.value.toLowerCase();
-      const filtered = cacheDocs.filter(d => {
-        const t = d.data();
+      const docs = cacheDocs.filter(d=>{
+        const t=d.data();
         return (t.titulo||"").toLowerCase().includes(term) || (t.descricao||"").toLowerCase().includes(term);
       });
-      render(filtered);
+
+      if(viewMode.value==="lista") renderLista(docs);
+      else renderBlocos(docs);
     }
-    searchInput.addEventListener("input", applyFilter);
 
-    // Modal controls
-    btnCloseModal.addEventListener("click", () => modalBackdrop.classList.remove("open"));
-    modalBackdrop.addEventListener("click", e => {
-      if (e.target === modalBackdrop) modalBackdrop.classList.remove("open");
+    function renderLista(docs){
+  list.innerHTML = `<div class="list-container"></div>`;
+  const container = list.querySelector(".list-container");
+
+  docs.forEach(d=>{
+    const t = d.data();
+    const item = document.createElement("div");
+    item.className = "list-item";
+    item.innerHTML = `
+      <h3>${t.titulo || "(sem título)"}</h3>
+      <p>${t.descricao || ""}</p>
+      ${isAdmin ? `
+        <div class="item-actions">
+          <button class="action-btn" title="Editar">✏️</button>
+          <button class="action-btn" title="Excluir">🗑️</button>
+        </div>
+      ` : ""}
+    `;
+
+    // clique no item abre modal (mas ignora se clicou em ação)
+    item.addEventListener("click", (e)=>{
+      if(e.target.closest(".action-btn")) return;
+      openModal(d.id, t);
     });
-  </script>
 
-  <script>
+    if(isAdmin){
+      const [btnEdit, btnDel] = item.querySelectorAll(".action-btn");
+      btnEdit.addEventListener("click",(e)=>{
+        e.stopPropagation();
+        openAdmForEdit(d.id, t);
+      });
+      btnDel.addEventListener("click",async(e)=>{
+        e.stopPropagation();
+        if(confirm("Excluir esta tabulação?")){
+          await deleteDoc(doc(db,"tabulacoes",d.id));
+        }
+      });
+    }
+
+    container.appendChild(item);
+  });
+}
+
+
+    function renderBlocos(docs){
+      list.innerHTML = `
+        <div class="stack-stage">
+          <div class="stack-container" id="stackContainer"></div>
+        </div>`;
+      const container = document.getElementById("stackContainer");
+
+      docs.forEach((d,i)=>{
+        const t = d.data();
+        const card = document.createElement("div");
+        card.className = "tab-card";
+        card.style.zIndex = (docs.length - i).toString();
+        card.innerHTML = `<h3>${t.titulo || "(sem título)"}</h3><p>${t.descricao || ""}</p>`;
+
+        // clique simples -> passa (carrossel)
+        card.addEventListener("click", ()=> rotateCard(card,"right"));
+        // duplo clique -> abre modal p/ ver/editar
+        card.addEventListener("dblclick", (e)=>{
+          e.stopPropagation();
+          openModal(d.id, t);
+        });
+
+        container.appendChild(card);
+      });
+
+      initSwipe();
+    }
+
+    /* ===== modal ===== */
+    function openModal(id, data){
+      modalDocId = id;
+      modalDocData = data;
+      modalTitle.textContent = data.titulo || "(sem título)";
+      modalDesc.textContent = data.descricao || "";
+      modalBackdrop.classList.add("open");
+    }
+    btnCloseModal.addEventListener("click", ()=> modalBackdrop.classList.remove("open"));
+    modalBackdrop.addEventListener("click", e=>{
+      if(e.target === modalBackdrop) modalBackdrop.classList.remove("open");
+    });
+    btnEditFromModal.addEventListener("click", ()=>{
+      if(!isAdmin || !modalDocId) return;
+      openAdmForEdit(modalDocId, modalDocData);
+      modalBackdrop.classList.remove("open");
+    });
+
+    /* ===== ADM handlers ===== */
+    btnToggleAdm.addEventListener("click", ()=>{
+      if(!isAdmin) return alert("Somente administradores podem usar o painel.");
+      openAdmForNew();
+    });
+    btnAdmClose.addEventListener("click", ()=> admPanel.classList.remove("open"));
+
+    function openAdmForNew(){
+      editId = null;
+      admTitle.textContent = "Nova Tabulação";
+      fldTitulo.value = "";
+      fldDescricao.value = "";
+      btnDel.style.display = "none";
+      admPanel.classList.add("open");
+    }
+
+    function openAdmForEdit(id, data){
+      editId = id;
+      admTitle.textContent = "Editar Tabulação";
+      fldTitulo.value = data.titulo || "";
+      fldDescricao.value = data.descricao || "";
+      btnDel.style.display = "";
+      admPanel.classList.add("open");
+    }
+
+    btnSave.addEventListener("click", async ()=>{
+      if(!isAdmin) return;
+      const titulo = fldTitulo.value.trim();
+      const descricao = fldDescricao.value.trim();
+      if(!titulo) return alert("Informe um título.");
+
+      try{
+        if(editId){
+          await setDoc(doc(db,"tabulacoes",editId), { titulo, descricao }, { merge:true });
+        }else{
+          await addDoc(collection(db,"tabulacoes"), { titulo, descricao });
+        }
+        admPanel.classList.remove("open");
+      }catch(e){ console.error(e); alert("Erro ao salvar."); }
+    });
+
+    btnDel.addEventListener("click", async ()=>{
+      if(!isAdmin || !editId) return;
+      if(!confirm("Excluir esta tabulação?")) return;
+      try{
+        await deleteDoc(doc(db,"tabulacoes",editId));
+        admPanel.classList.remove("open");
+      }catch(e){ console.error(e); alert("Erro ao excluir."); }
+    });
+
+    /* ===== swipe/loop blocos ===== */
+    function initSwipe(){
+      const container = document.getElementById("stackContainer");
+      let cards = [...container.querySelectorAll(".tab-card")];
+
+      function reorder(){
+        cards.forEach((c,i)=> c.style.zIndex = (cards.length - i).toString());
+      }
+
+      function rotateCard(card, dir){
+        card.style.transition = "transform .35s ease, opacity .35s ease";
+        card.style.transform = `translate(${dir==="right"?"120%":"-120%"}, -50%) rotate(${dir==="right"?8:-8}deg)`;
+        card.style.opacity = "0";
+
+        setTimeout(()=>{
+          card.remove();
+          container.appendChild(card);                 // 🔄 loop infinito
+          card.style.transition = "none";
+          card.style.transform = "translate(-50%,-50%)";
+          card.style.opacity = "1";
+          cards = [...container.querySelectorAll(".tab-card")];
+          reorder();
+        }, 350);
+      }
+
+      cards.forEach(card=>{
+        let startX=0, deltaX=0, dragging=false;
+
+        const onDown = e=>{
+          dragging = true;
+          startX = (e.clientX ?? e.touches?.[0]?.clientX ?? 0);
+          card.style.transition = "none";
+        };
+        const onMove = e=>{
+          if(!dragging) return;
+          const x = (e.clientX ?? e.touches?.[0]?.clientX ?? startX);
+          deltaX = x - startX;
+          card.style.transform = `translate(calc(-50% + ${deltaX}px), -50%) rotate(${deltaX/25}deg)`;
+        };
+        const finish = ()=>{
+          if(!dragging) return;
+          dragging = false;
+          if(Math.abs(deltaX) > 120){
+            rotateCard(card, deltaX > 0 ? "right" : "left");
+          }else{
+            card.style.transition = "transform .3s ease";
+            card.style.transform = "translate(-50%,-50%)";
+          }
+          deltaX = 0;
+        };
+
+        card.addEventListener("pointerdown", onDown);
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", finish);
+        window.addEventListener("pointercancel", finish);
+      });
+
+      reorder();
+
+      // expõe função global para clique simples no renderBlocos
+      window.rotateCard = rotateCard;
+    }
+
+    // input e seletor
+    searchInput.addEventListener("input", render);
+    viewMode.addEventListener("change", render);
+
+    // tema
     (function(){
-      const btn = document.getElementById("btnToggleTheme");
       const stored = localStorage.getItem("theme");
-      if (stored) document.body.setAttribute("data-theme", stored);
-      else if (window.matchMedia("(prefers-color-scheme: light)").matches) document.body.setAttribute("data-theme","light");
+      if(stored) document.body.setAttribute("data-theme", stored);
+      else if(window.matchMedia("(prefers-color-scheme: light)").matches)
+        document.body.setAttribute("data-theme","light");
       else document.body.setAttribute("data-theme","dark");
-      btn.addEventListener("click", () => {
+
+      btnToggleTheme.addEventListener("click", ()=>{
         const cur = document.body.getAttribute("data-theme");
-        const next = cur==="light"?"dark":"light";
-        document.body.setAttribute("data-theme",next);
-        localStorage.setItem("theme",next);
+        const next = cur==="light" ? "dark" : "light";
+        document.body.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
       });
     })();
   </script>
