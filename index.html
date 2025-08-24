@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Roteiro de Atendimento</title>
   <link rel="stylesheet" href="roteiro.css" />
-  <link rel="icon" href="data:,">
+  <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
 </head>
 <body>
   <div class="container">
     <!-- Cabeçalho -->
     <header>
       <div>
-        <h1>Roteiro de Atendimento</h1>
+        <h1 class="title">Roteiro de Atendimento</h1>
       </div>
       <div class="toolbar">
         <!-- Campo de pesquisa -->
@@ -35,7 +35,7 @@
     <!-- Alerta global abaixo da barra -->
     <div id="tabAlert" class="tab-alert">
     <div class="msg">
-        Caso a ligação seja interrompida ou cliente desligou, verifique a tabulação no ícone abaixo ✔
+        <b><i>Caso a ligação seja interrompida ou cliente desligou, verifique a tabulação no ícone (✔) abaixo</i></b> ⬇️
     </div>
       <span class="arrow"></span>
     </div>
@@ -281,31 +281,6 @@ function setColor(fieldId) {
   if (!color) return;
   wrapText(fieldId, `<span style="color:${color}">`, `</span>`);
 }
-</script>
-
-<script>
-  // ===== Aplicar tema salvo no localStorage =====
-  const savedTheme = localStorage.getItem("theme") || "dark";
-  if (savedTheme === "light") {
-    document.body.setAttribute("data-theme","light");
-  } else {
-    document.body.removeAttribute("data-theme");
-  }
-
-  // ===== Alternar tema pelo botão já existente =====
-  const btnToggleTheme = document.getElementById("btnToggleTheme");
-  if (btnToggleTheme) {
-    btnToggleTheme.addEventListener("click", () => {
-      const current = localStorage.getItem("theme") || "dark";
-      const newTheme = current === "dark" ? "light" : "dark";
-      localStorage.setItem("theme", newTheme);
-      if (newTheme === "light") {
-        document.body.setAttribute("data-theme","light");
-      } else {
-        document.body.removeAttribute("data-theme");
-      }
-    });
-  }
 </script>
 
 </body>

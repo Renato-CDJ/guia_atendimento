@@ -250,6 +250,45 @@ function hideTabulacao() {
 }
 
 // =====================================================
+// Alerta Global (mostrado só ao iniciar)
+// =====================================================
+let tabAlertTimer = null;
+
+function startTabAlertLoop() {
+  const tabAlert = document.getElementById("tabAlert");
+  if (!tabAlert) return;
+
+  // 🔄 limpa qualquer loop anterior
+  if (tabAlertTimer) clearInterval(tabAlertTimer);
+
+  const toggleAlert = () => {
+    // reset visibilidade
+    tabAlert.classList.remove("show", "hide");
+
+    // força repaint para reativar animação
+    void tabAlert.offsetWidth;
+
+    // mostra
+    requestAnimationFrame(() => {
+      tabAlert.classList.add("show");
+    });
+
+    // esconde após 2s
+    setTimeout(() => {
+      tabAlert.classList.remove("show");
+      tabAlert.classList.add("hide");
+    }, 3000);
+  };
+
+  // mostra imediatamente ao entrar na tela
+  toggleAlert();
+
+  // repete a cada 3s
+  tabAlertTimer = setInterval(toggleAlert, 7000);
+}
+
+
+// =====================================================
 // Helpers (produtos, chips, etc.)
 // =====================================================
 function uniqueProducts() {
@@ -283,17 +322,14 @@ async function reloadRoteirosForPessoa(pessoaSel) {
   const inicioSec = byId("inicio");
   $("#chipsProduto", inicioSec)?.replaceChildren(document.createTextNode("Carregando..."));
 
-  // limpa produto ao trocar de pessoa
   state.produto = "";
   updateStartEnabled();
 
   const json = await loadRoteirosJSON(pessoaSel);
   flattenProducts(json);
 
-  // Reconstroi chips de produto na tela atual de início
   if (inicioSec) buildProductChips(inicioSec);
 
-  // Como o conjunto de telas mudou, atualiza jump/progresso
   if (isAdmin) buildJumpList();
   updateProgress();
 }
@@ -310,7 +346,6 @@ function renderScreen(def) {
   <div class="script" style="font-size:${def.fontSizeBody || '18px'}; padding:${def.paddingBody || '16px'}">${def.body}</div>
 `;
 
-  // Ícone ✔ de Tabulação (no canto do quadro)
   const tabIcon = document.createElement("button");
   tabIcon.className = "tab-icon";
   tabIcon.textContent = "✔";
@@ -324,11 +359,9 @@ function renderScreen(def) {
 
   flow.appendChild(sec);
 
-  // Lógica especial para tela inicial: chips e Start
   if (def.id === "inicio") {
     updateStartEnabled();
 
-    // atendimento
     $$("#chipsAtendimento .chip", sec).forEach(btn => {
       btn.onclick = () => {
         state.atendimento = btn.dataset.value;
@@ -338,10 +371,8 @@ function renderScreen(def) {
       };
     });
 
-    // produto
     buildProductChips(sec);
 
-    // pessoa
     $$("#chipsPessoa .chip", sec).forEach(btn => {
       btn.onclick = async () => {
         state.pessoa = btn.dataset.value;
@@ -359,10 +390,8 @@ function renderScreen(def) {
   }
 }
 
-// Monta os botões no container global (abaixo do quadro)
 function buildGlobalButtons(def) {
   const container = globalActions;
-  // Fallback: se não houver container global, cria/usa um dentro da tela ativa
   const useFallback = !container;
   const host = useFallback ? byId(def.id).querySelector(".actions") || byId(def.id).appendChild(Object.assign(document.createElement("div"),{className:"actions"})) : container;
 
@@ -370,7 +399,6 @@ function buildGlobalButtons(def) {
 
   const add = (btn) => host && host.appendChild(btn);
 
-  // Botão Voltar (exceto início)
   if (def.id !== "inicio") {
     const backBtn = document.createElement("button");
     backBtn.className = "btn";
@@ -383,22 +411,24 @@ function buildGlobalButtons(def) {
     add(backBtn);
   }
 
-  // Botões definidos pela tela
   (def.buttons || []).forEach(b => {
     const btn = document.createElement("button");
     btn.className = "btn" + (b.primary ? " btn-primary" : "");
-
     btn.textContent = b.label;
 
     if (def.id === "inicio" && b.next === "__start") {
-      btn.id = "btnStart";
-      btn.disabled = true;
-      btn.onclick = () => {
-        const produto = state.produto;
-        const startId = startByProduct[produto];
-        if (!produto || !startId) return alert("Selecione um produto válido para iniciar.");
-        go(startId);
-      };
+  btn.id = "btnStart";
+  btn.disabled = true;
+  btn.onclick = () => {
+    const produto = state.produto;
+    const startId = startByProduct[produto];
+    if (!produto || !startId) return alert("Selecione um produto válido para iniciar.");
+    go(startId);
+
+    // 🔔 só mostra o alerta ao clicar em iniciar
+    showTabAlert();
+  };
+
     } else if (def.id === "inicio" && b.label === "Resetar") {
       btn.onclick = () => hardReset();
     } else if (def.id === "fim" && b.next === "inicio") {
@@ -430,7 +460,11 @@ function go(id) {
   historyStack.push(id);
   if (isAdmin) buildJumpList();
   show(id);
+
+  // 🔔 inicia o alerta sempre que mudar de tela
+  startTabAlertLoop();
 }
+
 function byId(id) { return $(`.screen[data-id="${id}"]`); }
 
 // Re-render seguro da tela atual (para refletir alterações via ADM)
@@ -743,18 +777,6 @@ async function bootstrap() {
 
 document.addEventListener("DOMContentLoaded", bootstrap);
 
-// Mostra e esconde o alerta global em loop
-function startTabAlert() {
-  const tabAlert = document.getElementById("tabAlert");
-  if (!tabAlert) return;
-  const toggleAlert = () => {
-    tabAlert.classList.remove("hide");
-    setTimeout(() => tabAlert.classList.add("hide"), 5000);
-  };
-  toggleAlert();
-  setInterval(toggleAlert, 15000);
-}
-document.addEventListener("DOMContentLoaded", startTabAlert);
 
 // =====================================================
 // Pesquisa rápida (Situações + Tabulações + Canais)

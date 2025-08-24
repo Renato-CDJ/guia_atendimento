@@ -5,16 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Roteiro de Atendimento - Operador</title>
   <link rel="stylesheet" href="roteiro.css" />
-  <link rel="icon" href="data:,">
+  <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
+
+  <!-- Variáveis e título animado (mesmo comportamento do login) -->
+  <style>
+    :root{
+      --accent-dark: #00c853;
+      --accent2-dark: #00e676;
+      --accent-light: #ff5722;
+      --accent2-light: #ff9800;
+    }
+    .title{
+      font-size: clamp(34px, 5vw, 60px);
+      font-weight: 900;
+      margin: 10px 0 12px;
+      background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow-dark 3s infinite ease-in-out;
+    }
+    body[data-theme="light"] .title{
+      background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
+      -webkit-background-clip: text;
+      background-clip: text;
+      animation: glow-light 3s infinite ease-in-out;
+    }
+    @keyframes glow-dark{
+      0%,100%{ filter: drop-shadow(0 0 6px rgba(0,200,83,.5)); }
+      50%    { filter: drop-shadow(0 0 18px rgba(0,200,83,.9)); }
+    }
+    @keyframes glow-light{
+      0%,100%{ filter: drop-shadow(0 0 6px rgba(255,87,34,.5)); }
+      50%    { filter: drop-shadow(0 0 18px rgba(255,87,34,.9)); }
+    }
+  </style>
 </head>
 <body data-role="operador">
   <div class="container">
     <!-- Cabeçalho -->
     <header>
-      <div><h1>Roteiro de Atendimento</h1></div>
+      <div><h1 class="title">Roteiro de Atendimento</h1></div>
       <div class="toolbar">
         <input type="text" id="searchInput" class="select" placeholder="🔍 Pesquisar..." />
-        
         <button id="btnToggleTheme" class="badge">🌗 Tema</button>
       </div>
     </header>
@@ -27,7 +60,7 @@
     <!-- Alerta -->
     <div id="tabAlert" class="tab-alert">
       <div class="msg">
-        Caso a ligação seja interrompida ou cliente desligou, verifique a tabulação no ícone abaixo ✔
+        <b><i>Caso a ligação seja interrompida ou cliente desligou, verifique a tabulação no ícone (✔) abaixo</i></b> ⬇️
       </div>
       <span class="arrow"></span>
     </div>
@@ -35,7 +68,7 @@
     <!-- Fluxo -->
     <main id="flow"></main>
 
-    <!-- 🔹 Container dos botões globais (mantido igual ao index) -->
+    <!-- Botões globais -->
     <div id="globalActions" class="global-actions"></div>
   </div>
 
@@ -71,7 +104,7 @@
   <!-- App -->
   <script src="roteiro.js"></script>
 
-  <!-- Bloco de notas (única área editável) -->
+  <!-- Bloco de notas -->
   <script type="module">
     import { db } from "./firebase.js";
     import { doc, getDoc, setDoc }
@@ -113,30 +146,6 @@
     loadNotes();
   </script>
 
-  <script>
-  // ===== Aplicar tema salvo no localStorage =====
-  const savedTheme = localStorage.getItem("theme") || "dark";
-  if (savedTheme === "light") {
-    document.body.setAttribute("data-theme","light");
-  } else {
-    document.body.removeAttribute("data-theme");
-  }
-
-  // ===== Alternar tema pelo botão já existente =====
-  const btnToggleTheme = document.getElementById("btnToggleTheme");
-  if (btnToggleTheme) {
-    btnToggleTheme.addEventListener("click", () => {
-      const current = localStorage.getItem("theme") || "dark";
-      const newTheme = current === "dark" ? "light" : "dark";
-      localStorage.setItem("theme", newTheme);
-      if (newTheme === "light") {
-        document.body.setAttribute("data-theme","light");
-      } else {
-        document.body.removeAttribute("data-theme");
-      }
-    });
-  }
-</script>
-
+  
 </body>
 </html>
