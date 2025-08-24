@@ -152,15 +152,15 @@ function buildSystemScreens() {
     title: "Início",
     body: `
       <div class="grid-3">
-        <label>Tipo de atendimento</label>
+        <label><b>Tipo de atendimento</b></label>
         <div class="chips" id="chipsAtendimento">
-          <button class="chip" data-value="ativo">Ativo</button>
-          <button class="chip" data-value="receptivo">Receptivo</button>
+          <button class="chip" data-value="ativo"><b>Ativo</b></button>
+          <button class="chip" data-value="receptivo"><b>Receptivo</b></button>
         </div>
-        <label>Pessoa</label>
+        <label><b>Pessoa</b></label>
         <div class="chips" id="chipsPessoa">
-          <button class="chip" data-value="fisica">Física</button>
-          <button class="chip" data-value="juridica">Jurídica</button>
+          <button class="chip" data-value="fisica"><b>Física</b></button>
+          <button class="chip" data-value="juridica"><b>Jurídica</b></button>
         </div>
         <label><b>Produto</b></label>
         <div class="chips" id="chipsProduto"></div>
