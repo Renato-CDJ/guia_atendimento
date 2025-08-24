@@ -78,12 +78,15 @@
       margin-bottom: 40px;
       background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
       -webkit-background-clip: text;
+      background-clip: text;   /* compatibilidade */
+
       -webkit-text-fill-color: transparent;
       animation: glow-dark 3s infinite ease-in-out;
     }
     body[data-theme="light"] .title {
       background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
       -webkit-background-clip: text;
+      background-clip: text;   /* compatibilidade */
       animation: glow-light 3s infinite ease-in-out;
     }
 
@@ -124,11 +127,13 @@
       background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;   /* compatibilidade */
       animation: glow-dark 3s infinite ease-in-out;
     }
     body[data-theme="light"] .role-card .label {
       background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
       -webkit-background-clip: text;
+      background-clip: text;   /* compatibilidade */
       animation: glow-light 3s infinite ease-in-out;
     }
 
