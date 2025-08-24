@@ -1,186 +1,314 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Acesso ao Sistema</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Roteiro de Atendimento - Login</title>
+  <link rel="icon" href="data:,">
+
   <style>
+    :root {
+      --accent-dark: #00c853;
+      --accent2-dark: #00e676;
+      --accent-light: #ff5722;
+      --accent2-light: #ff9800;
+      --danger: #e53935;
+    }
+
     body {
-      font-family: system-ui, Arial, sans-serif;
-      background: linear-gradient(135deg, #0077c8, #00c853);
-      height: 100vh;
       margin: 0;
+      height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: #0f1113;
+      color: #f5f7fa;
+      transition: background .5s ease, color .5s ease;
+      overflow: hidden;
+    }
+    body[data-theme="light"] {
+      background: #ffffff;
+      color: #1a1a1a;
+    }
+    
+
+    /* Barra topo */
+    .topbar {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 20px;
+      gap: 10px;
+      box-sizing: border-box;
+    }
+
+    /* Botão de Tema */
+    .theme-toggle {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 18px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: all .3s ease;
+    }
+    .theme-toggle:hover { transform: scale(1.1); }
+
+    /* Botão ADM */
+    .btn-adm {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 28px;
+      transition: transform 0.3s ease;
+    }
+    .btn-adm:hover {
+      transform: scale(1.2);
+    }
+
+    /* Título */
+    .title {
+      font-size: clamp(34px, 5vw, 60px);
+      font-weight: 900;
+      text-align: center;
+      margin-top: 230px; 
+      margin-bottom: 40px;
+      background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow-dark 3s infinite ease-in-out;
+    }
+    body[data-theme="light"] .title {
+      background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
+      -webkit-background-clip: text;
+      animation: glow-light 3s infinite ease-in-out;
+    }
+
+    @keyframes glow-dark {
+      0%,100% { filter: drop-shadow(0 0 6px rgba(0,200,83,.5)); }
+      50% { filter: drop-shadow(0 0 18px rgba(0,200,83,.9)); }
+    }
+    @keyframes glow-light {
+      0%,100% { filter: drop-shadow(0 0 6px rgba(255,87,34,.5)); }
+      50% { filter: drop-shadow(0 0 18px rgba(255,87,34,.9)); }
+    }
+
+    /* Ícone Operador centralizado */
+    .role-card {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
       justify-content: center;
-    }
-    .login-box {
-      background: #fff;
-      padding: 40px;
-      border-radius: 14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.25);
-      width: 100%;
-      max-width: 380px;
-      text-align: center;
-      animation: fadeIn 0.6s ease;
-    }
-    h1 {
-      margin-bottom: 25px;
-      color: #0077c8;
-      font-size: 24px;
-    }
-    .role-btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 8px;
-      font-size: 17px;
-      font-weight: bold;
+      align-items: center;
       cursor: pointer;
-      transition: transform 0.2s, filter 0.2s;
+      text-align: center;
+      transition: transform 0.3s ease;
     }
-    .role-btn:hover {
-      transform: scale(1.02);
-      filter: brightness(1.1);
+    .role-card:hover {
+      transform: scale(1.1);
     }
-    .op-btn {
-      background: linear-gradient(90deg, #00c853, #009624);
-      color: #fff;
+    .role-card .icon {
+      margin-bottom: 10px;
     }
-    .adm-btn {
-      background: linear-gradient(90deg, #0077c8, #004ba0);
-      color: #fff;
+    .role-card .icon img {
+      width: 320px;
+      height: 150px;
+      object-fit: contain;
     }
-    .adm-form {
+    .role-card .label {
+      font-size: 42px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow-dark 3s infinite ease-in-out;
+    }
+    body[data-theme="light"] .role-card .label {
+      background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
+      -webkit-background-clip: text;
+      animation: glow-light 3s infinite ease-in-out;
+    }
+
+    /* Login ADM */
+    .role-inputs {
+      margin-top: 30px;
       display: none;
-      margin-top: 20px;
-      text-align: left;
-      animation: fadeIn 0.4s ease;
-    }
-    .adm-form label {
-      font-size: 14px;
-      font-weight: 500;
-      color: #333;
-    }
-    .adm-form input {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0 14px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 15px;
-    }
-    .adm-form button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      background: linear-gradient(90deg, #0077c8, #004ba0);
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 16px;
-      transition: 0.2s;
-    }
-    .adm-form button:hover { filter: brightness(1.1); }
-    .msg {
-      margin-top: 12px;
-      font-size: 14px;
-      color: #d32f2f;
       text-align: center;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+
+    .role-inputs input {
+      display: block;
+      width: 280px;
+      padding: 12px;
+      margin: 10px auto;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.3);
+      background: rgba(0,0,0,.25);
+      color: inherit;
+      font-size: 16px;
+      outline: none;
+    }
+    body[data-theme="light"] .role-inputs input {
+      background: #fff;
+      border: 1px solid #ccc;
+      color: #1a1a1a;
+    }
+
+    .role-inputs button {
+      width: 300px;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
+      color: #06140b;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform .2s ease, filter .2s ease;
+      margin-top: 10px;
+    }
+    .role-inputs button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    body[data-theme="light"] .role-inputs button {
+      background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
+      color: #fff;
+    }
+
+    .error {
+      margin-top: 10px;
+      color: var(--danger);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    /* Rodapé Área de Qualidade */
+    .quality {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      font-style: italic;
+      font-weight: 600;
+      color: #00e676;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 2px solid #00e676;
+      width: 0;
+      animation: typing 2s steps(20,end), blink .7s step-end infinite alternate, fadeCycle 3s infinite;
+      cursor: default; /* 🔹 impede que seja clicável */
+      pointer-events: none; /* 🔹 garante que não captura cliques */
+    }
+    body[data-theme="light"] .quality {
+      color: #ff5722;
+      border-right-color: #ff5722;
+    }
+
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 200px; }
+    }
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+    @keyframes fadeCycle {
+      0%,70%,100% { opacity: 0; }
+      10%,60% { opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <div class="login-box">
-    <h1>Acesso ao Sistema</h1>
-
-    <!-- Botões principais -->
-    <button class="role-btn op-btn" id="btnOperador">Sou Operador</button>
-    <button class="role-btn adm-btn" id="btnAdm">Sou Administrador</button>
-
-    <!-- Formulário ADM -->
-    <div class="adm-form" id="admForm">
-      <label for="email">E-mail</label>
-      <input type="email" id="email" placeholder="Digite seu e-mail">
-      <label for="password">Senha</label>
-      <input type="password" id="password" placeholder="Digite sua senha">
-      <button id="btnLoginAdm">Entrar como ADM</button>
-      <div class="msg" id="msg"></div>
-    </div>
+  <!-- Topbar -->
+  <div class="topbar">
+    <button id="btnTheme" class="theme-toggle">🌙</button>
+    <button id="btnAdm" class="btn-adm">⚙️</button>
   </div>
 
+  <h1 class="title">Roteiro de Atendimento</h1>
+
+  <!-- Ícone Operador centralizado -->
+  <div class="role-card" id="btnOperador">
+    <div class="icon">
+      <img src="img/operador-de-telemarketing.png" alt="Operador de Telemarketing">
+    </div>
+    <div class="label">Logar</div>
+  </div>
+
+  <!-- Campos login ADM -->
+  <div id="admFields" class="role-inputs">
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Senha" />
+    <button id="loginBtn">Entrar</button>
+    <div id="error" class="error"></div>
+  </div>
+
+  <!-- Assinatura fixa (não clicável) -->
+  <div class="quality">Área de Qualidade</div>
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
+    import { getAuth, signInWithEmailAndPassword } 
       from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDM-cWulKkn5RAT6tns0BktHkRdfFt4-0s",
-      authDomain: "roteiro-a6cb0.firebaseapp.com",
-      projectId: "roteiro-a6cb0",
-      storageBucket: "roteiro-a6cb0.appspot.com",
-      messagingSenderId: "304848084937",
-      appId: "1:304848084937:web:21c4d4ea2dc862e7e05218",
-      measurementId: "G-PLMNPQWVH9"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    import { app } from "./firebase.js";
 
     const ADM_EMAILS = [
       "seuemail@dominio.com", 
       "admin@gmail.com"
     ];
 
+    const auth = getAuth(app);
     const btnOperador = document.getElementById("btnOperador");
     const btnAdm = document.getElementById("btnAdm");
-    const admForm = document.getElementById("admForm");
-    const btnLoginAdm = document.getElementById("btnLoginAdm");
-    const emailInput = document.getElementById("email");
-    const passInput  = document.getElementById("password");
-    const msgBox     = document.getElementById("msg");
+    const admFields = document.getElementById("admFields");
+    const loginBtn = document.getElementById("loginBtn");
+    const errorDiv = document.getElementById("error");
 
-    // Se clicar em Operador → vai direto (sem login)
-btnOperador.addEventListener("click", () => {
-  window.location.href = "operador.html";
-});
+    // Operador → vai direto
+    btnOperador.addEventListener("click", () => {
+      window.location.href = "operador.html";
+    });
 
-// Se clicar em ADM → mostra form de login
-btnAdm.addEventListener("click", () => {
-  admForm.style.display = "block";
-  btnAdm.style.display = "none";
-  btnOperador.style.display = "none";
-});
+    // Administrador → mostra login
+    btnAdm.addEventListener("click", () => {
+      admFields.style.display = "block";
+    });
 
-// Login ADM
-btnLoginAdm.addEventListener("click", async () => {
-  try {
-    const cred = await signInWithEmailAndPassword(auth, emailInput.value, passInput.value);
-    if (!ADM_EMAILS.includes(cred.user.email)) {
-      msgBox.textContent = "Acesso negado: você não é administrador.";
-      await signOut(auth);
-      return;
+    // Login Admin
+    loginBtn?.addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        if (ADM_EMAILS.includes(email)) {
+          window.location.href = "index.html";
+        } else {
+          errorDiv.textContent = "Este e-mail não tem acesso de administrador.";
+        }
+      } catch (e) {
+        errorDiv.textContent = "Erro: " + e.message;
+      }
+    });
+
+    /* ====== Tema ====== */
+    const btnTheme = document.getElementById("btnTheme");
+    function applyTheme(theme) {
+      if (theme === "light") {
+        document.body.setAttribute("data-theme","light");
+        btnTheme.textContent = "🌙";
+      } else {
+        document.body.removeAttribute("data-theme");
+        btnTheme.textContent = "☀️";
+      }
+      localStorage.setItem("theme", theme);
     }
-    window.location.href = "index.html";
-  } catch (e) {
-    msgBox.textContent = "Erro: " + e.message;
-  }
-});
-
-// 🔹 Auto redireciona apenas se já estiver logado como ADM
-onAuthStateChanged(auth, (user) => {
-  if (user && ADM_EMAILS.includes(user.email)) {
-    window.location.href = "index.html";
-  }
-});
-
+    btnTheme.addEventListener("click", () => {
+      const current = localStorage.getItem("theme") || "dark";
+      applyTheme(current === "dark" ? "light" : "dark");
+    });
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    applyTheme(savedTheme);
   </script>
 </body>
 </html>

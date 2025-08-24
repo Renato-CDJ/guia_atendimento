@@ -112,5 +112,31 @@
     noteEditor.addEventListener("input", saveNotes);
     loadNotes();
   </script>
+
+  <script>
+  // ===== Aplicar tema salvo no localStorage =====
+  const savedTheme = localStorage.getItem("theme") || "dark";
+  if (savedTheme === "light") {
+    document.body.setAttribute("data-theme","light");
+  } else {
+    document.body.removeAttribute("data-theme");
+  }
+
+  // ===== Alternar tema pelo botão já existente =====
+  const btnToggleTheme = document.getElementById("btnToggleTheme");
+  if (btnToggleTheme) {
+    btnToggleTheme.addEventListener("click", () => {
+      const current = localStorage.getItem("theme") || "dark";
+      const newTheme = current === "dark" ? "light" : "dark";
+      localStorage.setItem("theme", newTheme);
+      if (newTheme === "light") {
+        document.body.setAttribute("data-theme","light");
+      } else {
+        document.body.removeAttribute("data-theme");
+      }
+    });
+  }
+</script>
+
 </body>
 </html>

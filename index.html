@@ -57,19 +57,6 @@
         <button data-tab="geral" class="tab active">⚙ Geral</button>
       </div>
 
-      <div class="adm-toolbar">
-        <button onclick="formatAdm('bold')"><b>B</b></button>
-        <button onclick="formatAdm('italic')"><i>I</i></button>
-        <button onclick="formatAdm('underline')"><u>U</u></button>
-        <button onclick="formatAdm('insertUnorderedList')">• Lista</button>
-        <button onclick="formatAdm('justifyLeft')">⯇</button>
-        <button onclick="formatAdm('justifyCenter')">≡</button>
-        <button onclick="formatAdm('justifyRight')">⯈</button>
-      </div>
-
-        <textarea id="fldBody" contenteditable="true"></textarea>
-
-
       <!-- Aba Geral -->
       <div class="tab-content active" id="tab-geral">
         <label>ID da tela</label>
@@ -77,6 +64,14 @@
 
         <label>Título da tela</label>
         <input type="text" id="fldTitle">
+
+        <div class="adm-toolbar">
+          <button type="button" onclick="wrapText('fldBody','<b>','</b>')"><b>B</b></button>
+          <button type="button" onclick="wrapText('fldBody','<i>','</i>')"><i>I</i></button>
+          <button type="button" onclick="wrapText('fldBody','<u>','</u>')"><u>U</u></button>
+          <button type="button" onclick="insertList('fldBody')">• Lista</button>
+          <button type="button" onclick="setColor('fldBody')">🎨</button>
+        </div>
 
         <label>Texto do script</label>
         <textarea id="fldBody"></textarea>
@@ -249,6 +244,68 @@
 
   // Carregar ao abrir
   loadNotes();
+</script>
+
+
+<script>
+  // Aplica tags no texto selecionado do textarea
+function wrapText(fieldId, before, after) {
+  const textarea = document.getElementById(fieldId);
+  const start = textarea.selectionStart;
+  const end   = textarea.selectionEnd;
+  const selected = textarea.value.substring(start, end);
+
+  const newText = before + selected + after;
+
+  textarea.setRangeText(newText, start, end, 'end');
+  textarea.focus();
+}
+
+// Insere lista simples
+function insertList(fieldId) {
+  const textarea = document.getElementById(fieldId);
+  const start = textarea.selectionStart;
+  const end   = textarea.selectionEnd;
+  const selected = textarea.value.substring(start, end);
+
+  const lines = selected.split("\n").map(l => l ? `<li>${l}</li>` : "").join("\n");
+  const newText = `<ul>\n${lines}\n</ul>`;
+
+  textarea.setRangeText(newText, start, end, 'end');
+  textarea.focus();
+}
+
+// Aplica cor escolhida
+function setColor(fieldId) {
+  const color = prompt("Digite a cor (ex: red, #ff0000):", "#ff0000");
+  if (!color) return;
+  wrapText(fieldId, `<span style="color:${color}">`, `</span>`);
+}
+</script>
+
+<script>
+  // ===== Aplicar tema salvo no localStorage =====
+  const savedTheme = localStorage.getItem("theme") || "dark";
+  if (savedTheme === "light") {
+    document.body.setAttribute("data-theme","light");
+  } else {
+    document.body.removeAttribute("data-theme");
+  }
+
+  // ===== Alternar tema pelo botão já existente =====
+  const btnToggleTheme = document.getElementById("btnToggleTheme");
+  if (btnToggleTheme) {
+    btnToggleTheme.addEventListener("click", () => {
+      const current = localStorage.getItem("theme") || "dark";
+      const newTheme = current === "dark" ? "light" : "dark";
+      localStorage.setItem("theme", newTheme);
+      if (newTheme === "light") {
+        document.body.setAttribute("data-theme","light");
+      } else {
+        document.body.removeAttribute("data-theme");
+      }
+    });
+  }
 </script>
 
 </body>
