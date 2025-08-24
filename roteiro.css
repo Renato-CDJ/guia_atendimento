@@ -742,3 +742,5 @@ body:not([data-theme="light"]) .bottom-shortcuts button#noteToggle {
   color: var(--muted);
   font-style: italic;
 }
+
+

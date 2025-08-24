@@ -162,7 +162,7 @@ function buildSystemScreens() {
           <button class="chip" data-value="fisica">Física</button>
           <button class="chip" data-value="juridica">Jurídica</button>
         </div>
-        <label>Produto</label>
+        <label><b>Produto</b></label>
         <div class="chips" id="chipsProduto"></div>
       </div>
     `,
