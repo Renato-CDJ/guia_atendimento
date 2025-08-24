@@ -25,14 +25,13 @@
       background: #0f1113;
       color: #f5f7fa;
       transition: background .5s ease, color .5s ease;
-      overflow: hidden;
+      overflow-x: hidden; /* 🔹 evita barra horizontal */
     }
     body[data-theme="light"] {
       background: #ffffff;
       color: #1a1a1a;
     }
     
-
     /* Barra topo */
     .topbar {
       width: 100%;
@@ -71,22 +70,21 @@
 
     /* Título */
     .title {
-      font-size: clamp(34px, 5vw, 60px);
+      font-size: clamp(28px, 6vw, 60px);
       font-weight: 900;
       text-align: center;
-      margin-top: 230px; 
+      margin-top: 180px; 
       margin-bottom: 40px;
       background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
       -webkit-background-clip: text;
-      background-clip: text;   /* compatibilidade */
-
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       animation: glow-dark 3s infinite ease-in-out;
     }
     body[data-theme="light"] .title {
       background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
       -webkit-background-clip: text;
-      background-clip: text;   /* compatibilidade */
+      background-clip: text;
       animation: glow-light 3s infinite ease-in-out;
     }
 
@@ -110,30 +108,25 @@
       text-align: center;
       transition: transform 0.3s ease;
     }
-    .role-card:hover {
-      transform: scale(1.1);
-    }
-    .role-card .icon {
-      margin-bottom: 10px;
-    }
+    .role-card:hover { transform: scale(1.05); }
     .role-card .icon img {
-      width: 320px;
-      height: 150px;
+      width: clamp(180px, 60%, 150px);
+      height: auto;
       object-fit: contain;
     }
     .role-card .label {
-      font-size: 42px;
+      font-size: clamp(20px, 5vw, 42px);
       font-weight: 700;
       background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-clip: text;   /* compatibilidade */
+      background-clip: text;
       animation: glow-dark 3s infinite ease-in-out;
     }
     body[data-theme="light"] .role-card .label {
       background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
       -webkit-background-clip: text;
-      background-clip: text;   /* compatibilidade */
+      background-clip: text;
       animation: glow-light 3s infinite ease-in-out;
     }
 
@@ -142,11 +135,12 @@
       margin-top: 30px;
       display: none;
       text-align: center;
+      width: 100%;
+      max-width: 360px;
     }
-
     .role-inputs input {
       display: block;
-      width: 280px;
+      width: 100%;
       padding: 12px;
       margin: 10px auto;
       border-radius: 10px;
@@ -163,7 +157,7 @@
     }
 
     .role-inputs button {
-      width: 300px;
+      width: 100%;
       padding: 14px;
       border-radius: 14px;
       border: none;
@@ -194,7 +188,7 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 20px;
+      font-size: clamp(14px, 4vw, 20px);
       font-style: italic;
       font-weight: 600;
       color: #00e676;
@@ -203,24 +197,27 @@
       border-right: 2px solid #00e676;
       width: 0;
       animation: typing 2s steps(20,end), blink .7s step-end infinite alternate, fadeCycle 3s infinite;
-      cursor: default; /* 🔹 impede que seja clicável */
-      pointer-events: none; /* 🔹 garante que não captura cliques */
+      pointer-events: none;
     }
     body[data-theme="light"] .quality {
       color: #ff5722;
       border-right-color: #ff5722;
     }
 
-    @keyframes typing {
-      from { width: 0; }
-      to { width: 200px; }
+    @keyframes typing { from { width: 0; } to { width: 200px; } }
+    @keyframes blink { 50% { border-color: transparent; } }
+    @keyframes fadeCycle { 0%,70%,100% { opacity: 0; } 10%,60% { opacity: 1; } }
+
+    /* 📱 RESPONSIVIDADE */
+    @media (max-width: 768px) {
+      .title { margin-top: 120px; }
+      .role-card .icon img { width: 60%; }
     }
-    @keyframes blink {
-      50% { border-color: transparent; }
-    }
-    @keyframes fadeCycle {
-      0%,70%,100% { opacity: 0; }
-      10%,60% { opacity: 1; }
+    @media (max-width: 480px) {
+      .topbar { justify-content: center; padding: 12px; }
+      .title { margin-top: 80px; font-size: clamp(22px, 7vw, 34px); }
+      .role-card .label { font-size: clamp(18px, 6vw, 28px); }
+      .role-inputs { max-width: 90%; }
     }
   </style>
 </head>
@@ -233,7 +230,7 @@
 
   <h1 class="title">Roteiro de Atendimento</h1>
 
-  <!-- Ícone Operador centralizado -->
+  <!-- Ícone Operador -->
   <div class="role-card" id="btnOperador">
     <div class="icon">
       <img src="img/operador-de-telemarketing.png" alt="Operador de Telemarketing">
@@ -249,7 +246,7 @@
     <div id="error" class="error"></div>
   </div>
 
-  <!-- Assinatura fixa (não clicável) -->
+  <!-- Assinatura fixa -->
   <div class="quality">Área de Qualidade</div>
 
   <script type="module">

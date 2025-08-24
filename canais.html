@@ -37,6 +37,38 @@
       background: linear-gradient(180deg, #fff 0%, #fafafa 100%); border:1px solid #ddd; color:#333;
     }
     body[data-theme="light"] .group li{ color:#444; }
+
+    /* >>> Botão Voltar no mesmo estilo dos botões do operador.html */
+    .bottom-back{
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      z-index: 1900;
+    }
+
+    .bottom-back a{
+      display: inline-block;
+      background: var(--panel);
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      padding: 14px 28px;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,.25);
+      transition: all 0.25s ease;
+    }
+
+    .bottom-back a:hover{
+      background: linear-gradient(90deg,var(--accent),var(--accent-2));
+      color: #fff;
+      border-color: transparent;
+      transform: translateY(-3px);
+    }
+
   </style>
 </head>
 <body>
@@ -141,6 +173,12 @@
       </div>
     </section>
   </div>
+
+  <!-- >>> ADIÇÃO: Botão Voltar -->
+<div class="bottom-back">
+  <a href="operador.html" class="btn">⬅️ Voltar</a>
+</div>
+
 
   <!-- Tema (compatível com o site) -->
   <script>

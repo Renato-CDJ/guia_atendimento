@@ -35,6 +35,37 @@
       padding:8px 12px; border-radius:10px; cursor:pointer;
     }
 
+  /* >>> Botão Voltar no mesmo estilo dos botões do operador.html */
+    .bottom-back{
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      z-index: 1900;
+    }
+
+    .bottom-back a{
+      display: inline-block;
+      background: var(--panel);
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      padding: 14px 28px;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,.25);
+      transition: all 0.25s ease;
+    }
+
+    .bottom-back a:hover{
+      background: linear-gradient(90deg,var(--accent),var(--accent-2));
+      color: #fff;
+      border-color: transparent;
+      transform: translateY(-3px);
+    }
+
     /* ===== GRID ===== */
     .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px }
     .card{
@@ -99,7 +130,6 @@
     <header>
       <div>
         <h1>Situações</h1>
-        <p class="muted">Consulta de situações por campanha</p>
       </div>
       <div class="toolbar">
         <!-- 🔹 filtro de categorias -->
@@ -126,6 +156,14 @@
       </footer>
     </div>
   </div>
+
+  <!-- >>> ADIÇÃO: Botão Voltar -->
+  <div class="bottom-back">
+    <a href="operador.html" class="btn">⬅️ Voltar</a>
+  </div>
+
+
+  
 
   <!-- Painel ADM (Situações) -->
   <aside class="adm" id="admPanel">

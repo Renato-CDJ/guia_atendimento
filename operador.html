@@ -42,7 +42,13 @@ body[data-theme="light"] .title {
   50% { filter: drop-shadow(0 0 18px rgba(255,87,34,.9)); }
 }
 
-  </style>
+/* Barra de pesquisa mais larga*/
+header .toolbar #searchInput{
+  flex: 1 1 600px;
+  min-width: clamp(420px, 50vw, 380px);
+}
+
+</style>
 </head>
 <body data-role="operador">
   <div class="container">
@@ -150,5 +156,80 @@ body[data-theme="light"] .title {
   </script>
 
   
+
+<script>
+// === PROGRESSO baseado em botões de FINALIZAR / VOLTAR AO INÍCIO ===
+(function(){
+  const bar = document.getElementById("bar");
+  if(!bar) return;
+
+  const setProgress = (p)=>{
+    const pct = Math.max(0, Math.min(100, Math.round(p)));
+    bar.style.width = pct + "%";
+    bar.setAttribute("aria-valuenow", pct);
+  };
+
+  const actions = document.getElementById("globalActions");
+
+  function isFinalizeElement(el){
+    if(!el) return false;
+    // procura textos comuns e também data-action/data-finalizar
+    const t = (el.textContent || "").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (/\b(finalizar|finaliza|concluir|encerrar|tabular|fim)\b/.test(t)) return true;
+    const id = (el.id || "").toLowerCase();
+    if (/final/.test(id)) return true;
+    if (el.dataset && (el.dataset.finalizar==='1' || el.dataset.action==='finalizar')) return true;
+    return false;
+  }
+
+  function scanForFinalize(root){
+    if(!root) return false;
+    const candidates = root.querySelectorAll("button, a, [role='button']");
+    for (const el of candidates){
+      if (isFinalizeElement(el)) return true;
+    }
+    return false;
+  }
+
+  // Observa mudanças nos botões globais (quando a tela muda)
+  const observer = new MutationObserver(()=>{
+    if (scanForFinalize(actions)) setProgress(100);
+  });
+  if(actions){
+    observer.observe(actions, { childList: true, subtree: true });
+    // primeira verificação
+    if (scanForFinalize(actions)) setProgress(100);
+  }
+
+  // Captura cliques para preencher (final) e resetar (início)
+  document.addEventListener("click", (e)=>{
+    const btn = e.target.closest("button, a, [role='button']");
+    if(!btn) return;
+    // normaliza texto p/ pt-br sem acento
+    const t = (btn.textContent || "").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // finaliza -> 100%
+    if (isFinalizeElement(btn)) {
+      setProgress(100);
+      return;
+    }
+    // voltar ao início / inicio / reiniciar / recomeçar -> 0%
+    if (/\b(voltar.*inicio|inicio|comecar|recomecar|reiniciar)\b/.test(t) || btn.id === "btnInicio") {
+      setProgress(0);
+    }
+  });
+})();
+
+// === (Opcional) Exponha helpers caso o fluxo queira manipular manualmente ===
+window._progress = {
+  set: (p)=>{
+    const bar = document.getElementById("bar");
+    if(bar){ bar.style.width = Math.max(0,Math.min(100,p)) + "%"; }
+  },
+  full: ()=> window._progress.set(100),
+  reset: ()=> window._progress.set(0),
+};
+</script>
+
 </body>
 </html>
