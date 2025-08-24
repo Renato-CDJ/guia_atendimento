@@ -52,10 +52,23 @@
         <div>Painel ADM</div>
         <button id="btnAdmClose" class="badge">✕</button>
       </header>
-
+      
       <div class="tabs">
         <button data-tab="geral" class="tab active">⚙ Geral</button>
       </div>
+
+      <div class="adm-toolbar">
+        <button onclick="formatAdm('bold')"><b>B</b></button>
+        <button onclick="formatAdm('italic')"><i>I</i></button>
+        <button onclick="formatAdm('underline')"><u>U</u></button>
+        <button onclick="formatAdm('insertUnorderedList')">• Lista</button>
+        <button onclick="formatAdm('justifyLeft')">⯇</button>
+        <button onclick="formatAdm('justifyCenter')">≡</button>
+        <button onclick="formatAdm('justifyRight')">⯈</button>
+      </div>
+
+        <textarea id="fldBody" contenteditable="true"></textarea>
+
 
       <!-- Aba Geral -->
       <div class="tab-content active" id="tab-geral">
@@ -123,7 +136,7 @@
     <script src="roteiro.js"></script>
   </div>
 
-  <!-- Modal de Tabulação -->
+    <!-- Modal de Tabulação -->
   <div id="tabModal" class="modal">
     <div class="modal-content">
       <span id="closeModal" class="close">&times;</span>
@@ -139,7 +152,7 @@
     <button id="noteToggle">📝 Bloco de notas</button>
   </div>
 
-<!-- Painel de Notas -->
+    <!-- Painel de Notas -->
   <div id="notePanel">
   <div id="noteToolbar">
     <button onclick="formatNote('bold')"><b>B</b></button>
@@ -193,6 +206,10 @@
   notePanel.classList.remove("active");
   });
 
+  function formatAdm(cmd) {
+  document.execCommand(cmd, false, null);
+  // depois podemos sincronizar com o preview
+  }
 
   // Formatação
   window.formatNote = (cmd) => {

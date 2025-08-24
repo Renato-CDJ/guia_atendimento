@@ -334,6 +334,31 @@ header h1{
   outline: none;
 }
 
+/* Visual para editar o texto */
+.adm-toolbar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.adm-toolbar button {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.adm-toolbar button:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent-2);
+}
+
+
 /* Tabs */
 .adm .tabs {
   display: flex;
