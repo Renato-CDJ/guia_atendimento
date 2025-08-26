@@ -13,9 +13,11 @@
       color: #f5f7fa;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       height: 100vh;
       margin: 0;
+      gap: 30px;
+      padding: 30px;
     }
     .box {
       background: rgba(0,0,0,0.7);
@@ -58,6 +60,48 @@
       font-size: 14px;
       white-space: pre-line;
     }
+
+    /* Painel de Controle */
+    .online-box {
+      background: rgba(0,0,0,0.7);
+      padding: 20px;
+      border-radius: 12px;
+      width: 420px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.5);
+    }
+    .online-box h3 {
+      font-size: 18px;
+      margin: 0 0 15px;
+      color: #00e676;
+    }
+    .user {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.05);
+      margin-bottom: 8px;
+    }
+    .user span {
+      font-weight: 500;
+    }
+    .user-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .user-actions button {
+      border: none;
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #fff;
+    }
+    .user-actions button.edit { background: #2196f3; }
+    .user-actions button.delete { background: #e53935; }
+    .user-actions button.block { background: #ff9800; }
+    .user-actions button.disconnect { background: #9c27b0; }
   </style>
 </head>
 <body>
@@ -78,13 +122,21 @@
     <div id="msg"></div>
   </div>
 
+  <!-- Painel de Controle -->
+  <div class="online-box">
+    <h3>👥 Operadores Conectados (<span id="countOnline">0</span>)</h3>
+    <div id="onlineList"></div>
+    <hr style="margin:12px 0; border:1px solid rgba(255,255,255,.2)">
+    <button id="btnExport">📄 Exportar Relatório</button>
+  </div>
+
   <!-- Libs externas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <script type="module">
     import { app, db } from "./firebase.js";
-    import { doc, setDoc } 
+    import { doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc } 
       from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
     const msg = document.getElementById("msg");
@@ -139,7 +191,6 @@
       }
     });
 
-    // === SALVAR EM LOTE NO FIRESTORE ===
     async function salvarEmLote(nomes) {
       let sucesso = 0, erros = 0;
       for (const nome of nomes) {
@@ -158,6 +209,83 @@
       }
       msg.textContent = `✅ ${sucesso} operadores cadastrados.\n⚠️ ${erros} falhas.`;
     }
+
+    // === PAINEL ONLINE EM TEMPO REAL ===
+    const onlineList = document.getElementById("onlineList");
+    const countOnline = document.getElementById("countOnline");
+    let relatorio = [];
+
+    onSnapshot(collection(db, "status_online"), (snapshot) => {
+      onlineList.innerHTML = "";
+      let count = 0;
+      relatorio = [];
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        if (data.online) count++;
+
+        relatorio.push({
+          nome: data.nome,
+          conectadoEm: data.conectadoEm?.toDate?.() || "",
+          desconectadoEm: data.desconectadoEm?.toDate?.() || ""
+        });
+
+        const div = document.createElement("div");
+        div.className = "user";
+        div.innerHTML = `
+          <span>${data.nome} ${data.online ? "🟢" : "⚪"}</span>
+          <div class="user-actions">
+            <button class="edit">Editar</button>
+            <button class="delete">Excluir</button>
+            <button class="block">Bloquear</button>
+            <button class="disconnect">Desconectar</button>
+          </div>
+        `;
+
+        // Ações
+        div.querySelector(".edit").addEventListener("click", async () => {
+          const novoNome = prompt("Novo nome para operador:", data.nome);
+          if (novoNome) {
+            await setDoc(doc(db, "operadores", novoNome.toLowerCase()), { nome: novoNome }, { merge: true });
+          }
+        });
+
+        div.querySelector(".delete").addEventListener("click", async () => {
+          if (confirm("Excluir operador " + data.nome + "?")) {
+            await deleteDoc(doc(db, "operadores", data.nome.toLowerCase()));
+            await deleteDoc(doc(db, "status_online", data.nome));
+          }
+        });
+
+        div.querySelector(".block").addEventListener("click", async () => {
+          await updateDoc(doc(db, "status_online", data.nome), { bloqueado: true });
+          alert(data.nome + " foi bloqueado.");
+        });
+
+        div.querySelector(".disconnect").addEventListener("click", async () => {
+          await updateDoc(doc(db, "status_online", data.nome), { online: false, desconectadoEm: new Date() });
+        });
+
+        onlineList.appendChild(div);
+      });
+
+      countOnline.textContent = count;
+    });
+
+    // Exportar relatório em CSV
+    document.getElementById("btnExport").addEventListener("click", () => {
+      let csv = "Nome,Conectado em,Desconectado em\n";
+      relatorio.forEach(r => {
+        csv += `${r.nome},${r.conectadoEm},${r.desconectadoEm}\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "relatorio-operadores.csv";
+      a.click();
+    });
   </script>
 </body>
 </html>

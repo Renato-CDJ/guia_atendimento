@@ -58,6 +58,8 @@ header .toolbar #searchInput{
       <div class="toolbar">
         <input type="text" id="searchInput" class="select" placeholder="🔍 Pesquisar..." />
         <button id="btnToggleTheme" class="badge">🌗 Tema</button>
+        <button id="btnLogout" class="badge">🚪 Sair</button>
+
       </div>
     </header>
 
@@ -111,51 +113,73 @@ header .toolbar #searchInput{
   </div>
 
   <!-- App -->
-  <script src="roteiro.js"></script>
+<script src="roteiro.js"></script>
 
-  <!-- Bloco de notas -->
-  <script type="module">
-    import { db } from "./firebase.js";
-    import { doc, getDoc, setDoc }
-      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+<!-- Bloco de notas + status online -->
+<script type="module">
+  import { db } from "./firebase.js";
+  import { doc, getDoc, setDoc, updateDoc, serverTimestamp } 
+    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-    const noteToggle = document.getElementById("noteToggle");
-    const notePanel  = document.getElementById("notePanel");
-    const noteEditor = document.getElementById("noteEditor");
-    const noteClose  = document.getElementById("noteClose");
+  const noteToggle = document.getElementById("noteToggle");
+  const notePanel  = document.getElementById("notePanel");
+  const noteEditor = document.getElementById("noteEditor");
+  const noteClose  = document.getElementById("noteClose");
 
-    noteToggle.addEventListener("click", () => notePanel.classList.toggle("active"));
-    noteClose?.addEventListener("click", () => notePanel.classList.remove("active"));
+  noteToggle.addEventListener("click", () => notePanel.classList.toggle("active"));
+  noteClose?.addEventListener("click", () => notePanel.classList.remove("active"));
 
-    window.formatNote = (cmd) => {
-      document.execCommand(cmd, false, null);
-      saveNotes();
-    };
+  window.formatNote = (cmd) => {
+    document.execCommand(cmd, false, null);
+    saveNotes();
+  };
 
-    const noteDocRef = doc(db, "anotacoes", "operador");
+  const noteDocRef = doc(db, "anotacoes", "operador");
 
-    async function saveNotes() {
-      try {
-        await setDoc(noteDocRef, {
-          conteudo: noteEditor.innerHTML,
-          atualizado: new Date().toISOString()
-        });
-        console.log("Nota salva no Firestore!");
-      } catch (e) { console.error("Erro ao salvar nota:", e); }
-    }
+  async function saveNotes() {
+    try {
+      await setDoc(noteDocRef, {
+        conteudo: noteEditor.innerHTML,
+        atualizado: new Date().toISOString()
+      });
+      console.log("Nota salva no Firestore!");
+    } catch (e) { console.error("Erro ao salvar nota:", e); }
+  }
 
-    async function loadNotes() {
-      try {
-        const snap = await getDoc(noteDocRef);
-        if (snap.exists()) noteEditor.innerHTML = snap.data().conteudo || "";
-      } catch (e) { console.error("Erro ao carregar nota:", e); }
-    }
+  async function loadNotes() {
+    try {
+      const snap = await getDoc(noteDocRef);
+      if (snap.exists()) noteEditor.innerHTML = snap.data().conteudo || "";
+    } catch (e) { console.error("Erro ao carregar nota:", e); }
+  }
 
-    noteEditor.addEventListener("input", saveNotes);
-    loadNotes();
-  </script>
+  noteEditor.addEventListener("input", saveNotes);
+  loadNotes();
 
-  
+  // === STATUS ONLINE DO OPERADOR ===
+  const operador = localStorage.getItem("operador");
+  if (operador) {
+    const statusRef = doc(db, "status_online", operador);
+
+    // Marca como online
+    setDoc(statusRef, {
+      nome: operador,
+      online: true,
+      conectadoEm: serverTimestamp(),
+      ultimoPing: serverTimestamp()
+    }, { merge: true });
+
+    // Atualiza "ultimoPing" a cada 30s
+    setInterval(() => {
+      updateDoc(statusRef, { ultimoPing: serverTimestamp(), online: true });
+    }, 30000);
+
+    // Ao fechar aba ou sair -> marca como offline
+    window.addEventListener("beforeunload", async () => {
+      await updateDoc(statusRef, { online: false, desconectadoEm: serverTimestamp() });
+    });
+  }
+</script>
 
 <script>
 // === PROGRESSO baseado em botões de FINALIZAR / VOLTAR AO INÍCIO ===
@@ -173,7 +197,6 @@ header .toolbar #searchInput{
 
   function isFinalizeElement(el){
     if(!el) return false;
-    // procura textos comuns e também data-action/data-finalizar
     const t = (el.textContent || "").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     if (/\b(finalizar|finaliza|concluir|encerrar|tabular|fim)\b/.test(t)) return true;
     const id = (el.id || "").toLowerCase();
@@ -191,36 +214,29 @@ header .toolbar #searchInput{
     return false;
   }
 
-  // Observa mudanças nos botões globais (quando a tela muda)
   const observer = new MutationObserver(()=>{
     if (scanForFinalize(actions)) setProgress(100);
   });
   if(actions){
     observer.observe(actions, { childList: true, subtree: true });
-    // primeira verificação
     if (scanForFinalize(actions)) setProgress(100);
   }
 
-  // Captura cliques para preencher (final) e resetar (início)
   document.addEventListener("click", (e)=>{
     const btn = e.target.closest("button, a, [role='button']");
     if(!btn) return;
-    // normaliza texto p/ pt-br sem acento
     const t = (btn.textContent || "").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-    // finaliza -> 100%
     if (isFinalizeElement(btn)) {
       setProgress(100);
       return;
     }
-    // voltar ao início / inicio / reiniciar / recomeçar -> 0%
     if (/\b(voltar.*inicio|inicio|comecar|recomecar|reiniciar)\b/.test(t) || btn.id === "btnInicio") {
       setProgress(0);
     }
   });
 })();
 
-// === (Opcional) Exponha helpers caso o fluxo queira manipular manualmente ===
 window._progress = {
   set: (p)=>{
     const bar = document.getElementById("bar");
@@ -230,6 +246,15 @@ window._progress = {
   reset: ()=> window._progress.set(0),
 };
 </script>
+
+<script>
+  const btnLogout = document.getElementById("btnLogout");
+  btnLogout?.addEventListener("click", () => {
+    localStorage.removeItem("operador"); 
+    window.location.href = "login.html";
+  });
+</script>
+
 
 </body>
 </html>
