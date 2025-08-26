@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Roteiro de Atendimento - Login</title>
   <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
-
   <style>
     :root {
       --accent-dark: #00c853;
@@ -276,110 +275,102 @@
       <img src="img/operador-de-telemarketing.png" alt="Operador de Telemarketing">
     </div>
     <div id="userBox">
-      <input type="text" id="userName" placeholder="                 Digite seu usuário" />
+      <input type="text" id="userName" placeholder="Digite seu usuário" />
       <button id="userLoginBtn">Entrar</button>
       <div id="userError" class="error"></div>
     </div>
   </div>
 
-  <!-- Assinatura fixa -->
   <div class="quality">Área de Qualidade</div>
 
-  <script type="module">
-  import { getAuth, signInWithEmailAndPassword } 
-    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-  import { app, db } from "./firebase.js";
-  import { doc, getDoc } 
-    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+<script type="module">
+import { getAuth, signInWithEmailAndPassword, signInAnonymously, updateProfile }
+  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import { app, db } from "./firebase.js";
+import { doc, getDoc } 
+  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-  const ADM_EMAILS = [
-    "seuemail@dominio.com", 
-    "admin@gmail.com"
-  ];
+const ADM_EMAILS = ["seuemail@dominio.com","admin@gmail.com"];
 
-  const auth = getAuth(app);
-  const btnAdm = document.getElementById("btnAdm");
-  const admFields = document.getElementById("admFields");
-  const loginBtn = document.getElementById("loginBtn");
-  const errorDiv = document.getElementById("error");
+const auth = getAuth(app);
+const btnAdm = document.getElementById("btnAdm");
+const admFields = document.getElementById("admFields");
+const loginBtn = document.getElementById("loginBtn");
+const errorDiv = document.getElementById("error");
 
-  const userNameInput = document.getElementById("userName");
-  const userLoginBtn = document.getElementById("userLoginBtn");
-  const userError = document.getElementById("userError");
+const userNameInput = document.getElementById("userName");
+const userLoginBtn = document.getElementById("userLoginBtn");
+const userError = document.getElementById("userError");
 
-  // Toggle ADM dropdown
-  btnAdm.addEventListener("click", () => {
-    admFields.style.display = admFields.style.display === "block" ? "none" : "block";
-  });
+// Toggle ADM dropdown
+btnAdm.addEventListener("click", () => {
+  admFields.style.display = admFields.style.display === "block" ? "none" : "block";
+});
 
-  // Login Admin
-  loginBtn?.addEventListener("click", async () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-      const userCred = await signInWithEmailAndPassword(auth, email, password);
-      if (ADM_EMAILS.includes(email)) {
-        window.location.href = "index.html";
-      } else {
-        errorDiv.textContent = "Este e-mail não tem acesso de administrador.";
-      }
-    } catch (e) {
-      errorDiv.textContent = "Erro: " + e.message;
+// Login Admin
+loginBtn?.addEventListener("click", async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    if (ADM_EMAILS.includes(email)) {
+      window.location.href = "index.html";
+    } else {
+      errorDiv.textContent = "Este e-mail não tem acesso de administrador.";
     }
-  });
+  } catch (e) {
+    errorDiv.textContent = "Erro: " + e.message;
+  }
+});
 
-  // Login Operador validando no Firestore
-  async function loginOperador() {
-    const nome = userNameInput.value.trim().toLowerCase();
-    if (!nome) {
-      userError.textContent = "Digite um usuário válido.";
+// Login Operador
+async function loginOperador() {
+  const nome = userNameInput.value.trim().toLowerCase();
+  if (!nome) {
+    userError.textContent = "Digite um usuário válido.";
+    return;
+  }
+
+  try {
+    const snap = await getDoc(doc(db,"operadores",nome));
+    if (!snap.exists()) {
+      userError.textContent = "Usuário não encontrado.";
       return;
     }
 
-    try {
-      const snap = await getDoc(doc(db, "operadores", nome));
-      if (snap.exists()) {
-        localStorage.setItem("operador", nome); // salva sessão
-        window.location.href = "operador.html";
-      } else {
-        userError.textContent = "Usuário não encontrado.";
-      }
-    } catch (e) {
-      userError.textContent = "Erro ao verificar usuário: " + e.message;
-    }
+    // autentica anonimamente
+    const cred = await signInAnonymously(auth);
+
+    // define displayName para sabermos quem é no operador.html
+    await updateProfile(cred.user,{ displayName: nome });
+
+    localStorage.setItem("operador", nome);
+    window.location.href = "operador.html";
+
+  } catch (e) {
+    console.error("Erro login operador:",e);
+    userError.textContent = "Erro ao logar: " + (e.message || e.code);
   }
+}
+userLoginBtn?.addEventListener("click", loginOperador);
+userNameInput?.addEventListener("keypress", e => { if(e.key==="Enter") loginOperador(); });
+</script>
 
-  userLoginBtn?.addEventListener("click", loginOperador);
-  userNameInput?.addEventListener("keypress", (e) => {
-    if(e.key === "Enter") loginOperador();
+<script>
+/* Tema */
+(function(){
+  const btnTheme=document.getElementById("btnTheme");
+  const stored=localStorage.getItem("theme");
+  if(stored){ document.body.setAttribute("data-theme",stored); }
+  else if(window.matchMedia("(prefers-color-scheme: light)").matches){ document.body.setAttribute("data-theme","light"); }
+  else{ document.body.setAttribute("data-theme","dark"); }
+  btnTheme.addEventListener("click",()=>{
+    const cur=document.body.getAttribute("data-theme");
+    const next=cur==="light"?"dark":"light";
+    document.body.setAttribute("data-theme",next);
+    localStorage.setItem("theme",next);
   });
+})();
 </script>
-
-
-  <script>
-  (function(){
-    const btnTheme = document.getElementById("btnTheme");
-
-    // aplica tema salvo ou preferido
-    const stored = localStorage.getItem("theme");
-    if (stored) {
-      document.body.setAttribute("data-theme", stored);
-    } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-      document.body.setAttribute("data-theme","light");
-    } else {
-      document.body.setAttribute("data-theme","dark");
-    }
-
-    // alterna ao clicar
-    btnTheme.addEventListener("click", () => {
-      const cur = document.body.getAttribute("data-theme");
-      const next = cur === "light" ? "dark" : "light";
-      document.body.setAttribute("data-theme", next);
-      localStorage.setItem("theme", next);
-    });
-  })();
-</script>
-
 </body>
 </html>
