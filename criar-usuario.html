@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Criar Operador</title>
+  <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f1113;
+      color: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .box {
+      background: rgba(0,0,0,0.7);
+      padding: 30px;
+      border-radius: 12px;
+      width: 350px;
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(0,0,0,.5);
+    }
+    h2 {
+      margin-bottom: 20px;
+      font-size: 22px;
+      color: #00e676;
+    }
+    input[type="text"], input[type="file"] {
+      width: 90%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.3);
+      background: rgba(0,0,0,.25);
+      color: #fff;
+      font-size: 15px;
+    }
+    button {
+      width: 95%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(90deg, #00c853, #00e676);
+      color: #06140b;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: transform .2s ease, filter .2s ease;
+    }
+    button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    #msg {
+      margin-top: 10px;
+      font-size: 14px;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Criar Operadores</h2>
+
+    <!-- Cadastro individual -->
+    <input type="text" id="opName" placeholder="Nome do operador" />
+    <button id="btnAddOperator">Registrar Operador</button>
+
+    <hr style="margin:20px 0; border:1px solid rgba(255,255,255,.2)">
+
+    <!-- Upload em lote -->
+    <label>Importar lista (.csv ou .xlsx):</label>
+    <input type="file" id="fileInput" accept=".csv, .xlsx" />
+    <button id="btnUpload">Importar Arquivo</button>
+
+    <div id="msg"></div>
+  </div>
+
+  <!-- Libs externas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script type="module">
+    import { app, db } from "./firebase.js";
+    import { doc, setDoc } 
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    const msg = document.getElementById("msg");
+
+    // === CADASTRO INDIVIDUAL ===
+    document.getElementById("btnAddOperator").addEventListener("click", async () => {
+      const nome = document.getElementById("opName").value.trim();
+      if (!nome) {
+        msg.textContent = "⚠️ Digite um nome.";
+        return;
+      }
+      try {
+        await setDoc(doc(db, "operadores", nome.toLowerCase()), {
+          nome,
+          criadoEm: new Date().toISOString()
+        });
+        msg.textContent = `✅ Operador "${nome}" registrado com sucesso!`;
+      } catch (e) {
+        msg.textContent = "Erro: " + e.message;
+      }
+    });
+
+    // === IMPORTAÇÃO CSV / XLSX ===
+    document.getElementById("btnUpload").addEventListener("click", async () => {
+      const file = document.getElementById("fileInput").files[0];
+      if (!file) {
+        msg.textContent = "⚠️ Selecione um arquivo CSV ou XLSX.";
+        return;
+      }
+
+      msg.textContent = "⏳ Processando arquivo...";
+
+      if (file.name.endsWith(".csv")) {
+        Papa.parse(file, {
+          header: false,
+          complete: async (results) => {
+            await salvarEmLote(results.data.flat().filter(n => n));
+          }
+        });
+      } else if (file.name.endsWith(".xlsx")) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const nomes = XLSX.utils.sheet_to_json(sheet, { header: 1 }).flat();
+          await salvarEmLote(nomes.filter(n => n));
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        msg.textContent = "⚠️ Formato não suportado.";
+      }
+    });
+
+    // === SALVAR EM LOTE NO FIRESTORE ===
+    async function salvarEmLote(nomes) {
+      let sucesso = 0, erros = 0;
+      for (const nome of nomes) {
+        const clean = String(nome).trim();
+        if (!clean) continue;
+        try {
+          await setDoc(doc(db, "operadores", clean.toLowerCase()), {
+            nome: clean,
+            criadoEm: new Date().toISOString()
+          });
+          sucesso++;
+        } catch (e) {
+          erros++;
+          console.error("Erro ao salvar:", clean, e);
+        }
+      }
+      msg.textContent = `✅ ${sucesso} operadores cadastrados.\n⚠️ ${erros} falhas.`;
+    }
+  </script>
+</body>
+</html>
