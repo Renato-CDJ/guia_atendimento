@@ -7,8 +7,8 @@
   <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
   <style>
     :root {
-      --accent-dark: #00c853;
-      --accent2-dark: #00e676;
+      --accent-dark: #2c2c2c;
+      --accent2-dark: #2c2c2c;
       --accent-light: #ff5722;
       --accent2-light: #ff9800;
       --danger: #e53935;
@@ -56,72 +56,6 @@
     }
     .theme-toggle:hover { transform: scale(1.1); }
 
-    /* Botão ADM */
-    .btn-adm {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 28px;
-      transition: transform 0.3s ease;
-      position: relative;
-    }
-    .btn-adm:hover {
-      transform: scale(1.2);
-    }
-
-    /* Dropdown ADM */
-    #admFields {
-      position: absolute;
-      top: 70px;
-      right: 20px;
-      background: rgba(0,0,0,.85);
-      padding: 16px;
-      border-radius: 12px;
-      box-shadow: 0 6px 18px rgba(0,0,0,.6);
-      display: none;
-      width: 280px;
-    }
-    body[data-theme="light"] #admFields {
-      background: #f8f8f8;
-      box-shadow: 0 6px 18px rgba(0,0,0,.2);
-    }
-
-    /* Inputs ADM */
-    #admFields input {
-      width: 90%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.3);
-      background: rgba(0,0,0,.25);
-      color: inherit;
-      font-size: 15px;
-    }
-    body[data-theme="light"] #admFields input {
-      background: #fff;
-      border: 1px solid #ccc;
-      color: #1a1a1a;
-    }
-
-    #admFields button {
-      width: 98%;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
-      color: #06140b;
-      font-weight: 700;
-      font-size: 15px;
-      cursor: pointer;
-      transition: transform .2s ease, filter .2s ease;
-      margin-top: 6px;
-    }
-    #admFields button:hover { transform: translateY(-2px); filter: brightness(1.1); }
-    body[data-theme="light"] #admFields button {
-      background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
-      color: #fff;
-    }
-
     .error {
       margin-top: 8px;
       color: var(--danger);
@@ -131,125 +65,158 @@
 
     /* Título */
     .title {
-      font-size: clamp(28px, 6vw, 60px);
+      font-size: clamp(32px, 7vw, 64px);
       font-weight: 900;
       text-align: center;
-      margin-top: 100px; 
-      margin-bottom: 30px;
-      background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
+      margin-top: 80px; 
+      margin-bottom: 300px;
+      background: linear-gradient(90deg, #ff5722, #ff9800); /* sempre laranja */
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: glow-dark 3s infinite ease-in-out;
-    }
-    body[data-theme="light"] .title {
-      background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
-      -webkit-background-clip: text;
-      background-clip: text;
-      animation: glow-light 3s infinite ease-in-out;
+      animation: glow-dark 3s infinite ease-in-out, float 4s ease-in-out infinite;
     }
 
-    @keyframes glow-dark {
-      0%,100% { filter: drop-shadow(0 0 6px rgba(0,200,83,.5)); }
-      50% { filter: drop-shadow(0 0 18px rgba(0,200,83,.9)); }
+    /* Tema escuro - título sempre laranja */
+    body[data-theme="dark"] .title {
+      background: linear-gradient(90deg, #ff5722, #ff9800);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow-dark 3s infinite ease-in-out, float 4s ease-in-out infinite;
     }
-    @keyframes glow-light {
-      0%,100% { filter: drop-shadow(0 0 6px rgba(255,87,34,.5)); }
-      50% { filter: drop-shadow(0 0 18px rgba(255,87,34,.9)); }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
 
     /* Operador */
     .role-card {
-      flex-grow: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      transition: transform 0.3s ease;
       cursor: pointer;
     }
-    .role-card:hover { transform: scale(1.05); }
     .role-card .icon img {
       width: clamp(160px, 50%, 150px);
       height: auto;
       object-fit: contain;
+      transition: transform 0.3s ease;
     }
+    .role-card .icon img:hover { transform: scale(1.05); }
 
-    /* Login Operador */
-    #userBox {
-      margin-top: 20px;
-      padding: 18px;
-      border-radius: 14px;
-      background: rgba(0,0,0,.4);
-      box-shadow: 0 4px 14px rgba(0,0,0,.5);
-      max-width: 320px;
-      width: 90%;
-    }
-    body[data-theme="light"] #userBox {
-      background: #f3f3f3;
-      box-shadow: 0 4px 14px rgba(0,0,0,.15);
-    }
+    /* Login Box */
+#userBox {
+  margin-top: 30px;
+  padding: 28px 22px;
+  border-radius: 20px;
+  background: rgba(15, 17, 19, 0.8);
+  border: 2px solid var(--accent-dark);
+  box-shadow: 0 8px 25px rgba(255, 87, 34, 0.25);
+  max-width: 360px;
+  width: 90%;
+  backdrop-filter: blur(10px);
+  transition: all .3s ease;
+}
+#userBox:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 35px rgba(255, 87, 34, 0.4);
+}
 
-    #userBox input {
-      width: 90%;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.3);
-      background: rgba(0,0,0,.25);
-      color: inherit;
-      font-size: 16px;
-      outline: none;
-    }
-    body[data-theme="light"] #userBox input {
-      background: #fff;
-      border: 1px solid #ccc;
-      color: #1a1a1a;
-    }
+body[data-theme="light"] #userBox {
+  background: #fff;
+  border: 2px solid var(--accent-light);
+  box-shadow: 0 6px 20px rgba(255, 87, 34, 0.25);
+}
 
-    #userBox button {
-      width: 90%;
-      margin-top: 10px;
-      padding: 12px;
-      border: none;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 16px;
-      background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
-      cursor: pointer;
-      transition: transform .2s ease, filter .2s ease;
-    }
-    #userBox button:hover { transform: translateY(-2px); filter: brightness(1.1); }
-    body[data-theme="light"] #userBox button {
-      background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
-      color: #fff;
-    }
+/* Inputs */
+#userBox input {
+  width: 91%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 87, 34, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  font-size: 15px;
+  outline: none;
+  margin-bottom: 12px;
+  transition: all .3s ease;
+}
+#userBox input:focus {
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 8px rgba(255, 87, 34, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+}
+body[data-theme="light"] #userBox input {
+  background: #fafafa;
+  border: 1.5px solid #ddd;
+}
+body[data-theme="light"] #userBox input:focus {
+  border-color: var(--accent-light);
+  box-shadow: 0 0 8px rgba(255, 87, 34, 0.4);
+}
+
+/* Botão */
+#userBox button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+  background: linear-gradient(135deg, #2c2c2c, #3b3b3b, #ff5722, #ff9800);
+  background-size: 200% 200%;
+  cursor: pointer;
+  transition: all .4s ease;
+  letter-spacing: 0.5px;
+}
+
+#userBox button:hover {
+  transform: translateY(-3px) scale(1.02);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 18px rgba(255, 87, 34, 0.4);
+  background-position: right center; /* anima o degradê no hover */
+}
 
     /* Rodapé Área de Qualidade */
-    .quality {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: clamp(14px, 4vw, 20px);
-      font-style: italic;
-      font-weight: 600;
-      color: #00e676;
-      white-space: nowrap;
-      overflow: hidden;
-      border-right: 2px solid #00e676;
-      width: 0;
-      animation: typing 2s steps(20,end), blink .7s step-end infinite alternate, fadeCycle 3s infinite;
-      pointer-events: none;
-    }
-    body[data-theme="light"] .quality {
-      color: #ff5722;
-      border-right-color: #ff5722;
-    }
+.quality {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(14px, 4vw, 20px);
+  font-style: italic;
+  font-weight: 600;
+  color: #ff5722;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid #ff5722;
+  animation: 
+    typing 4s steps(20,end) infinite, /* reinicia do zero */
+    blink .7s step-end infinite;
+  pointer-events: none;
+}
+body[data-theme="light"] .quality {
+  color: #ff5722;
+  border-right-color: #ff5722;
+}
 
-    @keyframes typing { from { width: 0; } to { width: 200px; } }
-    @keyframes blink { 50% { border-color: transparent; } }
-    @keyframes fadeCycle { 0%,70%,100% { opacity: 0; } 10%,60% { opacity: 1; } }
+/* Digitação */
+@keyframes typing {
+  0%   { width: 0; }
+  50%  { width: 200px; } /* ajusta ao tamanho do texto */
+  100% { width: 0; }     /* volta ao zero pra reiniciar */
+}
+
+/* Cursor piscando */
+@keyframes blink {
+  50% { border-color: transparent; }
+}
 
   </style>
 </head>
@@ -257,26 +224,19 @@
   <!-- Topbar -->
   <div class="topbar">
     <button id="btnTheme" class="theme-toggle">🌙</button>
-    <button id="btnAdm" class="btn-adm">⚙️</button>
-    <!-- ADM dropdown -->
-    <div id="admFields">
-      <input type="email" id="email" placeholder="Email" />
-      <input type="password" id="password" placeholder="Senha" />
-      <button id="loginBtn">Entrar</button>
-      <div id="error" class="error"></div>
-    </div>
   </div>
 
   <h1 class="title">Roteiro de Atendimento</h1>
 
-  <!-- Operador -->
+  <!-- Operador / Admin -->
   <div class="role-card">
     <div class="icon">
       <img src="img/operador-de-telemarketing.png" alt="Operador de Telemarketing">
     </div>
     <div id="userBox">
-      <input type="text" id="userName" placeholder="Digite seu usuário" />
-      <button id="userLoginBtn">Entrar</button>
+      <input type="text" id="loginInput" placeholder="Digite seu usuário ou e-mail" />
+      <input type="password" id="password" placeholder="Senha (somente admin)" style="display:none;" />
+      <button id="loginBtn">Entrar</button>
       <div id="userError" class="error"></div>
     </div>
   </div>
@@ -293,67 +253,68 @@ import { doc, getDoc }
 const ADM_EMAILS = ["seuemail@dominio.com","admin@gmail.com"];
 
 const auth = getAuth(app);
-const btnAdm = document.getElementById("btnAdm");
-const admFields = document.getElementById("admFields");
+const loginInput = document.getElementById("loginInput");
+const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
-const errorDiv = document.getElementById("error");
-
-const userNameInput = document.getElementById("userName");
-const userLoginBtn = document.getElementById("userLoginBtn");
 const userError = document.getElementById("userError");
 
-// Toggle ADM dropdown
-btnAdm.addEventListener("click", () => {
-  admFields.style.display = admFields.style.display === "block" ? "none" : "block";
-});
-
-// Login Admin
-loginBtn?.addEventListener("click", async () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    if (ADM_EMAILS.includes(email)) {
-      window.location.href = "index.html";
-    } else {
-      errorDiv.textContent = "Este e-mail não tem acesso de administrador.";
-    }
-  } catch (e) {
-    errorDiv.textContent = "Erro: " + e.message;
+// Mostrar campo senha se for email admin
+loginInput.addEventListener("input", () => {
+  const val = loginInput.value.trim().toLowerCase();
+  if (ADM_EMAILS.includes(val)) {
+    passwordInput.style.display = "block";
+  } else {
+    passwordInput.style.display = "none";
+    passwordInput.value = "";
   }
 });
 
-// Login Operador
-async function loginOperador() {
-  const nome = userNameInput.value.trim().toLowerCase();
-  if (!nome) {
-    userError.textContent = "Digite um usuário válido.";
+loginBtn.addEventListener("click", async () => {
+  const val = loginInput.value.trim().toLowerCase();
+
+  if (!val) {
+    userError.textContent = "Digite um usuário ou e-mail.";
     return;
   }
 
+  // --- Admin ---
+  if (ADM_EMAILS.includes(val)) {
+    const senha = passwordInput.value;
+    if (!senha) {
+      userError.textContent = "Digite a senha do administrador.";
+      return;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, val, senha);
+      window.location.href = "index.html";
+    } catch (e) {
+      userError.textContent = "Erro: " + e.message;
+    }
+    return;
+  }
+
+  // --- Operador ---
   try {
-    const snap = await getDoc(doc(db,"operadores",nome));
+    const snap = await getDoc(doc(db, "operadores", val));
     if (!snap.exists()) {
       userError.textContent = "Usuário não encontrado.";
       return;
     }
 
-    // autentica anonimamente
     const cred = await signInAnonymously(auth);
+    await updateProfile(cred.user, { displayName: val });
 
-    // define displayName para sabermos quem é no operador.html
-    await updateProfile(cred.user,{ displayName: nome });
-
-    localStorage.setItem("operador", nome);
+    localStorage.setItem("operador", val);
     window.location.href = "operador.html";
-
   } catch (e) {
-    console.error("Erro login operador:",e);
+    console.error("Erro login operador:", e);
     userError.textContent = "Erro ao logar: " + (e.message || e.code);
   }
-}
-userLoginBtn?.addEventListener("click", loginOperador);
-userNameInput?.addEventListener("keypress", e => { if(e.key==="Enter") loginOperador(); });
+});
+
+// Enter para enviar
+loginInput.addEventListener("keypress", e => { if (e.key === "Enter") loginBtn.click(); });
+passwordInput.addEventListener("keypress", e => { if (e.key === "Enter") loginBtn.click(); });
 </script>
 
 <script>
