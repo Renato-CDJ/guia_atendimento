@@ -4,7 +4,7 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import { getAuth, signInAnonymously, updateProfile } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-// Configuração do Firebase
+// Configuração
 const firebaseConfig = {
   apiKey: "AIzaSyDM-cWulKkn5RAT6tns0BktHkRdfFt4-0s",
   authDomain: "roteiro-a6cb0.firebaseapp.com",
@@ -19,7 +19,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-// Expondo serviços principais
+// Expondo
 const db = getFirestore(app);
 const auth = getAuth(app);
 

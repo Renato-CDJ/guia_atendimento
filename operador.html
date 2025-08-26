@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="roteiro.css" />
   <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
 
-  <!-- Variáveis e título animado (mesmo comportamento do login) -->
   <style>
     :root{
       --accent-dark: #00c853;
@@ -16,74 +15,64 @@
       --accent2-light: #ff9800;
     }
     .title {
-  font-size: clamp(34px, 5vw, 40px);
-  font-weight: 900;
-  text-align: center;
-  margin: 10px 0 20px;
-  background: linear-gradient(90deg, var(--accent-dark, #00c853), var(--accent2-dark, #00e676));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: glow-dark 3s infinite ease-in-out;
-}
-body[data-theme="light"] .title {
-  background: linear-gradient(90deg, var(--accent-light, #ff5722), var(--accent2-light, #ff9800));
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: glow-light 3s infinite ease-in-out;
-}
+      font-size: clamp(34px, 5vw, 40px);
+      font-weight: 900;
+      text-align: center;
+      margin: 10px 0 20px;
+      background: linear-gradient(90deg, var(--accent-dark), var(--accent2-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow-dark 3s infinite ease-in-out;
+    }
+    body[data-theme="light"] .title {
+      background: linear-gradient(90deg, var(--accent-light), var(--accent2-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow-light 3s infinite ease-in-out;
+    }
+    @keyframes glow-dark {
+      0%,100% { filter: drop-shadow(0 0 6px rgba(0,200,83,.5)); }
+      50% { filter: drop-shadow(0 0 18px rgba(0,200,83,.9)); }
+    }
+    @keyframes glow-light {
+      0%,100% { filter: drop-shadow(0 0 6px rgba(255,87,34,.5)); }
+      50% { filter: drop-shadow(0 0 18px rgba(255,87,34,.9)); }
+    }
+    header .toolbar #searchInput{ flex: 1 1 600px; min-width: clamp(420px, 50vw, 380px); }
 
-@keyframes glow-dark {
-  0%,100% { filter: drop-shadow(0 0 6px rgba(0,200,83,.5)); }
-  50% { filter: drop-shadow(0 0 18px rgba(0,200,83,.9)); }
-}
-@keyframes glow-light {
-  0%,100% { filter: drop-shadow(0 0 6px rgba(255,87,34,.5)); }
-  50% { filter: drop-shadow(0 0 18px rgba(255,87,34,.9)); }
-}
-
-/* Barra de pesquisa mais larga*/
-header .toolbar #searchInput{
-  flex: 1 1 600px;
-  min-width: clamp(420px, 50vw, 380px);
-}
-
-</style>
+    /* Indicador de status */
+    .status-wrap{ display:flex; align-items:center; gap:8px; }
+    .status-indicator{ font-size:18px; line-height:1; }
+    .status-text{ font-size:12px; opacity:.85; }
+  </style>
 </head>
 <body data-role="operador">
   <div class="container">
-    <!-- Cabeçalho -->
     <header>
-      <div><h1 class="title">Roteiro de Atendimento</h1></div>
+      <div class="status-wrap">
+        <h1 class="title">Roteiro de Atendimento</h1>
+        <span id="statusIcon" class="status-indicator" title="Status">⚪</span>
+        <span id="statusText" class="status-text">Offline</span>
+      </div>
       <div class="toolbar">
         <input type="text" id="searchInput" class="select" placeholder="🔍 Pesquisar..." />
         <button id="btnToggleTheme" class="badge">🌗 Tema</button>
         <button id="btnLogout" class="badge">🚪 Sair</button>
-
       </div>
     </header>
 
-    <!-- Barra de progresso -->
-    <div class="progress">
-      <div class="progressbar"><div id="bar"></div></div>
-    </div>
+    <div class="progress"><div class="progressbar"><div id="bar"></div></div></div>
 
-    <!-- Alerta -->
     <div id="tabAlert" class="tab-alert">
-      <div class="msg">
-        <b><i>Caso a ligação seja interrompida ou cliente desligou, verifique a tabulação no ícone (✔) abaixo</i></b> ⬇️
-      </div>
+      <div class="msg"><b><i>Caso a ligação seja interrompida ou cliente desligou, verifique a tabulação no ícone (✔) abaixo</i></b> ⬇️</div>
       <span class="arrow"></span>
     </div>
 
-    <!-- Fluxo -->
     <main id="flow"></main>
-
-    <!-- Botões globais -->
     <div id="globalActions" class="global-actions"></div>
   </div>
 
-  <!-- Modal de Tabulação -->
+  <!-- Modal -->
   <div id="tabModal" class="modal">
     <div class="modal-content">
       <span id="closeModal" class="close">&times;</span>
@@ -92,7 +81,6 @@ header .toolbar #searchInput{
     </div>
   </div>
 
-  <!-- Atalhos -->
   <div class="bottom-shortcuts">
     <a href="tabulacoes.html">📑 Tabulações</a>
     <a href="situacoes.html">📝 Situações</a>
@@ -100,7 +88,6 @@ header .toolbar #searchInput{
     <button id="noteToggle">📝 Bloco de notas</button>
   </div>
 
-  <!-- Painel de Notas -->
   <div id="notePanel">
     <div id="noteToolbar">
       <button onclick="formatNote('bold')"><b>B</b></button>
@@ -112,149 +99,148 @@ header .toolbar #searchInput{
     <div id="noteEditor" contenteditable="true"></div>
   </div>
 
-  <!-- App -->
-<script src="roteiro.js"></script>
+  <script src="roteiro.js"></script>
 
-<!-- Bloco de notas + status online -->
 <script type="module">
-  import { db } from "./firebase.js";
-  import { doc, getDoc, setDoc, updateDoc, serverTimestamp } 
-    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { auth, db } from "./firebase.js";
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-  const noteToggle = document.getElementById("noteToggle");
-  const notePanel  = document.getElementById("notePanel");
-  const noteEditor = document.getElementById("noteEditor");
-  const noteClose  = document.getElementById("noteClose");
+/* ---------- UI: Indicador de status ---------- */
+const statusIcon = document.getElementById("statusIcon");
+const statusText = document.getElementById("statusText");
+function setStatusUI(online){
+  statusIcon.textContent = online ? "🟢" : "⚪";
+  statusText.textContent = online ? "Online" : "Offline";
+}
 
-  noteToggle.addEventListener("click", () => notePanel.classList.toggle("active"));
-  noteClose?.addEventListener("click", () => notePanel.classList.remove("active"));
+/* ---------- Bloco de Notas ---------- */
+const noteToggle = document.getElementById("noteToggle");
+const notePanel = document.getElementById("notePanel");
+const noteEditor = document.getElementById("noteEditor");
+const noteClose = document.getElementById("noteClose");
 
-  window.formatNote = (cmd) => {
-    document.execCommand(cmd, false, null);
-    saveNotes();
-  };
+noteToggle.addEventListener("click",()=>notePanel.classList.toggle("active"));
+noteClose?.addEventListener("click",()=>notePanel.classList.remove("active"));
+window.formatNote=(cmd)=>{ document.execCommand(cmd,false,null); saveNotes(); };
 
-  const noteDocRef = doc(db, "anotacoes", "operador");
+let noteDocRef=null;
+async function saveNotes(){
+  if(!noteDocRef) return;
+  try{
+    await setDoc(noteDocRef,{conteudo:noteEditor.innerHTML, atualizado:new Date().toISOString()},{merge:true});
+  }catch(e){ console.error("Erro nota:",e); }
+}
+async function loadNotes(){
+  if(!noteDocRef) return;
+  try{
+    const snap=await getDoc(noteDocRef);
+    if(snap.exists()) noteEditor.innerHTML=snap.data().conteudo||"";
+  }catch(e){ console.error("Erro carregar nota:",e); }
+}
+noteEditor.addEventListener("input", saveNotes);
 
-  async function saveNotes() {
-    try {
-      await setDoc(noteDocRef, {
-        conteudo: noteEditor.innerHTML,
-        atualizado: new Date().toISOString()
-      });
-      console.log("Nota salva no Firestore!");
-    } catch (e) { console.error("Erro ao salvar nota:", e); }
-  }
+/* ---------- Presença + Autenticação ---------- */
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){ window.location.href="login.html"; return; }
 
-  async function loadNotes() {
-    try {
-      const snap = await getDoc(noteDocRef);
-      if (snap.exists()) noteEditor.innerHTML = snap.data().conteudo || "";
-    } catch (e) { console.error("Erro ao carregar nota:", e); }
-  }
+  const nome = user.displayName || localStorage.getItem("operador") || "";
+  if(!nome){ await signOut(auth); window.location.href="login.html"; return; }
 
-  noteEditor.addEventListener("input", saveNotes);
+  // Notas salvas por UID (compatível com suas regras)
+  noteDocRef = doc(db,"anotacoes", user.uid);
   loadNotes();
 
-  // === STATUS ONLINE DO OPERADOR ===
-  const operador = localStorage.getItem("operador");
-  if (operador) {
-    const statusRef = doc(db, "status_online", operador);
+  const statusRef = doc(db,"status_online", nome);
 
-    // Marca como online
-    setDoc(statusRef, {
-      nome: operador,
-      online: true,
-      conectadoEm: serverTimestamp(),
-      ultimoPing: serverTimestamp()
-    }, { merge: true });
-
-    // Atualiza "ultimoPing" a cada 30s
-    setInterval(() => {
-      updateDoc(statusRef, { ultimoPing: serverTimestamp(), online: true });
-    }, 30000);
-
-    // Ao fechar aba ou sair -> marca como offline
-    window.addEventListener("beforeunload", async () => {
-      await updateDoc(statusRef, { online: false, desconectadoEm: serverTimestamp() });
-    });
-  }
-</script>
-
-<script>
-// === PROGRESSO baseado em botões de FINALIZAR / VOLTAR AO INÍCIO ===
-(function(){
-  const bar = document.getElementById("bar");
-  if(!bar) return;
-
-  const setProgress = (p)=>{
-    const pct = Math.max(0, Math.min(100, Math.round(p)));
-    bar.style.width = pct + "%";
-    bar.setAttribute("aria-valuenow", pct);
-  };
-
-  const actions = document.getElementById("globalActions");
-
-  function isFinalizeElement(el){
-    if(!el) return false;
-    const t = (el.textContent || "").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (/\b(finalizar|finaliza|concluir|encerrar|tabular|fim)\b/.test(t)) return true;
-    const id = (el.id || "").toLowerCase();
-    if (/final/.test(id)) return true;
-    if (el.dataset && (el.dataset.finalizar==='1' || el.dataset.action==='finalizar')) return true;
-    return false;
-  }
-
-  function scanForFinalize(root){
-    if(!root) return false;
-    const candidates = root.querySelectorAll("button, a, [role='button']");
-    for (const el of candidates){
-      if (isFinalizeElement(el)) return true;
-    }
-    return false;
-  }
-
-  const observer = new MutationObserver(()=>{
-    if (scanForFinalize(actions)) setProgress(100);
-  });
-  if(actions){
-    observer.observe(actions, { childList: true, subtree: true });
-    if (scanForFinalize(actions)) setProgress(100);
-  }
-
-  document.addEventListener("click", (e)=>{
-    const btn = e.target.closest("button, a, [role='button']");
-    if(!btn) return;
-    const t = (btn.textContent || "").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-    if (isFinalizeElement(btn)) {
-      setProgress(100);
+  // Se bloqueado, cai fora
+  try{
+    const s = await getDoc(statusRef);
+    if(s.exists() && s.data().bloqueado){
+      alert("Seu acesso foi bloqueado pelo administrador.");
+      await signOut(auth);
+      localStorage.removeItem("operador");
+      window.location.href="login.html";
       return;
     }
-    if (/\b(voltar.*inicio|inicio|comecar|recomecar|reiniciar)\b/.test(t) || btn.id === "btnInicio") {
-      setProgress(0);
+  }catch(e){ console.error(e); }
+
+  // Marca online
+  try{
+    await setDoc(statusRef,{
+      nome, uid:user.uid, online:true,
+      forcarLogout:false,
+      conectadoEm:serverTimestamp(),
+      ultimoPing:serverTimestamp()
+    },{merge:true});
+    setStatusUI(true);
+  }catch(e){ console.error("Erro set online:",e); }
+
+  // Heartbeat
+  const ping = setInterval(()=>{
+    updateDoc(statusRef,{ultimoPing:serverTimestamp(),online:true}).catch(()=>{});
+  },30000);
+
+  // Escuta mudanças (desconexão forçada / online=false)
+  let forced = false;
+  onSnapshot(statusRef,(snap)=>{
+    if(!snap.exists()) return;
+    const data = snap.data();
+    setStatusUI(!!data.online);
+    if(!forced && (data.forcarLogout || data.online === false)){
+      forced = true;
+      alert("Você foi desconectado pelo administrador.");
+      clearInterval(ping);
+      signOut(auth).finally(()=>{
+        localStorage.removeItem("operador");
+        window.location.href="login.html";
+      });
     }
   });
-})();
 
-window._progress = {
-  set: (p)=>{
-    const bar = document.getElementById("bar");
-    if(bar){ bar.style.width = Math.max(0,Math.min(100,p)) + "%"; }
-  },
-  full: ()=> window._progress.set(100),
-  reset: ()=> window._progress.set(0),
-};
+  // Ao sair da página
+  window.addEventListener("beforeunload", async ()=>{
+    try{ await updateDoc(statusRef,{online:false,desconectadoEm:serverTimestamp()}); }catch{}
+    clearInterval(ping);
+  });
+
+  // Botão sair
+  document.getElementById("btnLogout").addEventListener("click",async()=>{
+    try{ await updateDoc(statusRef,{online:false,desconectadoEm:serverTimestamp(),forcarLogout:false}); }catch{}
+    try{ await signOut(auth); }catch{}
+    localStorage.removeItem("operador");
+    window.location.href="login.html";
+  });
+});
 </script>
 
 <script>
-  const btnLogout = document.getElementById("btnLogout");
-  btnLogout?.addEventListener("click", () => {
-    localStorage.removeItem("operador"); 
-    window.location.href = "login.html";
+// === Barra de progresso ===
+(function(){
+  const bar=document.getElementById("bar"); if(!bar) return;
+  const setProgress=(p)=>{ const pct=Math.max(0,Math.min(100,Math.round(p)));
+    bar.style.width=pct+"%"; bar.setAttribute("aria-valuenow",pct); };
+  const actions=document.getElementById("globalActions");
+  function isFinalizeElement(el){ if(!el) return false;
+    const t=(el.textContent||"").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(/\b(finalizar|fim|encerrar|tabular|concluir)\b/.test(t)) return true;
+    const id=(el.id||"").toLowerCase();
+    return /final/.test(id)|| (el.dataset&&(el.dataset.finalizar==='1'||el.dataset.action==='finalizar'));
+  }
+  function scanForFinalize(root){ if(!root) return false;
+    return Array.from(root.querySelectorAll("button,a,[role='button']")).some(isFinalizeElement); }
+  const observer=new MutationObserver(()=>{ if(scanForFinalize(actions)) setProgress(100); });
+  if(actions){ observer.observe(actions,{childList:true,subtree:true});
+    if(scanForFinalize(actions)) setProgress(100); }
+  document.addEventListener("click",(e)=>{
+    const btn=e.target.closest("button,a,[role='button']"); if(!btn) return;
+    const t=(btn.textContent||"").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(isFinalizeElement(btn)) setProgress(100);
+    if(/\b(voltar.*inicio|inicio|recomecar|reiniciar)\b/.test(t)||btn.id==="btnInicio"){ setProgress(0); }
   });
+})();
 </script>
-
-
 </body>
 </html>

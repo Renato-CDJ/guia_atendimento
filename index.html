@@ -6,45 +6,33 @@
   <title>Roteiro de Atendimento</title>
   <link rel="stylesheet" href="roteiro.css" />
   <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
+  <style>
+    .title {
+      font-size: clamp(34px, 5vw, 40px);
+      font-weight: 900;
+      text-align: center;
+      margin: 10px 0 20px;
+      background: linear-gradient(90deg,#00c853,#00e676);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow-dark 3s infinite ease-in-out;
+    }
+    body[data-theme="light"] .title {
+      background: linear-gradient(90deg,#ff5722,#ff9800);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow-light 3s infinite ease-in-out;
+    }
+    @keyframes glow-dark {0%,100%{filter:drop-shadow(0 0 6px rgba(0,200,83,.5));}50%{filter:drop-shadow(0 0 18px rgba(0,200,83,.9));}}
+    @keyframes glow-light {0%,100%{filter:drop-shadow(0 0 6px rgba(255,87,34,.5));}50%{filter:drop-shadow(0 0 18px rgba(255,87,34,.9));}}
+  </style>
 </head>
-<style>
-  .title {
-  font-size: clamp(34px, 5vw, 40px);
-  font-weight: 900;
-  text-align: center;
-  margin: 10px 0 20px;
-  background: linear-gradient(90deg, var(--accent-dark, #00c853), var(--accent2-dark, #00e676));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: glow-dark 3s infinite ease-in-out;
-}
-body[data-theme="light"] .title {
-  background: linear-gradient(90deg, var(--accent-light, #ff5722), var(--accent2-light, #ff9800));
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: glow-light 3s infinite ease-in-out;
-}
-
-@keyframes glow-dark {
-  0%,100% { filter: drop-shadow(0 0 6px rgba(0,200,83,.5)); }
-  50% { filter: drop-shadow(0 0 18px rgba(0,200,83,.9)); }
-}
-@keyframes glow-light {
-  0%,100% { filter: drop-shadow(0 0 6px rgba(255,87,34,.5)); }
-  50% { filter: drop-shadow(0 0 18px rgba(255,87,34,.9)); }
-}
-
-</style>
 <body>
   <div class="container">
     <!-- Cabeçalho -->
     <header>
-      <div>
-        <h1 class="title">Roteiro de Atendimento</h1>
-      </div>
+      <div><h1 class="title">Roteiro de Atendimento</h1></div>
       <div class="toolbar">
-        <!-- Campo de pesquisa -->
         <input type="text" id="searchInput" class="select" placeholder="🔍 Pesquisar..." />
         <div class="jump" id="jumpWrapper">
           <span class="muted">Telas:</span>
@@ -53,47 +41,29 @@ body[data-theme="light"] .title {
         </div>
         <button id="btnToggleTheme" class="badge">🌗 Tema</button>
         <button id="btnToggleMode" class="badge">⚙️ ADM</button>
+        <a href="criar-usuario.html" class="badge">➕ Criar Operadores</a>
       </div>
     </header>
 
-    <!-- Barra de progresso -->
-    <div class="progress">
-      <div class="progressbar"><div id="bar"></div></div>
-    </div>
+    <!-- Barra progresso -->
+    <div class="progress"><div class="progressbar"><div id="bar"></div></div></div>
 
-    <!-- Alerta global abaixo da barra -->
-    <div id="tabAlert" class="tab-alert">
-    <div class="msg">
-        <b><i>Caso a ligação seja interrompida ou cliente desligou, verifique a tabulação no ícone (✔) abaixo</i></b> ⬇️
-    </div>
-      <span class="arrow"></span>
-    </div>
+    <!-- Alerta -->
+    <div id="tabAlert" class="tab-alert"><div class="msg">
+      <b><i>Caso a ligação seja interrompida ou cliente desligou, verifique a tabulação no ícone (✔) abaixo</i></b> ⬇️
+    </div><span class="arrow"></span></div>
 
     <!-- Fluxo -->
     <main id="flow"></main>
-
-    <!-- Container dos botões globais -->
     <div id="globalActions" class="global-actions"></div>
 
     <!-- Painel ADM -->
     <aside class="adm" id="admPanel">
-      <header>
-        <div>Painel ADM</div>
-        <button id="btnAdmClose" class="badge">✕</button>
-      </header>
-      
-      <div class="tabs">
-        <button data-tab="geral" class="tab active">⚙ Geral</button>
-      </div>
-
-      <!-- Aba Geral -->
+      <header><div>Painel ADM</div><button id="btnAdmClose" class="badge">✕</button></header>
+      <div class="tabs"><button data-tab="geral" class="tab active">⚙ Geral</button></div>
       <div class="tab-content active" id="tab-geral">
-        <label>ID da tela</label>
-        <input type="text" id="fldId">
-
-        <label>Título da tela</label>
-        <input type="text" id="fldTitle">
-
+        <label>ID da tela</label><input type="text" id="fldId">
+        <label>Título da tela</label><input type="text" id="fldTitle">
         <div class="adm-toolbar">
           <button type="button" onclick="wrapText('fldBody','<b>','</b>')"><b>B</b></button>
           <button type="button" onclick="wrapText('fldBody','<i>','</i>')"><i>I</i></button>
@@ -101,47 +71,35 @@ body[data-theme="light"] .title {
           <button type="button" onclick="insertList('fldBody')">• Lista</button>
           <button type="button" onclick="setColor('fldBody')">🎨</button>
         </div>
-
-        <label>Texto do script</label>
-        <textarea id="fldBody"></textarea>
-
-        <label>Tabulação</label>
-        <input type="text" id="fldTab">
+        <label>Texto do script</label><textarea id="fldBody"></textarea>
+        <label>Tabulação</label><input type="text" id="fldTab">
 
         <!-- NOVOS CAMPOS -->
-        
         <label>Tamanho do texto (quadro)</label>
         <div class="control-group">
-        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeBody', -2)">−</button>
-        <input type="number" id="fldFontSizeBody" min="12" max="40" value="18">
-        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeBody', 2)">+</button>
+          <button type="button" onclick="adjustField('fldFontSizeBody',-2)">−</button>
+          <input type="number" id="fldFontSizeBody" min="12" max="40" value="18">
+          <button type="button" onclick="adjustField('fldFontSizeBody',2)">+</button>
         </div>
-
         <label>Tamanho do texto (botões)</label>
         <div class="control-group">
-        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeButtons', -2)">−</button>
-        <input type="number" id="fldFontSizeButtons" min="10" max="30" value="16">
-        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeButtons', 2)">+</button>
+          <button type="button" onclick="adjustField('fldFontSizeButtons',-2)">−</button>
+          <input type="number" id="fldFontSizeButtons" min="10" max="30" value="16">
+          <button type="button" onclick="adjustField('fldFontSizeButtons',2)">+</button>
         </div>
-
         <label>Tamanho do título</label>
         <div class="control-group">
-        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeTitle', -2)">−</button>
-        <input type="number" id="fldFontSizeTitle" min="14" max="50" value="22">
-        <button type="button" class="btn-step" onclick="adjustField('fldFontSizeTitle', 2)">+</button>
+          <button type="button" onclick="adjustField('fldFontSizeTitle',-2)">−</button>
+          <input type="number" id="fldFontSizeTitle" min="14" max="50" value="22">
+          <button type="button" onclick="adjustField('fldFontSizeTitle',2)">+</button>
         </div>
-
         <label>Espaçamento interno (padding)</label>
         <div class="control-group">
-        <button type="button" class="btn-step" onclick="adjustField('fldPaddingBody', -2)">−</button>
-        <input type="number" id="fldPaddingBody" min="0" max="50" value="16">
-        <button type="button" class="btn-step" onclick="adjustField('fldPaddingBody', 2)">+</button>
+          <button type="button" onclick="adjustField('fldPaddingBody',-2)">−</button>
+          <input type="number" id="fldPaddingBody" min="0" max="50" value="16">
+          <button type="button" onclick="adjustField('fldPaddingBody',2)">+</button>
         </div>
-
-        <!-- Checkbox para mostrar/ocultar Telas -->
         <label><input type="checkbox" id="chkShowJump"> Mostrar opção de Telas</label>
-
-        <!-- FIM NOVOS CAMPOS -->
       </div>
 
       <label>Botões</label>
@@ -156,16 +114,14 @@ body[data-theme="light"] .title {
       </div>
     </aside>
 
-    <!-- Scripts -->
     <script src="roteiro.js"></script>
   </div>
 
-    <!-- Modal de Tabulação -->
+  <!-- Modal -->
   <div id="tabModal" class="modal">
     <div class="modal-content">
       <span id="closeModal" class="close">&times;</span>
-      <h2>Tabulação</h2>
-      <p id="modalText"></p>
+      <h2>Tabulação</h2><p id="modalText"></p>
     </div>
   </div>
 
@@ -176,141 +132,87 @@ body[data-theme="light"] .title {
     <button id="noteToggle">📝 Bloco de notas</button>
   </div>
 
-    <!-- Painel de Notas -->
+  <!-- Painel Notas -->
   <div id="notePanel">
-  <div id="noteToolbar">
-    <button onclick="formatNote('bold')"><b>B</b></button>
-    <button onclick="formatNote('italic')"><i>I</i></button>
-    <button onclick="formatNote('underline')"><u>U</u></button>
-    <button onclick="formatNote('insertUnorderedList')">• Lista</button>
-    <button id="noteClose">✕</button>
-  </div>
+    <div id="noteToolbar">
+      <button onclick="formatNote('bold')"><b>B</b></button>
+      <button onclick="formatNote('italic')"><i>I</i></button>
+      <button onclick="formatNote('underline')"><u>U</u></button>
+      <button onclick="formatNote('insertUnorderedList')">• Lista</button>
+      <button id="noteClose">✕</button>
+    </div>
     <div id="noteEditor" contenteditable="true"></div>
   </div>
 
-  <script type="module">
-  import { getAuth, signOut, onAuthStateChanged } 
-    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-  import { app } from "./firebase.js";
-
-  const auth = getAuth(app);
-  const btnLogout = document.getElementById("btnLogout");
-
-  // Força redirecionar pro login se não tiver usuário
-  onAuthStateChanged(auth, user => {
-    if (!user) {
-      window.location.href = "login.html";
-    }
-  });
-
-  btnLogout?.addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-      window.location.href = "login.html";
-    } catch (e) {
-      alert("Erro ao sair: " + e.message);
-    }
-  });
-</script>
-
 <script type="module">
-  import { db } from "./firebase.js";
-  import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import { app, db } from "./firebase.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-  const noteToggle = document.getElementById("noteToggle");
-  const notePanel  = document.getElementById("notePanel");
-  const noteEditor = document.getElementById("noteEditor");
-  const noteClose  = document.getElementById("noteClose");
+const auth=getAuth(app);
+const btnLogout=document.getElementById("btnLogout");
+const noteToggle=document.getElementById("noteToggle");
+const notePanel=document.getElementById("notePanel");
+const noteEditor=document.getElementById("noteEditor");
+const noteClose=document.getElementById("noteClose");
 
-  // Abrir/fechar painel
-  noteToggle.addEventListener("click", () => {
-    notePanel.classList.toggle("active");
-  });
-  noteClose?.addEventListener("click", () => {
-  notePanel.classList.remove("active");
-  });
+let noteDocRef=null;
 
-  function formatAdm(cmd) {
-  document.execCommand(cmd, false, null);
-  // depois podemos sincronizar com o preview
-  }
-
-  // Formatação
-  window.formatNote = (cmd) => {
-    document.execCommand(cmd, false, null);
-    saveNotes();
-  };
-
-  // === Firestore ===
-  const noteDocRef = doc(db, "anotacoes", "usuario1"); 
-  // ⚠️ Troque "usuario1" pelo uid real quando integrar com Auth
-
-  async function saveNotes() {
-    try {
-      await setDoc(noteDocRef, {
-        conteudo: noteEditor.innerHTML,
-        atualizado: new Date().toISOString()
-      });
-      console.log("Nota salva no Firestore!");
-    } catch (e) {
-      console.error("Erro ao salvar nota:", e);
-    }
-  }
-
-  async function loadNotes() {
-    try {
-      const snap = await getDoc(noteDocRef);
-      if (snap.exists()) {
-        noteEditor.innerHTML = snap.data().conteudo || "";
-      }
-    } catch (e) {
-      console.error("Erro ao carregar nota:", e);
-    }
-  }
-
-  // Auto-save
-  noteEditor.addEventListener("input", saveNotes);
-
-  // Carregar ao abrir
+// Proteção ADM
+onAuthStateChanged(auth,(user)=>{
+  if(!user){ window.location.href="login.html"; return; }
+  noteDocRef=doc(db,"anotacoes",user.uid); // usa UID real
   loadNotes();
-</script>
+});
 
+// Logout
+btnLogout?.addEventListener("click",async()=>{
+  try{ await signOut(auth); window.location.href="login.html"; }
+  catch(e){ alert("Erro ao sair: "+e.message); }
+});
+
+// Notas
+noteToggle.addEventListener("click",()=>notePanel.classList.toggle("active"));
+noteClose?.addEventListener("click",()=>notePanel.classList.remove("active"));
+
+window.formatNote=(cmd)=>{ document.execCommand(cmd,false,null); saveNotes(); };
+
+async function saveNotes(){
+  if(!noteDocRef) return;
+  try{
+    await setDoc(noteDocRef,{conteudo:noteEditor.innerHTML,atualizado:new Date().toISOString()});
+  }catch(e){ console.error("Erro salvar:",e); }
+}
+
+async function loadNotes(){
+  if(!noteDocRef) return;
+  try{
+    const snap=await getDoc(noteDocRef);
+    if(snap.exists()) noteEditor.innerHTML=snap.data().conteudo||"";
+  }catch(e){ console.error("Erro carregar:",e); }
+}
+noteEditor.addEventListener("input", saveNotes);
+</script>
 
 <script>
-  // Aplica tags no texto selecionado do textarea
-function wrapText(fieldId, before, after) {
-  const textarea = document.getElementById(fieldId);
-  const start = textarea.selectionStart;
-  const end   = textarea.selectionEnd;
-  const selected = textarea.value.substring(start, end);
-
-  const newText = before + selected + after;
-
-  textarea.setRangeText(newText, start, end, 'end');
-  textarea.focus();
+function wrapText(fieldId,before,after){
+  const t=document.getElementById(fieldId);
+  const s=t.selectionStart,e=t.selectionEnd;
+  const sel=t.value.substring(s,e);
+  t.setRangeText(before+sel+after,s,e,'end'); t.focus();
 }
-
-// Insere lista simples
-function insertList(fieldId) {
-  const textarea = document.getElementById(fieldId);
-  const start = textarea.selectionStart;
-  const end   = textarea.selectionEnd;
-  const selected = textarea.value.substring(start, end);
-
-  const lines = selected.split("\n").map(l => l ? `<li>${l}</li>` : "").join("\n");
-  const newText = `<ul>\n${lines}\n</ul>`;
-
-  textarea.setRangeText(newText, start, end, 'end');
-  textarea.focus();
+function insertList(fieldId){
+  const t=document.getElementById(fieldId);
+  const s=t.selectionStart,e=t.selectionEnd;
+  const sel=t.value.substring(s,e);
+  const lines=sel.split("\n").map(l=>l?`<li>${l}</li>`:"").join("\n");
+  t.setRangeText(`<ul>\n${lines}\n</ul>`,s,e,'end'); t.focus();
 }
-
-// Aplica cor escolhida
-function setColor(fieldId) {
-  const color = prompt("Digite a cor (ex: red, #ff0000):", "#ff0000");
-  if (!color) return;
-  wrapText(fieldId, `<span style="color:${color}">`, `</span>`);
+function setColor(fieldId){
+  const c=prompt("Digite a cor (ex: red, #ff0000):","#ff0000");
+  if(!c) return;
+  wrapText(fieldId,`<span style="color:${c}">`,`</span>`);
 }
 </script>
-
 </body>
 </html>
