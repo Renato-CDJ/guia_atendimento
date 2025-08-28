@@ -7,24 +7,30 @@
   <link rel="stylesheet" href="roteiro.css" />
   <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
   <style>
-    .title {
-      font-size: clamp(34px, 5vw, 40px);
-      font-weight: 900;
-      text-align: center;
-      margin: 10px 0 20px;
-      background: linear-gradient(90deg,#00c853,#00e676);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: glow-dark 3s infinite ease-in-out;
-    }
-    body[data-theme="light"] .title {
-      background: linear-gradient(90deg,#ff5722,#ff9800);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: glow-light 3s infinite ease-in-out;
-    }
-    @keyframes glow-dark {0%,100%{filter:drop-shadow(0 0 6px rgba(0,200,83,.5));}50%{filter:drop-shadow(0 0 18px rgba(0,200,83,.9));}}
-    @keyframes glow-light {0%,100%{filter:drop-shadow(0 0 6px rgba(255,87,34,.5));}50%{filter:drop-shadow(0 0 18px rgba(255,87,34,.9));}}
+  .title {
+    font-size: clamp(34px, 5vw, 40px);
+    font-weight: 900;
+    text-align: center;
+    margin: 10px 0 20px;
+    background: linear-gradient(90deg,#00c853,#00e676);
+    background-clip: text;           /*  versão padrão */
+    -webkit-background-clip: text;   /*  versão para navegadores baseados em Webkit */
+    -webkit-text-fill-color: transparent;
+    color: transparent;              /* fallback */
+    animation: glow-dark 3s infinite ease-in-out;
+  }
+
+  body[data-theme="light"] .title {
+    background: linear-gradient(90deg,#ff5722,#ff9800);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: glow-light 3s infinite ease-in-out;
+  }
+
+  @keyframes glow-dark {0%,100%{filter:drop-shadow(0 0 6px rgba(0,200,83,.5));}50%{filter:drop-shadow(0 0 18px rgba(0,200,83,.9));}}
+  @keyframes glow-light {0%,100%{filter:drop-shadow(0 0 6px rgba(255,87,34,.5));}50%{filter:drop-shadow(0 0 18px rgba(255,87,34,.9));}}
   </style>
 </head>
 <body>
