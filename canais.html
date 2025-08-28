@@ -192,6 +192,31 @@
       document.body.setAttribute("data-theme", next);
       localStorage.setItem("theme", next);
     });
+
+    onAuthStateChanged(auth, user=>{
+  if(!user){
+    // se realmente não tiver login, volta pro login.html
+    window.location.href = "login.html";
+    return;
+  }
+
+  // aqui ainda tem usuário → checa se é admin
+  // supondo que no login você já define displayName ou claim
+  if(user.email && user.email.endsWith("@admin.com")){ 
+    // ADMIN → pode editar
+    isAdmin = true;
+    btnToggleAdm.style.display = "";
+    btnCategorias.style.display = "";
+    btnEditFromModal.style.display = "";
+  } else {
+    // OPERADOR → apenas leitura
+    isAdmin = false;
+    btnToggleAdm.style.display = "none";
+    btnCategorias.style.display = "none";
+    btnEditFromModal.style.display = "none";
+  }
+});
+
   </script>
 </body>
 </html>

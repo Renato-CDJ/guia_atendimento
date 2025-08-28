@@ -326,21 +326,17 @@ onAuthStateChanged(auth, async (user)=>{
     if(!snap.exists()) return;
     const data = snap.data();
     setStatusUI(!!data.online);
-    if(!forced && (data.forcarLogout || data.online === false)){
-      forced = true;
-      alert("Você foi desconectado pelo administrador.");
-      clearInterval(ping);
-      signOut(auth).finally(()=>{
-        localStorage.removeItem("operador");
-        window.location.href="login.html";
-      });
-    }
+    if (!forced && data.forcarLogout) {
+    forced = true;
+    alert("Você foi desconectado pelo administrador.");
+    window.location.href="login.html";
+  }
+
   });
 
   // Ao sair
-  window.addEventListener("beforeunload", async ()=>{
-    try{ await updateDoc(statusRef,{online:false,desconectadoEm:serverTimestamp()}); }catch{}
-    clearInterval(ping);
+  window.addEventListener("beforeunload", ()=>{
+   clearInterval(ping);
   });
 
   // Botão sair

@@ -252,11 +252,18 @@
 
     /* auth */
     onAuthStateChanged(auth, user=>{
-      isAdmin = !!user;
-      btnToggleAdm.style.display = isAdmin ? "" : "none";
-      btnCategorias.style.display = isAdmin ? "" : "none";
-      btnEditFromModal.style.display = isAdmin ? "" : "none";
-    });
+  if(!user){
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Somente quem NÃO é anônimo (admin) tem edição
+  isAdmin = !!(user && !user.isAnonymous);
+  btnToggleAdm.style.display = isAdmin ? "" : "none";
+  btnCategorias.style.display = isAdmin ? "" : "none";
+  btnEditFromModal.style.display = isAdmin ? "" : "none";
+});
+
 
     /* categorias firestore */
     const qCats = query(collection(db,"categorias"), orderBy("nome"));

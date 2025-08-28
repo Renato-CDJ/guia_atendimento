@@ -219,10 +219,16 @@
     let cacheDocs = [];
     let isAdmin = false;
 
-    onAuthStateChanged(auth, user => {
-      isAdmin = !!user;
-      btnToggleAdm.style.display = isAdmin ? "" : "none";
-    });
+    onAuthStateChanged(auth, user=>{
+  if(!user){
+    window.location.href = "login.html";
+    return;
+  }
+
+  isAdmin = !!(user && !user.isAnonymous);
+  btnToggleAdm.style.display = isAdmin ? "" : "none";
+  });
+
 
     const q = query(collection(db, "tabulacoes"), orderBy("titulo"));
     onSnapshot(q, (snap) => {
