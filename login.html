@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Roteiro de Atendimento - Login</title>
-  <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
+  <link rel="icon" type="image/png" href="img/favicon.png">
   <style>
     :root {
       --accent-dark: #2c2c2c;
-      --accent2-dark: #2c2c2c;
       --accent-light: #ff5722;
       --accent2-light: #ff9800;
       --danger: #e53935;
@@ -16,34 +15,29 @@
 
     body {
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
       font-family: "Segoe UI", Roboto, Arial, sans-serif;
       background: #0f1113;
       color: #f5f7fa;
       transition: background .5s ease, color .5s ease;
-      overflow-x: hidden;
+      padding: 20px;
+      box-sizing: border-box;
     }
     body[data-theme="light"] {
       background: #ffffff;
       color: #1a1a1a;
     }
-    
-    /* Barra topo */
-    .topbar {
-      width: 100%;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      padding: 20px;
-      gap: 10px;
-      box-sizing: border-box;
-      position: relative;
-    }
 
-    /* Botão de Tema */
+    /* Topbar */
+    .topbar {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
     .theme-toggle {
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.3);
@@ -63,174 +57,136 @@
       text-align: center;
     }
 
-    /* Título */
-    .title {
-      font-size: clamp(32px, 7vw, 64px);
-      font-weight: 900;
-      text-align: center;
-      margin-top: 80px; 
-      margin-bottom: 300px;
-      background: linear-gradient(90deg, #ff5722, #ff9800); /* sempre laranja */
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: glow-dark 3s infinite ease-in-out, float 4s ease-in-out infinite;
+    /* ====================== LOGO ====================== */
+    .logo {
+      width: clamp(320px, 72vw, 980px);
+      margin-bottom: 52px;
+    }
+    .logo svg { width: 100%; height: auto; display: block; }
+
+    /* Texto “GRUPO” */
+    .grupo {
+      font-weight: 700;
+      letter-spacing: 14px;
+      font-size: 86px;
+      fill: url(#grupoGrad);
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,.3));
+    }
+    .grupo-glow {
+      animation: grupoGlow 3s ease-in-out infinite alternate;
+    }
+    @keyframes grupoGlow {
+      0% { filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+      100% { filter: drop-shadow(0 2px 6px rgba(255,255,255,.6)); }
     }
 
-    /* Tema escuro - título sempre laranja */
-    body[data-theme="dark"] .title {
-      background: linear-gradient(90deg, #ff5722, #ff9800);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: glow-dark 3s infinite ease-in-out, float 4s ease-in-out infinite;
+    /* Letras cromadas */
+    .chrome {
+      fill: url(#chromeGrad);
+      stroke: rgba(255,255,255,.65);
+      stroke-width: 2.2;
+      paint-order: stroke fill;
+      filter: url(#chromeFX);
     }
 
-    @keyframes float {
-      0%,100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
+    /* Barras laranjas */
+    .bars {
+      fill: url(#barGrad);
+      filter: url(#barFX);
+      stroke: rgba(255,255,255,.55);
+      stroke-width: 1.6;
+      paint-order: stroke fill;
     }
 
-    /* Operador */
-    .role-card {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
+    /* Brilho varrendo */
+    @keyframes sweep {
+      0%   { transform: translateX(-120%); }
+      100% { transform: translateX(120%);  }
+    }
+    .shine {
+      animation: sweep 4.5s linear infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .shine { animation: none; opacity: .25; }
+    }
+
+    /* Caixa de login */
+    #userBox {
+      padding: 28px 22px;
+      border-radius: 20px;
+      background: rgba(15, 17, 19, 0.8);
+      border: 2px solid var(--accent-dark);
+      box-shadow: 0 8px 25px rgba(255, 87, 34, 0.25);
+      max-width: 360px;
+      width: 100%;
+      backdrop-filter: blur(10px);
+      transition: all .3s ease;
+    }
+    #userBox:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 35px rgba(255, 87, 34, 0.4);
+    }
+
+    /* Inputs */
+    #userBox input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(255, 87, 34, 0.3);
+      background: rgba(255, 255, 255, 0.05);
+      color: inherit;
+      font-size: 15px;
+      outline: none;
+      margin-bottom: 12px;
+      transition: all .3s ease;
+      box-sizing: border-box;
+    }
+    #userBox input:focus {
+      border-color: var(--accent-dark);
+      box-shadow: 0 0 8px rgba(255, 87, 34, 0.6);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Botão */
+    #userBox button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 16px;
+      color: #fff;
+      background: linear-gradient(135deg, #2c2c2c, #3b3b3b, #ff5722, #ff9800);
+      background-size: 200% 200%;
       cursor: pointer;
+      transition: all .4s ease;
+      letter-spacing: 0.5px;
     }
-    .role-card .icon img {
-      width: clamp(160px, 50%, 150px);
-      height: auto;
-      object-fit: contain;
-      transition: transform 0.3s ease;
+    #userBox button:hover {
+      transform: translateY(-3px) scale(1.02);
+      filter: brightness(1.1);
+      box-shadow: 0 6px 18px rgba(255, 87, 34, 0.4);
+      background-position: right center;
     }
-    .role-card .icon img:hover { transform: scale(1.05); }
-
-    /* Login Box */
-#userBox {
-  margin-top: 30px;
-  padding: 28px 22px;
-  border-radius: 20px;
-  background: rgba(15, 17, 19, 0.8);
-  border: 2px solid var(--accent-dark);
-  box-shadow: 0 8px 25px rgba(255, 87, 34, 0.25);
-  max-width: 360px;
-  width: 90%;
-  backdrop-filter: blur(10px);
-  transition: all .3s ease;
-}
-#userBox:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 35px rgba(255, 87, 34, 0.4);
-}
-
-body[data-theme="light"] #userBox {
-  background: #fff;
-  border: 2px solid var(--accent-light);
-  box-shadow: 0 6px 20px rgba(255, 87, 34, 0.25);
-}
-
-/* Inputs */
-#userBox input {
-  width: 91%;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1.5px solid rgba(255, 87, 34, 0.3);
-  background: rgba(255, 255, 255, 0.05);
-  color: inherit;
-  font-size: 15px;
-  outline: none;
-  margin-bottom: 12px;
-  transition: all .3s ease;
-}
-#userBox input:focus {
-  border-color: var(--accent-dark);
-  box-shadow: 0 0 8px rgba(255, 87, 34, 0.6);
-  background: rgba(255, 255, 255, 0.08);
-}
-body[data-theme="light"] #userBox input {
-  background: #fafafa;
-  border: 1.5px solid #ddd;
-}
-body[data-theme="light"] #userBox input:focus {
-  border-color: var(--accent-light);
-  box-shadow: 0 0 8px rgba(255, 87, 34, 0.4);
-}
-
-/* Botão */
-#userBox button {
-  width: 100%;
-  margin-top: 12px;
-  padding: 14px;
-  border: none;
-  border-radius: 14px;
-  font-weight: 700;
-  font-size: 16px;
-  color: #fff;
-  background: linear-gradient(135deg, #2c2c2c, #3b3b3b, #ff5722, #ff9800);
-  background-size: 200% 200%;
-  cursor: pointer;
-  transition: all .4s ease;
-  letter-spacing: 0.5px;
-}
-
-#userBox button:hover {
-  transform: translateY(-3px) scale(1.02);
-  filter: brightness(1.1);
-  box-shadow: 0 6px 18px rgba(255, 87, 34, 0.4);
-  background-position: right center; /* anima o degradê no hover */
-}
 
     /* Rodapé Área de Qualidade */
-.quality {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: clamp(14px, 4vw, 20px);
-  font-style: italic;
-  font-weight: 600;
-  color: #ff5722;
-  white-space: nowrap;
-  overflow: hidden;
-  border-right: 2px solid #ff5722;
-  animation: 
-    typing 4s steps(20,end) infinite, /* reinicia do zero */
-    blink .7s step-end infinite;
-  pointer-events: none;
-}
-body[data-theme="light"] .quality {
-  color: #ff5722;
-  border-right-color: #ff5722;
-}
-
-/* Digitação */
-@keyframes typing {
-  0%   { width: 0; }
-  50%  { width: 200px; } /* ajusta ao tamanho do texto */
-  100% { width: 0; }     /* volta ao zero pra reiniciar */
-}
-
-/* Cursor piscando */
-@keyframes blink {
-  50% { border-color: transparent; }
-}
-
-/* Container central da tela */
-.main-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* centraliza vertical */
-  align-items: center;     /* centraliza horizontal */
-  min-height: 100vh;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-
+    .quality {
+      margin-top: 40px;
+      font-size: clamp(14px, 3vw, 18px);
+      font-style: italic;
+      font-weight: 600;
+      color: #ff5722;
+      text-align: center;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 2px solid #ff5722;
+      animation: typing 7s steps(20,end) infinite, blink .7s step-end infinite;
+    }
+    @keyframes typing { 0%{width:0} 50%{width:200px} 100%{width:0} }
+    @keyframes blink { 50%{border-color:transparent;} }
   </style>
 </head>
 <body>
@@ -239,112 +195,161 @@ body[data-theme="light"] .quality {
     <button id="btnTheme" class="theme-toggle">🌙</button>
   </div>
 
-  <h1 class="title">Roteiro de Atendimento</h1>
+  <!-- Logo Grupo Roveri -->
+  <div class="logo" aria-label="Logo Grupo Roveri">
+    <svg viewBox="0 0 1500 480" role="img" xmlns="http://www.w3.org/2000/svg">
+      <title>GRUPO ROVERI</title>
+      <defs>
+        <!-- Gradiente cromado -->
+        <linearGradient id="chromeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stop-color="#dcdcdc"/>
+          <stop offset="10%"  stop-color="#ffffff"/>
+          <stop offset="22%"  stop-color="#bdbdbd"/>
+          <stop offset="35%"  stop-color="#f5f5f5"/>
+          <stop offset="50%"  stop-color="#a8a8a8"/>
+          <stop offset="65%"  stop-color="#ffffff"/>
+          <stop offset="78%"  stop-color="#cfcfcf"/>
+          <stop offset="100%" stop-color="#b0b0b0"/>
+        </linearGradient>
 
-  <!-- Operador / Admin -->
-  <div class="role-card">
-    <div class="icon">
-      <img src="img/operador-de-telemarketing.png" alt="Operador de Telemarketing">
-    </div>
-    <div id="userBox">
-      <input type="text" id="loginInput" placeholder="Digite seu usuário ou e-mail" />
-      <input type="password" id="password" placeholder="Senha (somente admin)" style="display:none;" />
-      <button id="loginBtn">Entrar</button>
-      <div id="userError" class="error"></div>
-    </div>
+        <!-- Gradiente Grupo -->
+        <linearGradient id="grupoGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#555"/>
+          <stop offset="50%" stop-color="#bbb"/>
+          <stop offset="100%" stop-color="#666"/>
+        </linearGradient>
+
+        <!-- Gradiente barras -->
+        <linearGradient id="barGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#ffb300"/>
+          <stop offset="50%" stop-color="#ff8f00"/>
+          <stop offset="100%" stop-color="#ff6d00"/>
+        </linearGradient>
+
+        <!-- Filtros -->
+        <filter id="chromeFX" x="-15%" y="-25%" width="130%" height="150%">
+          <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="rgba(0,0,0,.35)"/>
+          <feDropShadow dx="0" dy="2"  stdDeviation="2"  flood-color="rgba(255,255,255,.25)"/>
+        </filter>
+        <filter id="barFX" x="-15%" y="-25%" width="130%" height="150%">
+          <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="rgba(0,0,0,.35)"/>
+          <feDropShadow dx="0" dy="2"  stdDeviation="1.5" flood-color="rgba(255,255,255,.35)"/>
+        </filter>
+
+        <!-- Máscara de brilho -->
+        <mask id="shineMask">
+          <rect width="100%" height="100%" fill="black"/>
+          <g class="shine" transform="translate(-120%,0)">
+            <rect x="0" y="40" width="280" height="360" fill="url(#shineGrad)" transform="skewX(-18)"/>
+          </g>
+        </mask>
+        <linearGradient id="shineGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0"   stop-color="white" stop-opacity="0"/>
+          <stop offset="0.45" stop-color="white" stop-opacity="0.75"/>
+          <stop offset="0.55" stop-color="white" stop-opacity="0.95"/>
+          <stop offset="1"   stop-color="white" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Grupo -->
+      <text class="grupo grupo-glow" x="750" y="110" text-anchor="middle">GRUPO</text>
+
+      <!-- ROVERI -->
+      <g mask="url(#shineMask)">
+        <text class="chrome" x="70"  y="350" font-size="300" font-weight="900">R</text>
+        <text class="chrome" x="335" y="350" font-size="300" font-weight="900">O</text>
+        <polygon class="bars" points="615,330 560,120 500,120 555,330" />
+        <polygon class="bars" points="700,330 645,120 585,120 640,330" />
+        <text class="chrome" x="735"  y="350" font-size="300" font-weight="900">V</text>
+        <text class="chrome" x="970"  y="350" font-size="300" font-weight="900">E</text>
+        <text class="chrome" x="1180" y="350" font-size="300" font-weight="900">R</text>
+        <text class="chrome" x="1415" y="350" font-size="300" font-weight="900">I</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Caixa de login -->
+  <div id="userBox">
+    <input type="text" id="loginInput" placeholder="Digite seu usuário ou e-mail" />
+    <input type="password" id="password" placeholder="Senha (somente admin)" style="display:none;" />
+    <button id="loginBtn">Entrar</button>
+    <div id="userError" class="error"></div>
   </div>
 
   <div class="quality">Área de Qualidade</div>
 
-<script type="module">
-import { getAuth, signInWithEmailAndPassword, signInAnonymously, updateProfile }
-  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import { app, db } from "./firebase.js";
-import { doc, getDoc } 
-  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+  <!-- Scripts -->
+  <script type="module">
+    import { getAuth, signInWithEmailAndPassword, signInAnonymously, updateProfile }
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+    import { app, db } from "./firebase.js";
+    import { doc, getDoc }
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const ADM_EMAILS = ["seuemail@dominio.com","admin@gmail.com"];
+    const ADM_EMAILS = ["seuemail@dominio.com","admin@gmail.com"];
 
-const auth = getAuth(app);
-const loginInput = document.getElementById("loginInput");
-const passwordInput = document.getElementById("password");
-const loginBtn = document.getElementById("loginBtn");
-const userError = document.getElementById("userError");
+    const auth = getAuth(app);
+    const loginInput = document.getElementById("loginInput");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const userError = document.getElementById("userError");
 
-// Mostrar campo senha se for email admin
-loginInput.addEventListener("input", () => {
-  const val = loginInput.value.trim().toLowerCase();
-  if (ADM_EMAILS.includes(val)) {
-    passwordInput.style.display = "block";
-  } else {
-    passwordInput.style.display = "none";
-    passwordInput.value = "";
-  }
-});
+    loginInput.addEventListener("input", () => {
+      const val = loginInput.value.trim().toLowerCase();
+      if (ADM_EMAILS.includes(val)) {
+        passwordInput.style.display = "block";
+      } else {
+        passwordInput.style.display = "none";
+        passwordInput.value = "";
+      }
+    });
 
-loginBtn.addEventListener("click", async () => {
-  const val = loginInput.value.trim().toLowerCase();
+    loginBtn.addEventListener("click", async () => {
+      const val = loginInput.value.trim().toLowerCase();
+      if (!val) { userError.textContent = "Digite um usuário ou e-mail."; return; }
 
-  if (!val) {
-    userError.textContent = "Digite um usuário ou e-mail.";
-    return;
-  }
+      if (ADM_EMAILS.includes(val)) {
+        const senha = passwordInput.value;
+        if (!senha) { userError.textContent = "Digite a senha do administrador."; return; }
+        try {
+          await signInWithEmailAndPassword(auth, val, senha);
+          window.location.href = "index.html";
+        } catch (e) {
+          userError.textContent = "Erro: " + e.message;
+        }
+        return;
+      }
 
-  // --- Admin ---
-  if (ADM_EMAILS.includes(val)) {
-    const senha = passwordInput.value;
-    if (!senha) {
-      userError.textContent = "Digite a senha do administrador.";
-      return;
-    }
-    try {
-      await signInWithEmailAndPassword(auth, val, senha);
-      window.location.href = "index.html";
-    } catch (e) {
-      userError.textContent = "Erro: " + e.message;
-    }
-    return;
-  }
+      try {
+        const snap = await getDoc(doc(db, "operadores", val));
+        if (!snap.exists()) { userError.textContent = "Usuário não encontrado."; return; }
+        const cred = await signInAnonymously(auth);
+        await updateProfile(cred.user, { displayName: val });
+        localStorage.setItem("operador", val);
+        window.location.href = "operador.html";
+      } catch (e) {
+        userError.textContent = "Erro ao logar: " + (e.message || e.code);
+      }
+    });
 
-  // --- Operador ---
-  try {
-    const snap = await getDoc(doc(db, "operadores", val));
-    if (!snap.exists()) {
-      userError.textContent = "Usuário não encontrado.";
-      return;
-    }
+    loginInput.addEventListener("keypress", e => { if (e.key === "Enter") loginBtn.click(); });
+    passwordInput.addEventListener("keypress", e => { if (e.key === "Enter") loginBtn.click(); });
+  </script>
 
-    const cred = await signInAnonymously(auth);
-    await updateProfile(cred.user, { displayName: val });
-
-    localStorage.setItem("operador", val);
-    window.location.href = "operador.html";
-  } catch (e) {
-    console.error("Erro login operador:", e);
-    userError.textContent = "Erro ao logar: " + (e.message || e.code);
-  }
-});
-
-// Enter para enviar
-loginInput.addEventListener("keypress", e => { if (e.key === "Enter") loginBtn.click(); });
-passwordInput.addEventListener("keypress", e => { if (e.key === "Enter") loginBtn.click(); });
-</script>
-
-<script>
-/* Tema */
-(function(){
-  const btnTheme=document.getElementById("btnTheme");
-  const stored=localStorage.getItem("theme");
-  if(stored){ document.body.setAttribute("data-theme",stored); }
-  else if(window.matchMedia("(prefers-color-scheme: light)").matches){ document.body.setAttribute("data-theme","light"); }
-  else{ document.body.setAttribute("data-theme","dark"); }
-  btnTheme.addEventListener("click",()=>{
-    const cur=document.body.getAttribute("data-theme");
-    const next=cur==="light"?"dark":"light";
-    document.body.setAttribute("data-theme",next);
-    localStorage.setItem("theme",next);
-  });
-})();
-</script>
+  <script>
+    (function(){
+      const btnTheme=document.getElementById("btnTheme");
+      const stored=localStorage.getItem("theme");
+      if(stored){ document.body.setAttribute("data-theme",stored); }
+      else if(window.matchMedia("(prefers-color-scheme: light)").matches){ document.body.setAttribute("data-theme","light"); }
+      else{ document.body.setAttribute("data-theme","dark"); }
+      btnTheme.addEventListener("click",()=>{
+        const cur=document.body.getAttribute("data-theme");
+        const next=cur==="light"?"dark":"light";
+        document.body.setAttribute("data-theme",next);
+        localStorage.setItem("theme",next);
+      });
+    })();
+  </script>
 </body>
 </html>
