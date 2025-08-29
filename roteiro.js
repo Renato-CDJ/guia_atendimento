@@ -415,6 +415,7 @@ function buildGlobalButtons(def) {
     const btn = document.createElement("button");
     btn.className = "btn" + (b.primary ? " btn-primary" : "");
     btn.textContent = b.label;
+    btn.style.fontSize = def.fontSizeButtons || "16px"; // 🔥 NOVO: tamanho customizado
 
     if (def.id === "inicio" && b.next === "__start") {
   btn.id = "btnStart";
@@ -426,7 +427,7 @@ function buildGlobalButtons(def) {
     go(startId);
 
     // 🔔 só mostra o alerta ao clicar em iniciar
-    showTabAlert();
+    startTabAlertLoop();
   };
 
     } else if (def.id === "inicio" && b.label === "Resetar") {
@@ -569,6 +570,28 @@ const fldFontSizeButtons = $("#fldFontSizeButtons");
 const fldFontSizeTitle   = $("#fldFontSizeTitle");
 const fldPaddingBody     = $("#fldPaddingBody");
 
+// 🔥 NOVA FUNÇÃO: Vincular inputs do painel ADM
+function bindAdmInputs() {
+  const map = {
+    fldFontSizeBody: "fontSizeBody",
+    fldFontSizeButtons: "fontSizeButtons",
+    fldFontSizeTitle: "fontSizeTitle",
+    fldPaddingBody: "paddingBody",
+    fldTab: "tab"
+  };
+
+  Object.entries(map).forEach(([fldId, key]) => {
+    const el = document.getElementById(fldId);
+    if (!el) return;
+    el.addEventListener("input", debounce(() => {
+      if (!currentId || !roteiros[currentId]) return;
+      roteiros[currentId][key] = el.type === "number" ? Number(el.value) + "px" : el.value;
+      saveScreenToFirebase(roteiros[currentId]);
+      rerenderScreen(currentId); // aplica imediatamente
+    }, 600));
+  });
+}
+
 function loadButtons(def) {
   if (!fldButtons) return;
   fldButtons.innerHTML = "";
@@ -688,6 +711,7 @@ $("#btnToggleMode")?.addEventListener("click", () => {
     loadScreen(historyStack.at(-1) || "inicio");
     buildJumpList();
     if (jumpSelect) jumpSelect.value = historyStack.at(-1) || "inicio";
+    bindAdmInputs(); // 🔥 NOVO: vincular inputs quando entrar no modo ADM
   }
 });
 $("#btnAdmClose")?.addEventListener("click", () => {

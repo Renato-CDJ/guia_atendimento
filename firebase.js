@@ -18,9 +18,17 @@ const firebaseConfig = {
 // Inicialização
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-
-// Expondo
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// 🔑 Login anônimo automático
+signInAnonymously(auth)
+  .then(() => {
+    console.log("[Firebase] Usuário autenticado anonimamente.");
+  })
+  .catch((error) => {
+    console.error("[Firebase] Erro ao autenticar anonimamente:", error);
+  });
+
+// Expondo
 export { app, analytics, db, auth, signInAnonymously, updateProfile };
