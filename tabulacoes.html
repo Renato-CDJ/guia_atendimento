@@ -102,6 +102,18 @@
       white-space: pre-wrap;
     }
 
+    /* Remove a limitação da área de cards */
+    .stack-stage {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);  /* “sangra” pra fora do .container */
+      margin-right: calc(50% - 50vw);
+    }
+
+    /* pausa o carrossel quando houver card em zoom */
+    .stack-stage.zoom-active .stack-container {
+      animation-play-state: paused !important;
+    }
+
     /* animação indo para direita */
     @keyframes slideRight {
       0%   { transform: translateX(-140%); opacity: 0; }

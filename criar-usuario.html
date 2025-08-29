@@ -5,136 +5,297 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Criar Operador</title>
   <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body{font-family:Arial,sans-serif;background:#0f1113;color:#f5f7fa;display:flex;gap:30px;padding:30px;}
-    .box,.online-box{background:rgba(0,0,0,0.7);padding:20px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.5);}
-    .box{width:350px;text-align:center;}
-    .online-box{width:420px;}
-    h2,h3{color:#00e676;}
-    input,button{margin:6px 0;padding:10px;border-radius:8px;}
-    button{cursor:pointer;background:linear-gradient(90deg,#00c853,#00e676);font-weight:bold;}
-    .user{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);margin-bottom:6px;padding:6px;border-radius:6px;}
-    .user-actions button{border:none;padding:4px 6px;font-size:12px;color:#fff;border-radius:6px;}
+    :root {
+      --bg:#0f1113; --panel:#15181b; --panel-2:#1b2024;
+      --text:#f5f7fa; --muted:#aab0b6; --accent:#ff9800; --shadow:0 6px 20px rgba(0,0,0,.5);
+    }
+    body[data-theme="light"] {
+      --bg:#f9f9fb; --panel:#fff; --panel-2:#f3f4f6;
+      --text:#1b1f24; --muted:#555; --accent:#ff6d00; --shadow:0 4px 14px rgba(0,0,0,.1);
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin:0; padding:30px; background:var(--bg); color:var(--text);
+      display:flex; gap:30px;
+      transition: background .3s, color .3s;
+    }
+    .box,.online-box {
+      background:var(--panel); padding:20px; border-radius:14px; box-shadow:var(--shadow);
+      transition: background .3s;
+    }
+    .box{width:100%;text-align:center;flex-shrink:0;}
+    .online-box{flex:1;min-width:500px;}
+    h2,h3{color:var(--accent);margin-top:0;}
+    input,button{
+      margin:6px 0;padding:10px;border-radius:8px;border:1px solid var(--muted);
+      background:var(--panel-2);color:var(--text);font-size:14px;
+    }
+    button{cursor:pointer;font-weight:600;border:none;}
+    button.primary{background:linear-gradient(90deg,var(--accent),#ff6d00);color:#fff;}
+    button:hover{opacity:.9;}
+    .toolbar{margin-bottom:12px;text-align:right;}
+    .badge{padding:6px 10px;border-radius:8px;background:var(--panel-2);cursor:pointer;}
+    .tabs{display:flex;gap:6px;margin-bottom:14px;}
+    .tab{flex:1;text-align:center;padding:8px;border-radius:8px;cursor:pointer;background:var(--panel-2);}
+    .tab.active{background:var(--accent);color:#fff;font-weight:bold;}
+    .user{background:var(--panel-2);border-radius:8px;margin-bottom:8px;overflow:hidden;}
+    .user-header{padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+    .user-header:hover{background:rgba(255,255,255,.07);}
+    .user-details{
+      display:none;padding:10px 14px;background:var(--panel);
+      font-size:13px;line-height:1.4;border-top:1px solid rgba(255,255,255,0.05);
+    }
+    .user-details p{margin:4px 0;color:var(--muted);}
+    .user-actions{margin-top:8px;display:flex;gap:6px;}
+    .user-actions button{flex:1;padding:6px 8px;font-size:12px;color:#fff;border-radius:6px;transition:.2s;}
     .edit{background:#2196f3;} .delete{background:#e53935;} .block{background:#ff9800;} .disconnect{background:#9c27b0;}
+    .user-actions button:hover{opacity:.85;}
+
+    /* coluna esquerda */
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 320px;
+    }
+
+    .charts-column{display:flex;flex-direction:column;gap:16px;}
+    .chart-box{
+      width:100%;
+      background:var(--panel-2);
+      padding:10px;
+      border-radius:10px;
+      box-shadow:var(--shadow);
+    }
+    canvas{width:100%!important;height:auto!important;}
   </style>
 </head>
 <body>
-  <div class="box">
-    <h2>Criar Operadores</h2>
-    <input type="text" id="opName" placeholder="Nome do operador" />
-    <button id="btnAddOperator">Registrar Operador</button>
-    <hr>
-    <label>Importar lista (.csv/.xlsx):</label>
-    <input type="file" id="fileInput" accept=".csv,.xlsx" />
-    <button id="btnUpload">Importar Arquivo</button>
-    <div id="msg"></div>
+  <!-- Coluna esquerda -->
+  <div class="left-panel">
+    <div class="box">
+      <h2>Criar Operadores</h2>
+      <input type="text" id="opName" placeholder="Nome do operador" />
+      <button id="btnAddOperator" class="primary">Registrar Operador</button>
+      <hr>
+      <label>Importar lista (.csv/.xlsx):</label>
+      <input type="file" id="fileInput" accept=".csv,.xlsx" />
+      <button id="btnUpload" class="primary">Importar Arquivo</button>
+      <div id="msg"></div>
+    </div>
+
+    <!-- Gráfico único -->
+    <div class="charts-column">
+      <div class="chart-box"><canvas id="statusChart"></canvas></div>
+    </div>
   </div>
 
+  <!-- Coluna direita -->
   <div class="online-box">
-    <h3>👥 Operadores Conectados (<span id="countOnline">0</span>)</h3>
+    <div class="toolbar"><button id="btnToggleTheme" class="badge">🌗 Tema</button></div>
+    <h3>👥 Operadores</h3>
+
+    <div class="tabs">
+      <div class="tab active" data-view="total">📋 Total</div>
+      <div class="tab" data-view="online">🟢 Logados</div>
+      <div class="tab" data-view="offline">⚪ Deslogados</div>
+      <div class="tab" data-view="blocked">🚫 Bloqueados</div>
+    </div>
+
     <div id="onlineList"></div>
-    <hr>
-    <button id="btnExport">📄 Exportar Relatório (Excel)</button>
+
+    <div style="margin-top:12px;">
+      <button id="btnExport" class="primary">📄 Exportar Relatório (Excel)</button>
+    </div>
   </div>
 
+  <!-- libs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<script type="module">
-import { db } from "./firebase.js";
-import { doc,setDoc,collection,onSnapshot,updateDoc,deleteDoc } 
-  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+  <!-- JS -->
+  <script type="module">
+    import { db } from "./firebase.js";
+    import { doc,setDoc,collection,onSnapshot,updateDoc,deleteDoc } 
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const msg=document.getElementById("msg");
+    const msg=document.getElementById("msg");
+    const onlineList=document.getElementById("onlineList");
+    let operadores=[];
+    let chartStatus;
 
-// Cadastro único
-document.getElementById("btnAddOperator").addEventListener("click",async()=>{
-  const nome=document.getElementById("opName").value.trim();
-  if(!nome){ msg.textContent="⚠️ Digite um nome."; return; }
-  try{
-    await setDoc(doc(db,"operadores",nome.toLowerCase()),{nome,criadoEm:new Date().toISOString()});
-    msg.textContent=`✅ Operador "${nome}" registrado.`;
-  }catch(e){ msg.textContent="Erro: "+e.message; }
-});
+    // util
+    function msToTime(ms){
+      let sec=Math.floor(ms/1000);
+      let h=Math.floor(sec/3600); sec%=3600;
+      let m=Math.floor(sec/60); sec%=60;
+      return `${h}h ${m}m ${sec}s`;
+    }
+    function formatDate(ts){
+      if(!ts?.toDate) return "-";
+      const d=ts.toDate();
+      return d.toDateString().slice(4)+" "+d.toTimeString().split(" ")[0];
+    }
 
-// Importar lista
-document.getElementById("btnUpload").addEventListener("click",async()=>{
-  const file=document.getElementById("fileInput").files[0];
-  if(!file){ msg.textContent="⚠️ Selecione arquivo."; return; }
-  msg.textContent="⏳ Processando...";
-  if(file.name.endsWith(".csv")){
-    Papa.parse(file,{header:false,complete:async(r)=>{await salvarEmLote(r.data.flat().filter(n=>n));}});
-  }else if(file.name.endsWith(".xlsx")){
-    const reader=new FileReader();
-    reader.onload=async(e)=>{
-      const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
-      const nomes=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1}).flat();
-      await salvarEmLote(nomes.filter(n=>n));
-    };
-    reader.readAsArrayBuffer(file);
-  }else msg.textContent="⚠️ Formato inválido.";
-});
-
-async function salvarEmLote(nomes){
-  let sucesso=0,erros=0;
-  for(const n of nomes){
-    const clean=String(n).trim(); if(!clean) continue;
-    try{ await setDoc(doc(db,"operadores",clean.toLowerCase()),{nome:clean,criadoEm:new Date().toISOString()}); sucesso++; }
-    catch(e){erros++; console.error("Erro:",clean,e);}
-  }
-  msg.textContent=`✅ ${sucesso} cadastrados | ⚠️ ${erros} falhas`;
-}
-
-// Painel online
-const onlineList=document.getElementById("onlineList");
-const countOnline=document.getElementById("countOnline");
-let relatorio=[];
-
-onSnapshot(collection(db,"status_online"),(snap)=>{
-  onlineList.innerHTML=""; let count=0; relatorio=[];
-  snap.forEach(d=>{
-    const data=d.data(); if(data.online) count++;
-    relatorio.push({nome:data.nome,conectadoEm:data.conectadoEm?.toDate?.()||"",desconectadoEm:data.desconectadoEm?.toDate?.()||""});
-    const div=document.createElement("div");
-    div.className="user";
-    div.innerHTML=`<span>${data.nome} ${data.online?"🟢":"⚪"}</span>
-      <div class="user-actions">
-        <button class="edit">Editar</button>
-        <button class="delete">Excluir</button>
-        <button class="block">Bloquear</button>
-        <button class="disconnect">Desconectar</button>
-      </div>`;
-    div.querySelector(".edit").addEventListener("click",async()=>{
-      const novo=prompt("Novo nome:",data.nome);
-      if(novo) await setDoc(doc(db,"operadores",novo.toLowerCase()),{nome:novo},{merge:true});
+    // add operador
+    document.getElementById("btnAddOperator").addEventListener("click",async()=>{
+      const nome=document.getElementById("opName").value.trim();
+      if(!nome){ msg.textContent="⚠️ Digite um nome."; return; }
+      await setDoc(doc(db,"operadores",nome.toLowerCase()),{nome,criadoEm:new Date().toISOString()});
+      msg.textContent=`✅ Operador "${nome}" registrado.`;
     });
-    div.querySelector(".delete").addEventListener("click",async()=>{
-      if(confirm("Excluir "+data.nome+"?")){
-        await deleteDoc(doc(db,"operadores",data.nome.toLowerCase()));
-        await deleteDoc(doc(db,"status_online",data.nome));
+
+    // importar lista
+    document.getElementById("btnUpload").addEventListener("click",async()=>{
+      const file=document.getElementById("fileInput").files[0];
+      if(!file){ msg.textContent="⚠️ Selecione arquivo."; return; }
+      msg.textContent="⏳ Processando...";
+      if(file.name.endsWith(".csv")){
+        Papa.parse(file,{header:false,complete:async(r)=>{await salvarEmLote(r.data.flat().filter(n=>n));}});
+      }else if(file.name.endsWith(".xlsx")){
+        const reader=new FileReader();
+        reader.onload=async(e)=>{
+          const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
+          const nomes=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1}).flat();
+          await salvarEmLote(nomes.filter(n=>n));
+        };
+        reader.readAsArrayBuffer(file);
+      }else msg.textContent="⚠️ Formato inválido.";
+    });
+    async function salvarEmLote(nomes){
+      for(const n of nomes){
+        const clean=String(n).trim(); if(!clean) continue;
+        await setDoc(doc(db,"operadores",clean.toLowerCase()),{nome:clean,criadoEm:new Date().toISOString()});
       }
+      msg.textContent=`✅ Lista importada com sucesso.`;
+    }
+
+    // status operadores
+    onSnapshot(collection(db,"status_online"),(snap)=>{
+      operadores=[];
+      snap.forEach(d=>{
+        const data=d.data();
+        let tempoSessao="";
+        if(data.conectadoEm && data.desconectadoEm){
+          tempoSessao=msToTime(data.desconectadoEm.toDate()-data.conectadoEm.toDate());
+        }
+        operadores.push({
+          nome:data.nome,
+          online:data.online||false,
+          bloqueado:data.bloqueado||false,
+          ultimoLogin:formatDate(data.conectadoEm),
+          ultimoLogout:formatDate(data.desconectadoEm),
+          tempoSessao
+        });
+      });
+      render("total");
+      updateCharts();
     });
-    div.querySelector(".block").addEventListener("click",async()=>{
-      await updateDoc(doc(db,"status_online",data.nome),{bloqueado:true,online:false});
-      alert(data.nome+" bloqueado.");
-    });
-    div.querySelector(".disconnect").addEventListener("click",async()=>{
-      await updateDoc(doc(db,"status_online",data.nome),{
-        online:false,desconectadoEm:new Date(),forcarLogout:true
+
+    // render lista
+    function render(view){
+      onlineList.innerHTML="";
+      let filtered=operadores;
+      if(view==="online") filtered=operadores.filter(o=>o.online);
+      if(view==="offline") filtered=operadores.filter(o=>!o.online && !o.bloqueado);
+      if(view==="blocked") filtered=operadores.filter(o=>o.bloqueado);
+
+      filtered.forEach(data=>{
+        const userDiv=document.createElement("div");
+        userDiv.className="user";
+        userDiv.innerHTML=`
+          <div class="user-header">
+            <span>${data.nome} ${data.online?"🟢":(data.bloqueado?"🚫":"⚪")}</span>
+            <small>${data.online?"Online":(data.bloqueado?"Bloqueado":"Offline")}</small>
+          </div>
+          <div class="user-details">
+            <p>Último login: ${data.ultimoLogin}</p>
+            <p>Último logout: ${data.ultimoLogout}</p>
+            <p>Tempo sessão: ${data.tempoSessao||"-"}</p>
+            <div class="user-actions">
+              <button class="edit">✏️ Editar</button>
+              <button class="delete">🗑️ Excluir</button>
+              <button class="block">🚫 Bloquear</button>
+              <button class="disconnect">🔌 Desconectar</button>
+            </div>
+          </div>
+        `;
+        const header=userDiv.querySelector(".user-header");
+        const details=userDiv.querySelector(".user-details");
+        header.addEventListener("click",()=>{ 
+          details.style.display=details.style.display==="block"?"none":"block";
+        });
+
+        // ações
+        userDiv.querySelector(".edit").addEventListener("click",async()=>{
+          const novo=prompt("Novo nome:",data.nome);
+          if(novo) await setDoc(doc(db,"operadores",novo.toLowerCase()),{nome:novo},{merge:true});
+        });
+        userDiv.querySelector(".delete").addEventListener("click",async()=>{
+          if(confirm("Excluir "+data.nome+"?")){
+            await deleteDoc(doc(db,"operadores",data.nome.toLowerCase()));
+            await deleteDoc(doc(db,"status_online",data.nome));
+          }
+        });
+        userDiv.querySelector(".block").addEventListener("click",async()=>{
+          await updateDoc(doc(db,"status_online",data.nome),{bloqueado:true,online:false,desconectadoEm:new Date()});
+        });
+        userDiv.querySelector(".disconnect").addEventListener("click",async()=>{
+          await updateDoc(doc(db,"status_online",data.nome),{online:false,desconectadoEm:new Date(),forcarLogout:true});
+        });
+
+        onlineList.appendChild(userDiv);
+      });
+    }
+
+    // tabs
+    document.querySelectorAll(".tab").forEach(tab=>{
+      tab.addEventListener("click",()=>{
+        document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+        tab.classList.add("active");
+        render(tab.dataset.view);
       });
     });
-    onlineList.appendChild(div);
-  });
-  countOnline.textContent=count;
-});
 
-// Exportar Excel
-document.getElementById("btnExport").addEventListener("click",()=>{
-  const ws = XLSX.utils.json_to_sheet(relatorio);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Operadores");
-  XLSX.writeFile(wb, "relatorio-operadores.xlsx");
-});
-</script>
+    // gráfico único
+    function updateCharts(){
+      const online=operadores.filter(o=>o.online).length;
+      const blocked=operadores.filter(o=>o.bloqueado).length;
+      const offline=operadores.length-online-blocked;
+
+      const ctx1=document.getElementById("statusChart");
+      if(chartStatus) chartStatus.destroy();
+      chartStatus=new Chart(ctx1,{
+        type:"pie",
+        data:{
+          labels:["Logados","Deslogados","Bloqueados"],
+          datasets:[{
+            data:[online,offline,blocked],
+            backgroundColor:["#00c853","#555","#e53935"]
+          }]
+        },
+        options:{plugins:{legend:{position:"bottom"}}}
+      });
+    }
+
+    // exportar
+    document.getElementById("btnExport").addEventListener("click",()=>{
+      const ws = XLSX.utils.json_to_sheet(operadores);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Operadores");
+      XLSX.writeFile(wb, "relatorio-operadores.xlsx");
+    });
+
+    // tema
+    const btnToggleTheme=document.getElementById("btnToggleTheme");
+    const theme=localStorage.getItem("theme")||"dark";
+    document.body.dataset.theme=theme;
+    btnToggleTheme.addEventListener("click",()=>{
+      document.body.dataset.theme=document.body.dataset.theme==="light"?"dark":"light";
+      localStorage.setItem("theme",document.body.dataset.theme);
+    });
+  </script>
 </body>
 </html>
