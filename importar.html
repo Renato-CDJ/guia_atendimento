@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Importar Roteiros para Firestore</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
+    h2 { color: #333; }
+    input, button { padding: 10px; font-size: 16px; margin: 5px 0; }
+    input { width: 300px; }
+    button { cursor: pointer; border: none; border-radius: 6px; margin-right: 8px; }
+    #btnImportar { background: #ff5722; color: #fff; }
+    #btnImportar:hover { background: #e64a19; }
+    #btnLimpar { background: #e53935; color: #fff; }
+    #btnLimpar:hover { background: #c62828; }
+    pre { background: #222; color: #0f0; padding: 10px; border-radius: 6px; max-height: 400px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <h2>🚀 Importar roteiros JSON para Firestore</h2>
+
+  <label for="jsonFile">Nome do arquivo JSON:</label><br>
+  <input type="text" id="jsonFile" value="roteiros.json" /><br>
+  
+  <button id="btnImportar">Iniciar Importação</button>
+  <button id="btnLimpar">🗑 Limpar coleção</button>
+
+  <pre id="log"></pre>
+
+  <script type="module">
+    import { db } from "./firebase.js";
+    import { collection, getDocs, doc, setDoc, deleteDoc } 
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    const log = document.getElementById("log");
+
+    // =========================
+    // Importar roteiros do JSON
+    // =========================
+    async function importarRoteiros() {
+      const fileName = document.getElementById("jsonFile").value.trim();
+      if (!fileName) {
+        log.textContent = "⚠️ Digite o nome de um arquivo JSON.";
+        return;
+      }
+      log.textContent = `⏳ Carregando ${fileName}...\n`;
+
+      try {
+        const resp = await fetch(fileName);
+        if (!resp.ok) throw new Error("Erro ao carregar " + fileName);
+        const json = await resp.json();
+
+        let total = 0;
+        for (const [produto, telasObj] of Object.entries(json.marcas || {})) {
+          for (const tela of Object.values(telasObj)) {
+            if (!tela?.id) continue;
+            const def = { ...tela, product: produto };
+            await setDoc(doc(db, "roteiros", def.id), def, { merge: true });
+            log.textContent += `✔ Importado: ${def.id}\n`;
+            total++;
+          }
+        }
+
+        log.textContent += `\n✅ Importação concluída. ${total} telas salvas no Firestore.`;
+      } catch (e) {
+        log.textContent += `\n❌ Erro: ${e.message}`;
+        console.error(e);
+      }
+    }
+
+    // =========================
+    // Limpar toda a coleção
+    // =========================
+    async function limparColecao() {
+      if (!confirm("⚠️ Isso vai apagar TODAS as telas da coleção 'roteiros'. Deseja continuar?")) return;
+      log.textContent = "⏳ Apagando documentos da coleção 'roteiros'...\n";
+      try {
+        const snap = await getDocs(collection(db, "roteiros"));
+        let count = 0;
+        for (const d of snap.docs) {
+          await deleteDoc(doc(db, "roteiros", d.id));
+          log.textContent += `🗑 Apagado: ${d.id}\n`;
+          count++;
+        }
+        log.textContent += `\n✅ Limpeza concluída. ${count} documentos removidos.`;
+      } catch (e) {
+        log.textContent += `\n❌ Erro ao limpar: ${e.message}`;
+        console.error(e);
+      }
+    }
+
+    document.getElementById("btnImportar").addEventListener("click", importarRoteiros);
+    document.getElementById("btnLimpar").addEventListener("click", limparColecao);
+  </script>
+</body>
+</html>

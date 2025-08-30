@@ -322,7 +322,7 @@ body[data-theme="light"] .screen .script{ background: rgba(255,87,34,0.06); }
     <div id="noteEditor" contenteditable="true"></div>
   </div>
 
-  <script src="roteiro.js"></script>
+<script src="roteiro.js"></script>
 
 <script type="module">
 import { auth, db } from "./firebase.js";
@@ -411,16 +411,15 @@ onAuthStateChanged(auth, async (user)=>{
     const data = snap.data();
     setStatusUI(!!data.online);
     if (!forced && data.forcarLogout) {
-    forced = true;
-    alert("Você foi desconectado pelo administrador.");
-    window.location.href="login.html";
-  }
-
+      forced = true;
+      alert("Você foi desconectado pelo administrador.");
+      window.location.href="login.html";
+    }
   });
 
   // Ao sair
   window.addEventListener("beforeunload", ()=>{
-   clearInterval(ping);
+    clearInterval(ping);
   });
 
   // Botão sair
@@ -503,7 +502,6 @@ onAuthStateChanged(auth, async (user)=>{
   window.addEventListener("resize", applyOperatorPrefs);
 </script>
 
-
 <script>
 // === Barra de progresso ===
 (function(){
@@ -529,6 +527,88 @@ onAuthStateChanged(auth, async (user)=>{
     if(/\b(voltar.*inicio|inicio|recomecar|reiniciar)\b/.test(t)||btn.id==="btnInicio"){ setProgress(0); }
   });
 })();
+</script>
+
+<!-- 🔥 NOVO: Tabulações em tempo real (somente o campo "tab" via Firestore) -->
+<script type="module">
+import { db } from "./firebase.js";
+import { collection, onSnapshot } 
+  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const tabsRealtime = Object.create(null);
+
+/** Obtém o id da tela ativa pelo DOM */
+function getActiveScreenId(){
+  const sec = document.querySelector(".screen.active");
+  return sec?.dataset?.id || null;
+}
+
+/** Atualiza o title do ícone de todas as telas já renderizadas */
+function updateAllTabIconsTitles(){
+  document.querySelectorAll(".screen").forEach(sec=>{
+    const id = sec.dataset?.id;
+    const icon = sec.querySelector(".tab-icon");
+    if(!id || !icon) return;
+
+    // guarda o valor original (do JSON) uma única vez
+    if(!icon.dataset.origTab){
+      const raw = (icon.title || "").replace(/^Tabulação:\s*/i,"").trim();
+      icon.dataset.origTab = raw || "Sem tabulação";
+    }
+
+    const tabAtual = tabsRealtime[id] ?? icon.dataset.origTab ?? "Sem tabulação";
+    icon.title = "Tabulação: " + tabAtual;
+  });
+}
+
+/** Patch em renderScreen(def) para aplicar título atualizado após cada render */
+(function patchRenderScreen(){
+  const original = window.renderScreen;
+  if(typeof original !== "function") return; // segurança
+  window.renderScreen = function(def){
+    // chama o render original
+    original(def);
+    // atualiza títulos (inclui a tela recém-renderizada)
+    updateAllTabIconsTitles();
+  };
+})();
+
+/** Patch em showTabulacao(msg) para sempre mostrar o valor mais recente do Firestore */
+(function patchShowTabulacao(){
+  const original = window.showTabulacao;
+  if(typeof original !== "function") return;
+  window.showTabulacao = function(_msgIgnorado){
+    const activeId = getActiveScreenId();
+    // pega o texto em tempo real (ou o original do JSON como fallback)
+    const icon = document.querySelector(".screen.active .tab-icon");
+    const fallback = icon?.dataset?.origTab || (icon?.title||"").replace(/^Tabulação:\s*/i,"").trim() || "Sem tabulação";
+    const texto = (activeId && tabsRealtime[activeId]) ? tabsRealtime[activeId] : fallback;
+    original("✔ " + texto);
+  };
+})();
+
+/** Escuta o Firestore e aplica em tempo real */
+function observarTabulacoes(){
+  const colRef = collection(db, "roteiros");
+  onSnapshot(colRef, (snap)=>{
+    // atualiza dicionário
+    snap.forEach(docSnap=>{
+      const data = docSnap.data();
+      if(typeof data?.tab === "string"){
+        tabsRealtime[docSnap.id] = data.tab;
+      }
+    });
+    // reflete no UI (telas já renderizadas)
+    updateAllTabIconsTitles();
+  });
+}
+
+// inicia quando DOM estiver pronto (roteiro.js já terá feito o bootstrap)
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", observarTabulacoes, { once:true });
+}else{
+  observarTabulacoes();
+}
 </script>
 </body>
 </html>

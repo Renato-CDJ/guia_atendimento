@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor de Tabulações</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f0f2f5; 
+      padding: 30px; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+    }
+    h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .card {
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+      padding: 30px;
+      margin: 0 auto;
+      max-width: 850px;
+      min-height: 300px;
+      position: relative;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.01);
+    }
+    .title {
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: #222;
+    }
+    .body {
+      background: #fff8f5;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 18px;
+      line-height: 1.6;
+      color: #444;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .buttons button {
+      background: #ff5722;
+      border: none;
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+    .buttons button:hover {
+      background: #e64a19;
+    }
+    .tabIcon {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #00c853;
+      color: #fff;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .tabIcon:hover {
+      background: #00b34a;
+    }
+    .tabEditor {
+      margin-top: 20px;
+      display: none;
+      justify-content: center;
+      gap: 10px;
+    }
+    .tabEditor input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      flex: 1;
+      font-size: 16px;
+    }
+    .tabEditor button {
+      background: #2196f3;
+      border: none;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+    .tabEditor button:hover {
+      background: #1976d2;
+    }
+  </style>
+</head>
+<body>
+  <h2>Editor de Tabulações</h2>
+  <div id="screen"></div>
+
+  <script type="module">
+    import { db } from "./firebase.js";
+    import { collection, getDocs, doc, setDoc } 
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    let roteiros = {};
+    let telaAtual = null;
+
+    // Carregar roteiros
+    async function carregarRoteiros() {
+      const snap = await getDocs(collection(db, "roteiros"));
+      snap.forEach(docSnap => {
+        roteiros[docSnap.id] = docSnap.data();
+      });
+      mostrarTela("hab_abordagem"); // tela inicial
+    }
+
+    // Mostrar uma tela
+    function mostrarTela(id) {
+      const data = roteiros[id];
+      if (!data) return alert("Tela não encontrada: " + id);
+      telaAtual = id;
+
+      const screen = document.getElementById("screen");
+      screen.innerHTML = `
+        <div class="card">
+          <div class="title">${data.title || "(sem título)"}</div>
+          <div class="body">${data.body || ""}</div>
+          <div class="buttons">
+            ${(data.buttons || []).map(btn =>
+              `<button onclick="mostrarTela('${btn.next}')">${btn.label}</button>`
+            ).join("")}
+          </div>
+          <div class="tabIcon" title="Tabulação: ${data.tab || 'Sem tabulação'}"
+               onclick="toggleEditor('${id}')">✔</div>
+          <div class="tabEditor" id="editor_${id}">
+            <input type="text" value="${data.tab || ""}" id="tab_${id}">
+            <button onclick="salvarTabulacao('${id}')">Salvar</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Alternar editor de tabulação
+    function toggleEditor(id) {
+      const editor = document.getElementById("editor_" + id);
+      if (editor) {
+        editor.style.display = editor.style.display === "flex" ? "none" : "flex";
+      }
+    }
+
+    // Salvar tabulação
+    async function salvarTabulacao(id) {
+      const input = document.getElementById("tab_" + id);
+      if (!input) return;
+      const novoValor = input.value.trim();
+
+      await setDoc(doc(db, "roteiros", id), { tab: novoValor }, { merge: true });
+      roteiros[id].tab = novoValor;
+      alert("✅ Tabulação salva para " + id);
+      mostrarTela(id); // recarregar tela pra atualizar tooltip
+    }
+
+    // Expor funções globais
+    window.mostrarTela = mostrarTela;
+    window.toggleEditor = toggleEditor;
+    window.salvarTabulacao = salvarTabulacao;
+
+    carregarRoteiros();
+  </script>
+</body>
+</html>

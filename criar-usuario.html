@@ -57,7 +57,7 @@
   </style>
 </head>
 <body>
-  <!-- Coluna esquerda -->
+    <!-- Coluna esquerda -->
   <div class="box">
     <h2>Criar Operadores</h2>
     <input type="text" id="opName" placeholder="Nome do operador" />
@@ -68,10 +68,16 @@
     <button id="btnUpload" class="primary">Importar Arquivo</button>
     <div id="msg"></div>
 
+    <hr>
+    <h3>⚙️ Ferramentas</h3>
+    <button onclick="window.open('codigo.html','_blank')" class="primary">📝 Editor de Tabulações</button>
+    <button onclick="window.open('importar.html','_blank')" class="primary">📥 Importar Roteiros</button>
+
     <div class="charts-column">
       <div class="chart-box"><canvas id="statusChart"></canvas></div>
     </div>
   </div>
+
 
   <!-- Coluna direita -->
   <div class="online-box">
