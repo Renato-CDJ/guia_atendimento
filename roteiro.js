@@ -359,6 +359,18 @@ function renderScreen(def) {
 
   flow.appendChild(sec);
 
+  const tabWrapper = document.createElement("div");
+tabWrapper.className = "tab-wrapper";
+
+const tabText = document.createElement("span");
+tabText.className = "tab-text";
+tabText.textContent = "Verificar Tabulação";
+
+tabWrapper.appendChild(tabIcon);
+tabWrapper.appendChild(tabText);
+sec.prepend(tabWrapper);
+
+
   if (def.id === "inicio") {
     updateStartEnabled();
 
