@@ -313,7 +313,8 @@
         if (!senha) { userError.textContent = "Digite a senha do administrador."; return; }
         try {
           await signInWithEmailAndPassword(auth, val, senha);
-          window.location.href = "index.html";
+          window.location.href = "criar-usuario.html";  // painel ADM
+
         } catch (e) {
           userError.textContent = "Erro: " + e.message;
         }
