@@ -152,6 +152,29 @@
       font-weight: 600;
     }
 
+    .operator-controls {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      background: rgba(255,87,34,0.1);
+      padding: 10px;
+      border-radius: 12px;
+     margin: 10px auto;
+      max-width: 900px;
+    }
+    .operator-controls label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .operator-controls input[type=range] {
+      width: 120px;
+    }
+    .screen .script {
+      transition: all 0.3s ease;
+    }
+
     /* Mensagem de alerta centralizada */
     #tabAlert {
       display: flex;
@@ -185,6 +208,56 @@
     #bar { width: 0%; height: 100%; background: linear-gradient(90deg, #ff5722, #ff9800); transition: width .4s ease; }
 </style>
 
+<!-- ======= EXTRA: toques visuais e estilos seguros ======= -->
+<style>
+/* Painel de ajustes — toque moderno sem remover seu CSS */
+.operator-controls{
+  background: rgba(255,87,34,0.15);
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  backdrop-filter: blur(6px);
+}
+.operator-controls label{
+  display:flex; align-items:center; gap:6px; color:var(--accent-light);
+}
+.operator-controls input[type=range]{ width:140px; accent-color: var(--accent-light); }
+
+/* Quadro do script ganha fundo suave e bordas arredondadas */
+.screen .script{
+  border-radius:12px;
+  background: rgba(0,0,0,0.15);
+  overflow-y:auto; /* scroll interno quando necessário */
+}
+body[data-theme="light"] .screen .script{ background: rgba(255,87,34,0.06); }
+
+/* Atalhos inferiores — aparência consistente */
+.bottom-shortcuts{
+  display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
+  padding:12px; margin:18px auto; max-width:960px;
+}
+.bottom-shortcuts a, .bottom-shortcuts button{
+  border:none; border-radius:12px; padding:10px 16px;
+  background: linear-gradient(135deg, #ff5722, #ff9800);
+  color:#fff; font-weight:600; cursor:pointer; text-decoration:none;
+  transition: transform .2s ease, filter .2s ease;
+}
+.bottom-shortcuts a:hover, .bottom-shortcuts button:hover{
+  transform: translateY(-2px); filter: brightness(1.05);
+}
+
+/* Painel de notas */
+#notePanel{
+  position: fixed; right: 16px; bottom: 16px; width: 360px; max-width: calc(100vw - 32px);
+  background: rgba(0,0,0,0.6); color:#fff; border-radius: 12px; padding: 8px; display:none;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4); backdrop-filter: blur(6px);
+}
+#notePanel.active{ display:block; }
+#noteToolbar{ display:flex; gap:6px; justify-content:space-between; align-items:center; margin-bottom:6px; }
+#noteToolbar button{ background:#333; color:#fff; border:none; border-radius:8px; padding:6px 10px; cursor:pointer; }
+#noteEditor{ min-height:120px; max-height: 50vh; overflow:auto; background:#111; border-radius:8px; padding:8px; }
+
+/* Segurança visual: evita que algo fique escondido atrás do notePanel */
+.container{ padding-bottom: 90px; }
+</style>
 </head>
 <body data-role="operador">
   <div class="container">
@@ -200,6 +273,17 @@
         </div>
       </div>
     </header>
+
+    <!-- Painel de Ajustes do Operador -->
+  <div id="operatorControls" class="operator-controls">
+    <label>Texto do Script:</label>
+    <input type="range" id="ctrlFontBody" min="12" max="32" step="1">
+  
+    <label>Botões:</label>
+    <input type="range" id="ctrlFontButtons" min="12" max="28" step="1">
+  
+  </div>
+
 
     <div class="progress"><div class="progressbar"><div id="bar"></div></div></div>
 
@@ -348,6 +432,77 @@ onAuthStateChanged(auth, async (user)=>{
   });
 });
 </script>
+
+<script>
+  // ======== Cálculo dinâmico para travar o quadro do script ========
+  function computeMaxScriptHeight(){
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+
+    const header = document.querySelector('header');
+    const controls = document.getElementById('operatorControls');
+    const progress = document.querySelector('.progress');
+    const alertBox = document.getElementById('tabAlert');
+    const actions = document.getElementById('globalActions');
+    const shortcuts = document.querySelector('.bottom-shortcuts');
+
+    const above = (header?.offsetHeight||0)
+                + (controls?.offsetHeight||0)
+                + (progress?.offsetHeight||0)
+                + (alertBox?.offsetHeight||0);
+
+    const below = (actions?.offsetHeight||0)
+                + (shortcuts?.offsetHeight||0);
+
+    const safety = 40; // folga para margens/paddings
+    const maxH = Math.max(240, vh - above - below - safety);
+    return maxH;
+  }
+
+  // Carregar preferências salvas
+  function applyOperatorPrefs() {
+    const bodySize = Number(localStorage.getItem("fontSizeBody") || 18);
+    const btnSize  = Number(localStorage.getItem("fontSizeButtons") || 16);
+
+    const maxH = computeMaxScriptHeight();
+
+    document.querySelectorAll(".screen .script").forEach(el=>{
+      el.style.fontSize  = bodySize + "px";
+      el.style.maxHeight = maxH + "px"; // 🔒 nunca passa dos botões e atalhos
+      el.style.overflowY = "auto";
+    });
+
+    // ⚠️ Ajusta apenas os botões abaixo do quadro:
+    document.querySelectorAll("#globalActions button").forEach(el=>{
+      el.style.fontSize = btnSize + "px";
+    });
+
+    // Mantém sliders com o estado atual
+    const $ = (id)=>document.getElementById(id);
+    $("ctrlFontBody").value    = bodySize;
+    $("ctrlFontButtons").value = btnSize;
+  }
+
+  // Observa mudanças no fluxo/botões p/ recalcular a trava
+  const flowObs = new MutationObserver(applyOperatorPrefs);
+  flowObs.observe(document.getElementById('flow'), { childList:true, subtree:true });
+  const actionsObs = new MutationObserver(applyOperatorPrefs);
+  actionsObs.observe(document.getElementById('globalActions'), { childList:true, subtree:true });
+
+  // Listeners dos sliders
+  document.getElementById("ctrlFontBody").addEventListener("input", e=>{
+    localStorage.setItem("fontSizeBody", e.target.value);
+    applyOperatorPrefs();
+  });
+  document.getElementById("ctrlFontButtons").addEventListener("input", e=>{
+    localStorage.setItem("fontSizeButtons", e.target.value);
+    applyOperatorPrefs();
+  });
+
+  // Aplica na carga e em redimensionamento
+  document.addEventListener("DOMContentLoaded", applyOperatorPrefs);
+  window.addEventListener("resize", applyOperatorPrefs);
+</script>
+
 
 <script>
 // === Barra de progresso ===
