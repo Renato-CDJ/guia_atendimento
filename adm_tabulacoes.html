@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ADM - Tabulações</title>
+  <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
+  <style>
+    :root{
+      --bg:#0f1113; --panel:#15181b; --panel-2:#1b2024; --text:#f5f7fa; --muted:#aab0b6;
+      --border:#22292f; --badge-bg:#21272d; --badge-border:#2a3138;
+      --accent:#ff6d00; --accent-2:#ffa000; --shadow:0 12px 34px rgba(0,0,0,.35);
+    }
+    body[data-theme="light"]{
+      --bg:#fff; --panel:#fff; --panel-2:#f7f7f8; --text:#1b1f24; --muted:#666;
+      --border:#e5e7eb; --badge-bg:#f3f4f6; --badge-border:#e5e7eb;
+      --accent:#ff6d00; --accent-2:#ffa000; --shadow:0 8px 20px rgba(0,0,0,.08);
+    }
+    *{ box-sizing:border-box }
+    body{
+      margin:0; font-family:system-ui,Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--text);
+      min-height:100vh; padding:20px;
+    }
+    .container{ max-width:960px; margin:auto }
+
+    header{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px }
+    header h1{ margin:0; font-size:22px; color:var(--accent) }
+    .toolbar{ display:flex; gap:8px; flex-wrap:wrap; }
+
+    .select,.badge{
+      border:1px solid var(--badge-border); background:var(--panel-2); color:var(--text);
+      padding:8px 12px; border-radius:10px; cursor:pointer;
+    }
+    #searchInput {
+      border:1px solid var(--badge-border); background:var(--panel-2); color:var(--text);
+      padding:10px 14px; border-radius:12px; width:240px;
+    }
+    /* lista */
+    .list-item{background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer}
+    .list-item:hover{border-color:var(--accent)}
+    .list-item h3{margin:0;font-size:16px;color:var(--accent)}
+    .list-item p{margin:4px 0 0;font-size:14px;color:var(--muted)}
+
+    /* ADM painel */
+    .adm{
+      position:fixed; top:0; right:0; bottom:0; width:340px; max-width:90vw;
+      background:var(--panel); border-left:1px solid var(--border);
+      box-shadow:-20px 0 40px rgba(0,0,0,.35);
+      padding:14px 14px 70px; z-index:2200;
+    }
+    .adm > header{ font-weight:700; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center }
+    .adm input,.adm textarea{width:100%;border:1px solid var(--badge-border);background:var(--panel-2);color:var(--text);border-radius:10px;padding:8px 10px;margin-bottom:10px}
+    .adm textarea{min-height:120px;resize:vertical}
+    .adm-footer{position:absolute;left:14px;right:14px;bottom:12px;display:flex;gap:8px}
+    .btn-mini{border:1px solid var(--badge-border);background:var(--badge-bg);color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer}
+    .btn-mini.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;color:#06140b}
+    .btn-mini.danger{background:#2a1211;border-color:#542625;color:#ffdede}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ADM - Tabulações</h1>
+      <div class="toolbar">
+        <select id="viewMode" class="select">
+          <option value="lista">📋 Lista</option>
+        </select>
+        <input id="searchInput" placeholder="🔍 Pesquisar...">
+      </div>
+    </header>
+    <main id="tabulacoesList"></main>
+  </div>
+
+  <!-- Painel ADM -->
+  <aside class="adm" id="admPanel">
+    <header>
+      <div id="admTitle">Nova Tabulação</div>
+    </header>
+    <label>Título</label>
+    <input type="text" id="fldTitulo">
+    <label>Descrição</label>
+    <textarea id="fldDescricao"></textarea>
+    <div class="adm-footer">
+      <button id="btnSave" class="btn-mini primary">Salvar</button>
+      <button id="btnDel" class="btn-mini danger" style="display:none">Excluir</button>
+    </div>
+  </aside>
+
+  <script type="module">
+    import { db } from "./firebase.js";
+    import { collection, query, orderBy, onSnapshot, addDoc, setDoc, deleteDoc, doc } 
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    const list=document.getElementById("tabulacoesList");
+    const viewMode=document.getElementById("viewMode");
+    const searchInput=document.getElementById("searchInput");
+
+    const admPanel=document.getElementById("admPanel");
+    const admTitle=document.getElementById("admTitle");
+    const fldTitulo=document.getElementById("fldTitulo");
+    const fldDescricao=document.getElementById("fldDescricao");
+    const btnSave=document.getElementById("btnSave");
+    const btnDel=document.getElementById("btnDel");
+
+    let cacheDocs=[]; let editingId=null;
+
+    const q=query(collection(db,"tabulacoes"),orderBy("titulo"));
+    onSnapshot(q,snap=>{cacheDocs=snap.docs;render();});
+
+    function render(){
+      const term=searchInput.value.toLowerCase();
+      const docs=cacheDocs.filter(d=>{
+        const t=d.data(); return (t.titulo||"").toLowerCase().includes(term)||(t.descricao||"").toLowerCase().includes(term);
+      });
+      if(viewMode.value==="lista") renderLista(docs); else renderBlocos(docs);
+    }
+
+    function renderLista(docs){
+      list.innerHTML="";
+      docs.forEach(d=>{
+        const t=d.data(); const item=document.createElement("div");
+        item.className="list-item";
+        item.innerHTML=`<h3>${t.titulo||"(sem título)"}</h3><p>${t.descricao||""}</p>`;
+        item.addEventListener("dblclick",()=>openEdit(d.id,t));
+        list.appendChild(item);
+      });
+    }
+
+    function renderBlocos(docs){
+      list.innerHTML="";
+      docs.forEach(d=>{
+        const t=d.data(); const div=document.createElement("div");
+        div.className="list-item";
+        div.innerHTML=`<h3>${t.titulo||"(sem título)"}</h3><p>${t.descricao||""}</p>`;
+        div.addEventListener("dblclick",()=>openEdit(d.id,t));
+        list.appendChild(div);
+      });
+    }
+
+    function openEdit(id,data){
+      editingId=id; admTitle.textContent="Editar Tabulação";
+      fldTitulo.value=data.titulo||""; fldDescricao.value=data.descricao||"";
+      btnDel.style.display=""; 
+    }
+
+    btnSave.addEventListener("click",async()=>{
+      const titulo=fldTitulo.value.trim(); const descricao=fldDescricao.value.trim();
+      if(!titulo){alert("Digite um título.");return;}
+      if(editingId){
+        await setDoc(doc(db,"tabulacoes",editingId),{titulo,descricao},{merge:true});
+      }else{
+        await addDoc(collection(db,"tabulacoes"),{titulo,descricao});
+      }
+      clearForm();
+    });
+
+    btnDel.addEventListener("click",async()=>{
+      if(editingId && confirm("Excluir?")){
+        await deleteDoc(doc(db,"tabulacoes",editingId));
+        clearForm();
+      }
+    });
+
+    function clearForm(){
+      editingId=null; admTitle.textContent="Nova Tabulação"; fldTitulo.value=""; fldDescricao.value=""; btnDel.style.display="none";
+    }
+
+    searchInput.addEventListener("input",render); viewMode.addEventListener("change",render);
+  </script>
+</body>
+</html>

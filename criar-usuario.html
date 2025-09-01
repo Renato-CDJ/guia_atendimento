@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Criar Operador</title>
   <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <style>
     :root {
       --bg:#0f1113; --panel:#15181b; --panel-2:#1b2024;
@@ -23,18 +28,18 @@
     }
     .box,.online-box {
       background:var(--panel); padding:20px; border-radius:16px; box-shadow:var(--shadow);
-      transition: background .3s;
     }
     .box{flex:1; min-width:280px;}
     .online-box{flex:2; min-width:340px;}
     h2,h3{color:var(--accent);margin-top:0;}
-    input,button{
+    input,button,textarea{
       margin:6px 0;padding:10px;border-radius:10px;border:1px solid var(--muted);
       background:var(--panel-2);color:var(--text);font-size:14px;
     }
-    button{cursor:pointer;font-weight:600;border:none;}
+    textarea{resize:vertical}
+    button{cursor:pointer;font-weight:600;border:none;transition:.2s;}
     button.primary{background:linear-gradient(135deg,var(--accent),#ff6d00);color:#fff;}
-    button:hover{opacity:.9;transform:translateY(-2px);}
+    button:hover{filter:brightness(1.1);transform:scale(1.03);}
     .toolbar{margin-bottom:12px;text-align:right;}
     .badge{padding:6px 10px;border-radius:8px;background:var(--panel-2);cursor:pointer;}
     .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
@@ -42,22 +47,18 @@
     .tab.active{background:var(--accent);color:#fff;font-weight:bold;}
     .user{background:var(--panel-2);border-radius:12px;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.2);}
     .user-header{padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;}
-    .user-header span{display:flex;align-items:center;gap:6px;}
     .user-header:hover{background:rgba(255,255,255,.07);}
     .user-details{display:none;padding:12px 14px;background:var(--panel);font-size:13px;line-height:1.4;border-top:1px solid rgba(255,255,255,0.05);}
-    .user-details p{margin:4px 0;color:var(--muted);}
     .user-actions{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;}
-    .user-actions button{flex:1;padding:8px;font-size:12px;color:#fff;border-radius:8px;transition:.2s;}
+    .user-actions button{flex:1;padding:10px;font-size:13px;color:#fff;border-radius:8px;box-shadow:0 3px 8px rgba(0,0,0,.3);}
     .edit{background:#2196f3;} .delete{background:#e53935;} .block{background:#ff9800;} .disconnect{background:#9c27b0;}
-    .user-actions button:hover{opacity:.85;}
-
-    .charts-column{display:flex;flex-direction:column;gap:16px;margin-top:20px;}
-    .chart-box{width:100%;background:var(--panel-2);padding:10px;border-radius:12px;box-shadow:var(--shadow);}
-    canvas{width:100%!important;height:auto!important;}
+    .charts-column{margin-top:20px;}
+    .chart-box{width:100%;background:var(--panel-2);padding:10px;border-radius:12px;box-shadow:var(--shadow);display:flex;justify-content:center;}
+    #statusChart{width:340px;max-width:95%;height:340px;}
   </style>
 </head>
 <body>
-    <!-- Coluna esquerda -->
+  <!-- Coluna esquerda -->
   <div class="box">
     <h2>Criar Operadores</h2>
     <input type="text" id="opName" placeholder="Nome do operador" />
@@ -70,19 +71,22 @@
 
     <hr>
     <h3>⚙️ Ferramentas</h3>
-    <button onclick="window.open('codigo.html','_blank')" class="primary">📝 Editor de Tabulações</button>
+    <button onclick="window.open('codigo.html','_blank')" class="primary">📝 Editor de Roteiros</button>
     <button onclick="window.open('importar.html','_blank')" class="primary">📥 Importar Roteiros</button>
+    <button onclick="window.open('adm_situacoes.html','_blank')" class="primary">📋 Gerenciar Situações</button>
+    <button onclick="window.open('adm_tabulacoes.html','_blank')" class="primary">🏷️ Gerenciar Tabulações</button>
 
     <div class="charts-column">
-      <div class="chart-box"><canvas id="statusChart"></canvas></div>
+      <div class="chart-box"><div id="statusChart"></div></div>
     </div>
   </div>
-
 
   <!-- Coluna direita -->
   <div class="online-box">
     <div class="toolbar"><button id="btnToggleTheme" class="badge">🌗 Tema</button></div>
     <h3>👥 Operadores</h3>
+
+    <textarea id="searchOperator" placeholder="🔍 Pesquisar ou cole lista de nomes" rows="3" style="width:100%;"></textarea>
 
     <div class="tabs">
       <div class="tab active" data-view="total">📋 Total</div>
@@ -98,211 +102,128 @@
     </div>
   </div>
 
-  <!-- libs -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-<!-- JS -->
 <script type="module">
   import { db } from "./firebase.js";
-  import { doc,setDoc,collection,onSnapshot,updateDoc,deleteDoc,getDoc } 
+  import { doc,setDoc,collection,onSnapshot,updateDoc,deleteDoc } 
     from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
   const msg=document.getElementById("msg");
   const onlineList=document.getElementById("onlineList");
-  let operadores=[];
-  let chartStatus;
+  const searchInput=document.getElementById("searchOperator");
+  let operadores=[], chart=null, activeView="total";
 
-  function msToTime(ms){
-    let sec=Math.floor(ms/1000);
-    let h=Math.floor(sec/3600); sec%=3600;
-    let m=Math.floor(sec/60); sec%=60;
-    return `${h}h ${m}m ${sec}s`;
-  }
-  function formatDate(ts){
-    if(!ts?.toDate) return "-";
-    const d=ts.toDate();
-    return d.toLocaleDateString()+" "+d.toLocaleTimeString();
-  }
+  // utils
+  function parseSearchTerms(raw){if(!raw) return [];return raw.toLowerCase().split(/[\s,;\n\r\t]+/).map(s=>s.trim()).filter(Boolean);}
+  function formatDate(ts){try{return ts?.toDate?ts.toDate().toLocaleString():"-"}catch{return"-"}}
+  function msToTime(ms){if(!ms) return "-";let s=Math.floor(ms/1000),h=Math.floor(s/3600);s%=3600;let m=Math.floor(s/60);s%=60;return`${h}h ${m}m ${s}s`;}
 
-  // adicionar operador
-  document.getElementById("btnAddOperator").addEventListener("click",async()=>{
+  // criar operador
+  document.getElementById("btnAddOperator").onclick=async()=>{
     const nome=document.getElementById("opName").value.trim();
-    if(!nome){ msg.textContent="⚠️ Digite um nome."; return; }
+    if(!nome) return msg.textContent="⚠️ Digite um nome.";
     const id=nome.toLowerCase();
-
-    // 🔥 papel padrão = operador
-    await setDoc(doc(db,"operadores",id),{
-      nome,
-      criadoEm:new Date().toISOString(),
-      role:"operador"
-    });
-    await setDoc(doc(db,"status_online",id),{nome,online:false,bloqueado:false});
-    msg.textContent=`✅ Operador "${nome}" registrado.`;
-  });
+    await setDoc(doc(db,"operadores",id),{nome,criadoEm:new Date().toISOString(),role:"operador"});
+    await setDoc(doc(db,"status_online",id),{nome,online:false,bloqueado:false,primeiroLogin:null});
+    msg.textContent=`✅ ${nome} registrado.`;
+  };
 
   // importar lista
-  document.getElementById("btnUpload").addEventListener("click",async()=>{
+  document.getElementById("btnUpload").onclick=async()=>{
     const file=document.getElementById("fileInput").files[0];
-    if(!file){ msg.textContent="⚠️ Selecione arquivo."; return; }
-    msg.textContent="⏳ Processando...";
+    if(!file) return msg.textContent="⚠️ Selecione arquivo.";
     if(file.name.endsWith(".csv")){
-      Papa.parse(file,{header:false,complete:async(r)=>{await salvarEmLote(r.data.flat().filter(n=>n));}});
+      Papa.parse(file,{complete:async r=>await salvarEmLote(r.data.flat().filter(Boolean))});
     }else if(file.name.endsWith(".xlsx")){
       const reader=new FileReader();
-      reader.onload=async(e)=>{
+      reader.onload=async e=>{
         const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
         const nomes=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1}).flat();
-        await salvarEmLote(nomes.filter(n=>n));
+        await salvarEmLote(nomes.filter(Boolean));
       };
       reader.readAsArrayBuffer(file);
-    }else msg.textContent="⚠️ Formato inválido.";
-  });
-
+    }
+  };
   async function salvarEmLote(nomes){
     for(const n of nomes){
       const clean=String(n).trim(); if(!clean) continue;
       const id=clean.toLowerCase();
-      await setDoc(doc(db,"operadores",id),{
-        nome:clean,
-        criadoEm:new Date().toISOString(),
-        role:"operador" // 🔥 sempre operador na importação
-      });
-      await setDoc(doc(db,"status_online",id),{nome:clean,online:false,bloqueado:false});
+      await setDoc(doc(db,"operadores",id),{nome:clean,criadoEm:new Date().toISOString(),role:"operador"});
+      await setDoc(doc(db,"status_online",id),{nome:clean,online:false,bloqueado:false,primeiroLogin:null});
     }
-    msg.textContent=`✅ Lista importada com sucesso.`;
+    msg.textContent="✅ Lista importada.";
   }
 
-  // status operadores
-  onSnapshot(collection(db,"status_online"),(snap)=>{
-    operadores=[];
-    snap.forEach(d=>{
-      const data=d.data();
-      let tempoSessao="";
-      if(data.conectadoEm && data.desconectadoEm){
-        tempoSessao=msToTime(data.desconectadoEm.toDate()-data.conectadoEm.toDate());
-      }
-      operadores.push({
-        id:d.id,
-        nome:data.nome,
-        online:data.online||false,
-        bloqueado:data.bloqueado||false,
-        ultimoLogin:formatDate(data.conectadoEm),
-        ultimoLogout:formatDate(data.desconectadoEm),
-        tempoSessao
-      });
+  // snapshot firestore
+  onSnapshot(collection(db,"status_online"),snap=>{
+    operadores=snap.docs.map(d=>{
+      const x=d.data();
+      return {id:d.id,nome:x.nome,online:x.online||false,bloqueado:x.bloqueado||false,
+        primeiroLogin:formatDate(x.primeiroLogin),
+        ultimoLogin:formatDate(x.conectadoEm),
+        tempoSessao:x.conectadoEm&&x.desconectadoEm?msToTime(x.desconectadoEm.toDate()-x.conectadoEm.toDate()):"-"};
     });
-    render("total");
-    updateCharts();
+    render(activeView,parseSearchTerms(searchInput.value));
+    updateChart();
   });
 
-  function render(view){
-    onlineList.innerHTML="";
+  // render
+  function render(view,filters=[]){
+    activeView=view; onlineList.innerHTML="";
     let filtered=operadores;
-    if(view==="online") filtered=operadores.filter(o=>o.online);
-    if(view==="offline") filtered=operadores.filter(o=>!o.online && !o.bloqueado);
-    if(view==="blocked") filtered=operadores.filter(o=>o.bloqueado);
+    if(view==="online") filtered=filtered.filter(o=>o.online);
+    if(view==="offline") filtered=filtered.filter(o=>!o.online&&!o.bloqueado);
+    if(view==="blocked") filtered=filtered.filter(o=>o.bloqueado);
+    if(filters.length) filtered=filtered.filter(op=>filters.some(f=>op.nome.toLowerCase().includes(f)));
 
     filtered.forEach(data=>{
-      const userDiv=document.createElement("div");
-      userDiv.className="user";
-      const statusIcon=data.online?"🟢":(data.bloqueado?"🚫":"⚪");
-      const statusColor=data.online?"var(--online)":(data.bloqueado?"var(--blocked)":"var(--offline)");
-      userDiv.innerHTML=`
-        <div class="user-header" style="color:${statusColor}">
-          <span>${statusIcon} ${data.nome}</span>
-          <small>${data.online?"Online":(data.bloqueado?"Bloqueado":"Offline")}</small>
-        </div>
+      const div=document.createElement("div");
+      div.className="user";
+      div.innerHTML=`
+        <div class="user-header"><span>${data.online?"🟢":data.bloqueado?"🚫":"⚪"} ${data.nome}</span><small>${data.online?"Online":data.bloqueado?"Bloqueado":"Offline"}</small></div>
         <div class="user-details">
+          <p>Primeiro login: ${data.primeiroLogin}</p>
           <p>Último login: ${data.ultimoLogin}</p>
-          <p>Último logout: ${data.ultimoLogout}</p>
-          <p>Tempo sessão: ${data.tempoSessao||"-"}</p>
+          <p>Tempo sessão: ${data.tempoSessao}</p>
           <div class="user-actions">
             <button class="edit">✏️ Editar</button>
             <button class="delete">🗑️ Excluir</button>
             <button class="block">${data.bloqueado?"✅ Desbloquear":"🚫 Bloquear"}</button>
             <button class="disconnect">🔌 Desconectar</button>
           </div>
-        </div>
-      `;
-      const header=userDiv.querySelector(".user-header");
-      const details=userDiv.querySelector(".user-details");
-      header.addEventListener("click",()=>{ 
-        details.style.display=details.style.display==="block"?"none":"block";
-      });
-
-      // ações
-      userDiv.querySelector(".edit").addEventListener("click",async()=>{
-        const novo=prompt("Novo nome:",data.nome);
-        if(novo){
-          const newId=novo.toLowerCase();
-          await setDoc(doc(db,"operadores",newId),{nome:novo},{merge:true});
-          await setDoc(doc(db,"status_online",newId),{nome:novo},{merge:true});
-        }
-      });
-      userDiv.querySelector(".delete").addEventListener("click",async()=>{
-        if(confirm("Excluir "+data.nome+"?")){
-          await deleteDoc(doc(db,"operadores",data.id));
-          await deleteDoc(doc(db,"status_online",data.id));
-        }
-      });
-      userDiv.querySelector(".block").addEventListener("click",async()=>{
-        await updateDoc(doc(db,"status_online",data.id),{bloqueado:!data.bloqueado,online:false,desconectadoEm:new Date()});
-      });
-      userDiv.querySelector(".disconnect").addEventListener("click",async()=>{
-        await updateDoc(doc(db,"status_online",data.id),{online:false,desconectadoEm:new Date(),forcarLogout:true});
-      });
-
-      onlineList.appendChild(userDiv);
+        </div>`;
+      const details=div.querySelector(".user-details");
+      div.querySelector(".user-header").onclick=()=>details.style.display=details.style.display==="block"?"none":"block";
+      div.querySelector(".edit").onclick=async e=>{e.stopPropagation();const novo=prompt("Novo nome:",data.nome);if(novo){await setDoc(doc(db,"operadores",novo.toLowerCase()),{nome:novo},{merge:true});await setDoc(doc(db,"status_online",novo.toLowerCase()),{nome:novo},{merge:true});await deleteDoc(doc(db,"operadores",data.id));await deleteDoc(doc(db,"status_online",data.id));}};
+      div.querySelector(".delete").onclick=async e=>{e.stopPropagation();if(confirm("Excluir "+data.nome+"?")){await deleteDoc(doc(db,"operadores",data.id));await deleteDoc(doc(db,"status_online",data.id));}};
+      div.querySelector(".block").onclick=async e=>{e.stopPropagation();await updateDoc(doc(db,"status_online",data.id),{bloqueado:!data.bloqueado,online:false,desconectadoEm:new Date()});};
+      div.querySelector(".disconnect").onclick=async e=>{e.stopPropagation();await updateDoc(doc(db,"status_online",data.id),{online:false,desconectadoEm:new Date(),forcarLogout:true});};
+      onlineList.appendChild(div);
     });
   }
 
-  // tabs
-  document.querySelectorAll(".tab").forEach(tab=>{
-    tab.addEventListener("click",()=>{
-      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-      tab.classList.add("active");
-      render(tab.dataset.view);
-    });
-  });
+  // abas
+  document.querySelectorAll(".tab").forEach(tab=>tab.onclick=()=>{document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));tab.classList.add("active");render(tab.dataset.view,parseSearchTerms(searchInput.value));});
+
+  // pesquisa
+  searchInput.addEventListener("input",()=>{render(activeView,parseSearchTerms(searchInput.value));});
 
   // gráfico
-  function updateCharts(){
-    const online=operadores.filter(o=>o.online).length;
+  function updateChart(){
+    const on=operadores.filter(o=>o.online).length;
     const blocked=operadores.filter(o=>o.bloqueado).length;
-    const offline=operadores.length-online-blocked;
-
-    const ctx1=document.getElementById("statusChart");
-    if(chartStatus) chartStatus.destroy();
-    chartStatus=new Chart(ctx1,{
-      type:"pie",
-      data:{
-        labels:["Logados","Deslogados","Bloqueados"],
-        datasets:[{
-          data:[online,offline,blocked],
-          backgroundColor:["#00c853","#555","#e53935"]
-        }]
-      },
-      options:{plugins:{legend:{position:"bottom"}}}
-    });
+    const off=operadores.length-on-blocked;
+    const opts={chart:{type:"donut",height:340,dropShadow:{enabled:true,blur:5,left:2,top:2}},labels:["Logados","Deslogados","Bloqueados"],series:[on,off,blocked],colors:["#00c853","#777","#e53935"],legend:{position:"bottom"},dataLabels:{formatter:v=>v.toFixed(1)+"%"},plotOptions:{pie:{donut:{size:"65%"}}}};
+    if(chart) chart.updateOptions(opts);
+    else{chart=new ApexCharts(document.querySelector("#statusChart"),opts);chart.render();}
   }
 
-  // exportar
-  document.getElementById("btnExport").addEventListener("click",()=>{
-    const ws = XLSX.utils.json_to_sheet(operadores);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Operadores");
-    XLSX.writeFile(wb, "relatorio-operadores.xlsx");
-  });
+  // exportar relatório
+  document.getElementById("btnExport").onclick=()=>{const ws=XLSX.utils.json_to_sheet(operadores.map(o=>({Nome:o.nome,Status:o.online?"Online":o.bloqueado?"Bloqueado":"Offline","Primeiro Login":o.primeiroLogin,"Último Login":o.ultimoLogin,"Tempo Sessão":o.tempoSessao})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Operadores");XLSX.writeFile(wb,"relatorio-operadores.xlsx");};
 
   // tema
   const btnToggleTheme=document.getElementById("btnToggleTheme");
-  const theme=localStorage.getItem("theme")||"dark";
-  document.body.dataset.theme=theme;
-  btnToggleTheme.addEventListener("click",()=>{
-    document.body.dataset.theme=document.body.dataset.theme==="light"?"dark":"light";
-    localStorage.setItem("theme",document.body.dataset.theme);
-  });
+  document.body.dataset.theme=localStorage.getItem("theme")||"dark";
+  btnToggleTheme.onclick=()=>{document.body.dataset.theme=document.body.dataset.theme==="light"?"dark":"light";localStorage.setItem("theme",document.body.dataset.theme);if(chart)chart.updateOptions({theme:{mode:document.body.dataset.theme}});};
 </script>
 </body>
 </html>
