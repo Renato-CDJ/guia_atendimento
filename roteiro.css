@@ -454,23 +454,25 @@ header h1{
 }
 
 
-/* =========================
-   Ícone ✔ (Tabulação)
-========================= */
-.tab-icon{
-  position:absolute; top:10px; right:10px;
-  width: 40px; height: 40px;
-  border-radius: 999px;
-  border: none;
-  background: radial-gradient(120% 120% at 20% 20%, var(--accent-2), var(--accent));
-  color: #06140b;
-  font-weight: 900;
-  box-shadow:
-    0 4px 14px rgba(0, 230, 118, 0.35),
-    inset 0 -2px 6px rgba(0,0,0,.35);
-  cursor:pointer;
-  transition: transform .08s ease, filter .2s ease, box-shadow .2s ease;
+/* ===== Ajuste para ícone + texto de tabulação ===== */
+.tab-wrapper {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column; /* texto em cima do ícone */
+  align-items: center;
+  gap: 4px;
 }
+
+.tab-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #00c853;
+  white-space: nowrap;
+  text-align: center;
+}
+
 .tab-icon:hover{ transform: translateY(-1px) scale(1.03); filter: saturate(1.2); }
 .tab-icon:active{ transform: translateY(0) scale(.98); }
 

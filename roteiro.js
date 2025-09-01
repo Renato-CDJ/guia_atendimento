@@ -220,7 +220,6 @@ function ensureTabModalInjected() {
   wrapper.innerHTML = `
     <div class="rt-modal__content" tabindex="-1">
       <button class="rt-close" id="rtmClose" aria-label="Fechar">✕</button>
-      <div class="rt-modal__icon">✔</div>
       <h2>Tabulação</h2>
       <p id="rtmText"></p>
       <div class="rt-actions">

@@ -158,7 +158,7 @@
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
-      background: rgba(255,87,34,0.1);
+      background: rgba(228, 128, 98, 0.1);
       padding: 10px;
       border-radius: 12px;
      margin: 10px auto;
@@ -263,8 +263,17 @@ body[data-theme="light"] .screen .script{ background: rgba(255,87,34,0.06); }
   top: 15px;
   right: 15px;
   display: flex;
+  flex-direction: column; /* força o texto ficar em cima e o ícone embaixo */
   align-items: center;
-  gap: 8px;
+  gap: 4px; /* espaçamento entre texto e ícone */
+}
+
+.tab-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #00c853;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .tab-icon {
@@ -281,11 +290,6 @@ body[data-theme="light"] .screen .script{ background: rgba(255,87,34,0.06); }
   border: none;
 }
 
-.tab-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: #00c853;
-}
 
 </style>
 </head>
@@ -640,5 +644,39 @@ if(document.readyState === "loading"){
   observarTabulacoes();
 }
 </script>
+
+<script>
+function computeMaxScriptHeight(){
+  const vh = window.innerHeight || document.documentElement.clientHeight;
+
+  const header    = document.querySelector('header');
+  const controls  = document.getElementById('operatorControls');
+  const progress  = document.querySelector('.progress');
+  const alertBox  = document.getElementById('tabAlert');
+  const actions   = document.getElementById('globalActions');
+  const shortcuts = document.querySelector('.bottom-shortcuts');
+
+  // altura ocupada acima e abaixo do quadro
+  const reserved = (header?.offsetHeight||0)
+                 + (controls?.offsetHeight||0)
+                 + (progress?.offsetHeight||0)
+                 + (alertBox?.offsetHeight||0)
+                 + (actions?.offsetHeight||0)
+                 + (shortcuts?.offsetHeight||0)
+                 + 60; // margem extra
+
+  const maxH = vh - reserved;
+
+  document.querySelectorAll('.screen .script').forEach(el=>{
+    el.style.maxHeight = maxH+"px";
+    el.style.overflowY = "auto";
+  });
+}
+
+// roda no carregamento e no resize
+window.addEventListener("load", computeMaxScriptHeight);
+window.addEventListener("resize", computeMaxScriptHeight);
+</script>
+
 </body>
 </html>
