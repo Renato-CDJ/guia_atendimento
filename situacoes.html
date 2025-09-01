@@ -89,8 +89,16 @@
       padding:4px 10px;
       border-radius:20px;
       color:#fff;
-      background:var(--accent);
+      white-space:nowrap;
     }
+
+      /* Cores por categoria */
+    .badge-cat.Habitacional { background:#00c853; } /* Verde */
+    .badge-cat.Comercial { background:#0288d1; }    /* Azul */
+    .badge-cat.Financeiro { background:#ff6d00; }   /* Laranja */
+    .badge-cat.Suporte { background:#9c27b0; }      /* Roxo */
+    .badge-cat.Outros { background:#607d8b; }       /* Cinza */
+
 
 
     /* MODAL */
@@ -201,7 +209,7 @@
         card.innerHTML = `
         <h3>
         ${t.titulo || "(sem título)"}
-        <span class="badge-cat">${cat}</span>
+        <span class="badge-cat ${cat}">${cat}</span>
         </h3>
         <p>${t.descricao || ""}</p>`;
         card.addEventListener("click", ()=>openModal(d.id,t,cat));
