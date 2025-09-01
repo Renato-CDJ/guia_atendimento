@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ADM - Situações</title>
   <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
+  <title>Admin - Situações</title>
   <style>
     :root{
       --bg:#0f1113; --panel:#15181b; --panel-2:#1b2024; --text:#f5f7fa; --muted:#aab0b6;
@@ -14,127 +14,358 @@
     body[data-theme="light"]{
       --bg:#fff; --panel:#fff; --panel-2:#f7f7f8; --text:#1b1f24; --muted:#666;
       --border:#e5e7eb; --badge-bg:#f3f4f6; --badge-border:#e5e7eb;
-      --accent:#00c853; --accent-2:#00e676; --shadow:0 8px 20px rgba(0,0,0,.08);
+      --accent:#ff6d00; --accent-2:#ffa000; --shadow:0 8px 20px rgba(0,0,0,.08);
     }
-    *{ box-sizing:border-box }
-    body{ margin:0; font-family:system-ui,Roboto,Arial,sans-serif;
-      background:var(--bg); color:var(--text); min-height:100vh; padding:20px; }
-    .container{ max-width:960px; margin:auto }
 
-    header{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px }
+    *{ box-sizing:border-box }
+    body{
+      margin:0; font-family:system-ui,Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--text);
+      min-height:100vh; padding:20px; display:flex; justify-content:center;
+    }
+    .container{ width:100%; max-width:1100px }
+
+    header{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:16px }
     header h1{ margin:0; font-size:22px; color:var(--accent) }
-    .toolbar{ display:flex; gap:8px; flex-wrap:wrap; }
+
+    .toolbar{ display:flex; gap:8px; flex-wrap:wrap }
     .select,.badge{
       border:1px solid var(--badge-border); background:var(--panel-2); color:var(--text);
       padding:8px 12px; border-radius:10px; cursor:pointer;
     }
-    #searchInput {
-      border:1px solid var(--badge-border); background:var(--panel-2); color:var(--text);
-      padding:10px 14px; border-radius:12px; width:240px;
-    }
-    /* lista */
-    .list-item{background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer}
-    .list-item:hover{border-color:var(--accent)}
-    .list-item h3{margin:0;font-size:16px;color:var(--accent)}
-    .list-item p{margin:4px 0 0;font-size:14px;color:var(--muted)}
 
-    /* ADM painel */
+    /* GRID */
+    .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px }
+    .card{
+      background:var(--panel); border:1px solid var(--border);
+      border-radius:12px; padding:14px 18px;
+      cursor:pointer; transition:background .25s ease, transform .2s ease;
+      position:relative; overflow:hidden;
+    }
+    .card:hover{ background:var(--panel-2); transform:translateY(-2px) }
+
+    .card h3{ margin:0 0 6px; font-size:18px; color:var(--accent) }
+    .card .meta{ font-size:12px; color:var(--muted); margin-bottom:6px }
+    .card p{ margin:0; font-size:14px; line-height:1.45; color:var(--text); max-height:60px; overflow:hidden; text-overflow:ellipsis }
+
+    .item-actions{ position:absolute; top:10px; right:10px; display:flex; gap:6px }
+    .action-btn{ border:none; background:transparent; color:var(--muted); cursor:pointer; font-size:16px; padding:4px; border-radius:6px }
+    .action-btn:hover{ background:var(--badge-bg); color:var(--accent) }
+
+    /* MODAL */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.75);
+      display:none; align-items:center; justify-content:center; z-index:2000; padding:20px;
+    }
+    .modal-backdrop.open{ display:flex }
+    .modal{
+      background:var(--panel); border-radius:20px; padding:28px 24px;
+      max-width:900px; width:100%; max-height:85vh; overflow-y:auto; box-shadow:var(--shadow);
+      animation:fadeIn .25s ease;
+    }
+    .modal h2{ margin-top:0; font-size:24px; color:var(--accent) }
+    .modal .meta{ margin:0 0 12px }
+    .modal p{ margin:14px 0 0; line-height:1.75; font-size:16px; white-space:pre-wrap }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(12px) scale(.98)} to{opacity:1; transform:translateY(0) scale(1)} }
+
+    /* PAINEL ADM */
     .adm{
-      position:fixed; top:0; right:0; bottom:0; width:340px; max-width:90vw;
+      position:fixed; top:0; right:0; bottom:0; width:360px; max-width:90vw;
       background:var(--panel); border-left:1px solid var(--border);
       box-shadow:-20px 0 40px rgba(0,0,0,.35);
-      padding:14px 14px 70px; z-index:2200;
+      padding:14px 14px 70px; transform:translateX(100%); transition:transform .28s ease;
+      z-index:2200; display:none;
     }
+    .adm.open{ transform:translateX(0); display:block }
     .adm > header{ font-weight:700; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center }
-    .adm input,.adm textarea{width:100%;border:1px solid var(--badge-border);background:var(--panel-2);color:var(--text);border-radius:10px;padding:8px 10px;margin-bottom:10px}
-    .adm textarea{min-height:120px;resize:vertical}
-    .adm-footer{position:absolute;left:14px;right:14px;bottom:12px;display:flex;gap:8px}
-    .btn-mini{border:1px solid var(--badge-border);background:var(--badge-bg);color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer}
-    .btn-mini.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;color:#06140b}
-    .btn-mini.danger{background:#2a1211;border-color:#542625;color:#ffdede}
+    .adm input,.adm textarea,.adm select{
+      width:100%; border:1px solid var(--badge-border); background:var(--panel-2); color:var(--text);
+      border-radius:10px; padding:8px 10px; outline:none;
+    }
+    .adm textarea{ min-height:120px; resize:vertical }
+    .adm-footer{ position:absolute; left:14px; right:14px; bottom:12px; display:flex; gap:8px }
+    .btn-mini{ border:1px solid var(--badge-border); background:var(--badge-bg); color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer }
+    .btn-mini.primary{ background:linear-gradient(90deg,var(--accent),var(--accent-2)); border:none; color:#06140b }
+    .btn-mini.danger{ background:#2a1211; border-color:#542625; color:#ffdede }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>ADM - Situações</h1>
+      <h1>Admin - Situações</h1>
       <div class="toolbar">
-        <input id="searchInput" placeholder="🔍 Pesquisar...">
+        <select id="filterCategoria" class="select"></select>
+        <input id="searchInput" class="select" type="text" placeholder="🔍 Pesquisar..." />
+        <button id="btnToggleTheme" class="badge">🌗 Tema</button>
+        <button id="btnNova" class="badge">➕ Nova Situação</button>
+        <button id="btnCategorias" class="badge">📂 Categorias</button>
+        <button id="btnTabs" class="badge">🗂️ Tabulações</button>
       </div>
     </header>
-    <main id="situacoesList"></main>
+
+    <main id="situacoesList" class="grid"></main>
   </div>
 
-  <!-- Painel ADM -->
+  <!-- Modal leitura -->
+  <div id="modalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <h2 id="modalTitle"></h2>
+      <div id="modalMeta" class="meta"></div>
+      <p id="modalDesc"></p>
+    </div>
+  </div>
+
+  <!-- Painel ADM Situações -->
   <aside class="adm" id="admPanel">
     <header>
       <div id="admTitle">Nova Situação</div>
+      <button id="btnAdmClose" class="btn-mini">✕</button>
     </header>
+
     <label>Título</label>
-    <input type="text" id="fldTitulo">
-    <label>Descrição</label>
+    <input type="text" id="fldTitulo" />
+
+    <label style="margin-top:8px;">Descrição</label>
     <textarea id="fldDescricao"></textarea>
+
+    <label style="margin-top:8px;">Categoria</label>
+    <select id="fldCategoria"></select>
+
     <div class="adm-footer">
       <button id="btnSave" class="btn-mini primary">Salvar</button>
-      <button id="btnDel" class="btn-mini danger" style="display:none">Excluir</button>
+      <button id="btnDel" class="btn-mini danger" style="display:none;">Excluir</button>
     </div>
+  </aside>
+
+  <!-- Painel ADM Categorias -->
+  <aside class="adm" id="catPanel">
+    <header>
+      <div id="catTitle">Categorias</div>
+      <button id="btnCatClose" class="btn-mini">✕</button>
+    </header>
+
+    <label>Nome da categoria</label>
+    <input type="text" id="fldCatNome" placeholder="Ex: Habitacional" />
+
+    <div class="adm-footer">
+      <button id="btnCatSave" class="btn-mini primary">Salvar</button>
+      <button id="btnCatDel" class="btn-mini danger" style="display:none;">Excluir</button>
+    </div>
+
+    <div id="catList" style="margin-top:20px; display:flex; flex-direction:column; gap:6px;"></div>
+  </aside>
+
+  <!-- Painel ADM Tabulações -->
+  <aside class="adm" id="tabPanel">
+    <header>
+      <div id="tabTitle">Tabulações</div>
+      <button id="btnTabClose" class="btn-mini">✕</button>
+    </header>
+
+    <label>Nome da tabulação</label>
+    <input type="text" id="fldTabNome" placeholder="Ex: Concluído com sucesso" />
+
+    <div class="adm-footer">
+      <button id="btnTabSave" class="btn-mini primary">Salvar</button>
+      <button id="btnTabDel" class="btn-mini danger" style="display:none;">Excluir</button>
+    </div>
+
+    <div id="tabList" style="margin-top:20px; display:flex; flex-direction:column; gap:6px;"></div>
   </aside>
 
   <script type="module">
     import { db } from "./firebase.js";
-    import { collection, query, orderBy, onSnapshot, addDoc, doc, updateDoc, deleteDoc } 
-      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+    import { collection, query, orderBy, onSnapshot, addDoc, setDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-    const listEl = document.getElementById("situacoesList");
-    const fldTitulo = document.getElementById("fldTitulo");
-    const fldDescricao = document.getElementById("fldDescricao");
+    /* refs */
+    const list = document.getElementById("situacoesList");
+    const searchInput = document.getElementById("searchInput");
+    const filterCategoria = document.getElementById("filterCategoria");
+
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalMeta = document.getElementById("modalMeta");
+    const modalDesc = document.getElementById("modalDesc");
+
+    const admPanel = document.getElementById("admPanel");
+    const admTitle = document.getElementById("admTitle");
+    const btnAdmClose = document.getElementById("btnAdmClose");
     const btnSave = document.getElementById("btnSave");
     const btnDel = document.getElementById("btnDel");
-    const admPanel = document.getElementById("admPanel");
-    let editingId = null;
+    const fldTitulo = document.getElementById("fldTitulo");
+    const fldDescricao = document.getElementById("fldDescricao");
+    const fldCategoria = document.getElementById("fldCategoria");
 
-    // 🔄 Carregar lista em tempo real
-    const q = query(collection(db, "situacoes"), orderBy("titulo"));
-    onSnapshot(q, (snap) => {
-      listEl.innerHTML = "";
-      snap.forEach(docSnap => {
-        const d = docSnap.data();
-        const div = document.createElement("div");
-        div.className = "list-item";
-        div.innerHTML = "<h3>"+d.titulo+"</h3><p>"+(d.descricao||"")+"</p>";
-        div.onclick = () => openEditor(docSnap.id, d);
-        listEl.appendChild(div);
-      });
+    const catPanel = document.getElementById("catPanel");
+    const btnCategorias = document.getElementById("btnCategorias");
+    const btnCatClose = document.getElementById("btnCatClose");
+    const btnCatSave = document.getElementById("btnCatSave");
+    const btnCatDel = document.getElementById("btnCatDel");
+    const fldCatNome = document.getElementById("fldCatNome");
+    const catList = document.getElementById("catList");
+
+    const tabPanel = document.getElementById("tabPanel");
+    const btnTabs = document.getElementById("btnTabs");
+    const btnTabClose = document.getElementById("btnTabClose");
+    const btnTabSave = document.getElementById("btnTabSave");
+    const btnTabDel = document.getElementById("btnTabDel");
+    const fldTabNome = document.getElementById("fldTabNome");
+    const tabList = document.getElementById("tabList");
+
+    /* state */
+    let cacheDocs = [];
+    let cacheCats = [];
+    let cacheTabs = [];
+    let editId = null;
+    let catEditId = null;
+    let tabEditId = null;
+
+    /* categorias */
+    const qCats = query(collection(db,"categorias"), orderBy("nome"));
+    onSnapshot(qCats,(snap)=>{
+      cacheCats = snap.docs;
+      renderCategoriasSelect();
+      renderCategoriasList();
     });
 
-    function openEditor(id=null, data={}) {
-      editingId = id;
-      fldTitulo.value = data.titulo || "";
-      fldDescricao.value = data.descricao || "";
-      document.getElementById("admTitle").textContent = id ? "Editar Situação" : "Nova Situação";
-      btnDel.style.display = id ? "inline-block" : "none";
+    function renderCategoriasSelect(){
+      filterCategoria.innerHTML = "";
+      const optAll = document.createElement("option");
+      optAll.value = "todas";
+      optAll.textContent = "Todas";
+      filterCategoria.appendChild(optAll);
+      fldCategoria.innerHTML = "";
+      cacheCats.forEach(c=>{
+        const opt=document.createElement("option");
+        opt.value=c.id; opt.textContent=c.data().nome;
+        fldCategoria.appendChild(opt);
+        const opt2=document.createElement("option");
+        opt2.value=c.id; opt2.textContent=c.data().nome;
+        filterCategoria.appendChild(opt2);
+      });
+      filterCategoria.value="todas";
     }
 
-    btnSave.onclick = async () => {
-      const data = { titulo: fldTitulo.value.trim(), descricao: fldDescricao.value.trim() };
-      if (!data.titulo) return alert("Informe o título.");
-      if (editingId) {
-        await updateDoc(doc(db, "situacoes", editingId), data);
-      } else {
-        await addDoc(collection(db, "situacoes"), data);
-      }
-      openEditor();
-    };
+    function renderCategoriasList(){
+      catList.innerHTML = "";
+      cacheCats.forEach(c=>{
+        const div=document.createElement("div");
+        div.style.display="flex";
+        div.style.justifyContent="space-between";
+        div.style.alignItems="center";
+        div.style.background="var(--panel-2)";
+        div.style.padding="6px 10px";
+        div.style.borderRadius="8px";
+        div.innerHTML=`<span>${c.data().nome}</span>
+          <div>
+            <button data-edit="${c.id}" class="btn-mini">✏️</button>
+            <button data-del="${c.id}" class="btn-mini danger">🗑️</button>
+          </div>`;
+        catList.appendChild(div);
+      });
+      catList.querySelectorAll("[data-edit]").forEach(btn=>{
+        btn.onclick=()=>{
+          const id=btn.dataset.edit;
+          const data=cacheCats.find(c=>c.id===id)?.data();
+          if(!data) return;
+          catEditId=id;
+          fldCatNome.value=data.nome;
+          btnCatDel.style.display="";
+          catPanel.classList.add("open");
+        };
+      });
+      catList.querySelectorAll("[data-del]").forEach(btn=>{
+        btn.onclick=async()=>{
+          const id=btn.dataset.del;
+          if(confirm("Excluir esta categoria?")){
+            await deleteDoc(doc(db,"categorias",id));
+          }
+        };
+      });
+    }
 
-    btnDel.onclick = async () => {
-      if (editingId && confirm("Excluir esta situação?")) {
-        await deleteDoc(doc(db, "situacoes", editingId));
-        openEditor();
-      }
-    };
+    btnCategorias.addEventListener("click",()=>{ fldCatNome.value=""; catEditId=null; btnCatDel.style.display="none"; catPanel.classList.add("open"); });
+    btnCatClose.addEventListener("click",()=>catPanel.classList.remove("open"));
+    btnCatSave.addEventListener("click",async()=>{ const nome=fldCatNome.value.trim(); if(!nome) return; if(catEditId){ await setDoc(doc(db,"categorias",catEditId),{nome},{merge:true}); }else{ await addDoc(collection(db,"categorias"),{nome}); } catPanel.classList.remove("open"); });
+    btnCatDel.addEventListener("click",async()=>{ if(!catEditId) return; if(confirm("Excluir esta categoria?")){ await deleteDoc(doc(db,"categorias",catEditId)); catPanel.classList.remove("open"); } });
 
-    // Abre sempre em modo novo
-    openEditor();
+    /* tabulações */
+    const qTabs = query(collection(db,"tabulacoes"), orderBy("nome"));
+    onSnapshot(qTabs,(snap)=>{ cacheTabs = snap.docs; renderTabsList(); });
+
+    function renderTabsList(){
+      tabList.innerHTML = "";
+      cacheTabs.forEach(t=>{
+        const div=document.createElement("div");
+        div.style.display="flex"; div.style.justifyContent="space-between"; div.style.alignItems="center"; div.style.background="var(--panel-2)"; div.style.padding="6px 10px"; div.style.borderRadius="8px";
+        div.innerHTML=`<span>${t.data().nome}</span>
+          <div>
+            <button data-edit="${t.id}" class="btn-mini">✏️</button>
+            <button data-del="${t.id}" class="btn-mini danger">🗑️</button>
+          </div>`;
+        tabList.appendChild(div);
+      });
+      tabList.querySelectorAll("[data-edit]").forEach(btn=>{
+        btn.onclick=()=>{ const id=btn.dataset.edit; const data=cacheTabs.find(t=>t.id===id)?.data(); if(!data) return; tabEditId=id; fldTabNome.value=data.nome; btnTabDel.style.display=""; tabPanel.classList.add("open"); };
+      });
+      tabList.querySelectorAll("[data-del]").forEach(btn=>{
+        btn.onclick=async()=>{ const id=btn.dataset.del; if(confirm("Excluir esta tabulação?")){ await deleteDoc(doc(db,"tabulacoes",id)); } };
+      });
+    }
+
+    btnTabs.addEventListener("click",()=>{ fldTabNome.value=""; tabEditId=null; btnTabDel.style.display="none"; tabPanel.classList.add("open"); });
+    btnTabClose.addEventListener("click",()=>tabPanel.classList.remove("open"));
+    btnTabSave.addEventListener("click",async()=>{ const nome=fldTabNome.value.trim(); if(!nome) return; if(tabEditId){ await setDoc(doc(db,"tabulacoes",tabEditId),{nome},{merge:true}); }else{ await addDoc(collection(db,"tabulacoes"),{nome}); } tabPanel.classList.remove("open"); });
+    btnTabDel.addEventListener("click",async()=>{ if(!tabEditId) return; if(confirm("Excluir esta tabulação?")){ await deleteDoc(doc(db,"tabulacoes",tabEditId)); tabPanel.classList.remove("open"); } });
+
+    /* situações */
+    const q = query(collection(db,"situacoes"), orderBy("titulo"));
+    onSnapshot(q,(snap)=>{ cacheDocs = snap.docs; render(); });
+
+    function render(){
+      const term = searchInput.value.toLowerCase();
+      const filtroCat = filterCategoria.value;
+      const docs = cacheDocs.filter(d=>{ const t=d.data(); const matchSearch = (t.titulo||"").toLowerCase().includes(term) || (t.descricao||"").toLowerCase().includes(term); const matchCategoria = (filtroCat==="todas") || (t.categoria === filtroCat); return matchSearch && matchCategoria; });
+      list.innerHTML = "";
+      docs.forEach(d=>{
+        const t = d.data();
+        const cat = cacheCats.find(c=>c.id===t.categoria)?.data()?.nome || "Sem categoria";
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${t.titulo || "(sem título)"}</h3>
+          <div class="meta">Categoria: ${cat}</div>
+          <p>${t.descricao || ""}</p>
+          <div class="item-actions">
+            <button class="action-btn" title="Editar">✏️</button>
+            <button class="action-btn" title="Excluir">🗑️</button>
+          </div>`;
+        card.querySelector(".action-btn[title='Editar']").addEventListener("click",()=>openAdmForEdit(d.id,t));
+        card.querySelector(".action-btn[title='Excluir']").addEventListener("click",async()=>{ if(confirm("Excluir esta situação?")) await deleteDoc(doc(db,"situacoes",d.id)); });
+        card.addEventListener("click", e=>{ if(e.target.closest(".action-btn")) return; openModal(d.id,t,cat); });
+        list.appendChild(card);
+      });
+    }
+
+    function openModal(id,data,catNome){ modalTitle.textContent = data.titulo || "(sem título)"; modalDesc.textContent = data.descricao || ""; modalMeta.textContent = "Categoria: " + (catNome || "Sem categoria"); modalBackdrop.classList.add("open"); }
+    modalBackdrop.addEventListener("click", e=>{ if(e.target===modalBackdrop) modalBackdrop.classList.remove("open"); });
+
+    /* painel situações */
+    document.getElementById("btnNova").addEventListener("click",()=>openAdmForNew());
+    btnAdmClose.addEventListener("click",()=>admPanel.classList.remove("open"));
+
+    function openAdmForNew(){ editId=null; admTitle.textContent="Nova Situação"; fldTitulo.value=""; fldDescricao.value=""; fldCategoria.value=cacheCats[0]?.id||""; btnDel.style.display="none"; admPanel.classList.add("open"); }
+    function openAdmForEdit(id,data){ editId=id; admTitle.textContent="Editar Situação"; fldTitulo.value=data.titulo||""; fldDescricao.value=data.descricao||""; fldCategoria.value=data.categoria||""; btnDel.style.display=""; admPanel.classList.add("open"); }
+
+    btnSave.addEventListener("click",async()=>{ const titulo=fldTitulo.value.trim(); const descricao=fldDescricao.value.trim(); const categoria=fldCategoria.value; if(!titulo) return alert("Informe um título."); try{ if(editId){ await setDoc(doc(db,"situacoes",editId),{titulo,descricao,categoria},{merge:true}); }else{ await addDoc(collection(db,"situacoes"),{titulo,descricao,categoria}); } admPanel.classList.remove("open"); }catch(e){ console.error(e); alert("Erro ao salvar."); } });
+    btnDel.addEventListener("click",async()=>{ if(!editId) return; if(confirm("Excluir esta situação?")){ try{ await deleteDoc(doc(db,"situacoes",editId)); admPanel.classList.remove("open"); }catch(e){ console.error(e); alert("Erro ao excluir."); } } });
+
+    /* tema */
+    (function(){ const btnToggleTheme=document.getElementById("btnToggleTheme"); const stored=localStorage.getItem("theme"); if(stored) document.body.setAttribute("data-theme",stored); else if(window.matchMedia("(prefers-color-scheme: light)").matches) document.body.setAttribute("data-theme","light"); else document.body.setAttribute("data-theme","dark"); btnToggleTheme.addEventListener("click",()=>{ const cur=document.body.getAttribute("data-theme"); const next=cur==="light"?"dark":"light"; document.body.setAttribute("data-theme",next); localStorage.setItem("theme",next); }); })();
+
+    /* search + filtro */
+    searchInput.addEventListener("input", render);
+    filterCategoria.addEventListener("change", render);
   </script>
 </body>
 </html>
