@@ -412,7 +412,7 @@ function buildGlobalButtons(def) {
 
   if (def.id !== "inicio") {
     const backBtn = document.createElement("button");
-    backBtn.className = "btn";
+    backBtn.className = "btn voltar-btn";
     backBtn.textContent = "⬅ Voltar";
     backBtn.onclick = () => {
       historyStack.pop();

@@ -4,18 +4,40 @@
   <meta charset="UTF-8">
   <title>Editor de Tabulações</title>
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      background: #f0f2f5; 
-      padding: 30px; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     h2 {
       font-size: 28px;
       margin-bottom: 20px;
       color: #333;
+    }
+    .campaigns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .campaign-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 30px 50px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #ff5722;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .campaign-card:hover {
+      transform: translateY(-4px);
+      background: #ffece5;
     }
     .card {
       border-radius: 16px;
@@ -26,10 +48,6 @@
       max-width: 850px;
       min-height: 300px;
       position: relative;
-      transition: transform 0.2s;
-    }
-    .card:hover {
-      transform: scale(1.01);
     }
     .title {
       font-weight: bold;
@@ -65,9 +83,7 @@
       font-size: 16px;
       transition: background 0.2s;
     }
-    .buttons button:hover {
-      background: #e64a19;
-    }
+    .buttons button:hover { background: #e64a19; }
     .tabIcon {
       position: absolute;
       top: 15px;
@@ -82,10 +98,6 @@
       align-items: center;
       font-size: 22px;
       cursor: pointer;
-      transition: background 0.2s;
-    }
-    .tabIcon:hover {
-      background: #00b34a;
     }
     .tabEditor {
       margin-top: 20px;
@@ -108,15 +120,16 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
-      transition: background 0.2s;
     }
-    .tabEditor button:hover {
-      background: #1976d2;
-    }
+    .tabEditor button:hover { background: #1976d2; }
   </style>
 </head>
 <body>
   <h2>Editor de Tabulações</h2>
+
+  <!-- Lista de campanhas -->
+  <div id="campaigns" class="campaigns"></div>
+
   <div id="screen"></div>
 
   <script type="module">
@@ -125,29 +138,73 @@
       from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
     let roteiros = {};
-    let telaAtual = null;
+    let historico = [];
+    let telaInicial = null;
+    let campanhaAtual = null;
 
-    // Carregar roteiros
-    async function carregarRoteiros() {
-      const snap = await getDocs(collection(db, "roteiros"));
-      snap.forEach(docSnap => {
-        roteiros[docSnap.id] = docSnap.data();
-      });
-      mostrarTela("hab_abordagem"); // tela inicial
+    // Carregar JSON local
+    async function carregarJSON() {
+      const resp = await fetch("roteiros.json", { cache: "no-store" });
+      const data = await resp.json();
+      return data.marcas || {};
     }
 
-    // Mostrar uma tela
+    // Carregar alterações do Firestore
+    async function carregarFirestore() {
+      const snap = await getDocs(collection(db, "roteiros"));
+      const map = {};
+      snap.forEach(docSnap => { map[docSnap.id] = docSnap.data(); });
+      return map;
+    }
+
+    // Montar cards de campanhas
+    async function initCampanhas() {
+      const json = await carregarJSON();
+      const campaignsDiv = document.getElementById("campaigns");
+      campaignsDiv.innerHTML = "";
+
+      Object.keys(json).forEach(nome => {
+        const card = document.createElement("div");
+        card.className = "campaign-card";
+        card.textContent = nome;
+        card.onclick = () => selecionarCampanha(nome, json[nome]);
+        campaignsDiv.appendChild(card);
+      });
+    }
+
+    // Selecionar campanha
+    async function selecionarCampanha(nome, estrutura) {
+      campanhaAtual = nome;
+      historico = [];
+
+      // base do JSON
+      roteiros = {};
+      Object.values(estrutura).forEach(def => { roteiros[def.id] = def; });
+
+      // overlay Firestore
+      const fsData = await carregarFirestore();
+      Object.keys(fsData).forEach(id => {
+        if (roteiros[id]) roteiros[id] = { ...roteiros[id], ...fsData[id] };
+      });
+
+      // tela inicial = abordagem
+      telaInicial = estrutura.abordagem?.id || Object.values(estrutura)[0].id;
+      mostrarTela(telaInicial);
+    }
+
+    // Mostrar tela
     function mostrarTela(id) {
       const data = roteiros[id];
       if (!data) return alert("Tela não encontrada: " + id);
-      telaAtual = id;
+      historico.push(id);
 
       const screen = document.getElementById("screen");
       screen.innerHTML = `
         <div class="card">
-          <div class="title">${data.title || "(sem título)"}</div>
+          <div class="title">${data.title || "(sem título)"} (${campanhaAtual})</div>
           <div class="body">${data.body || ""}</div>
           <div class="buttons">
+            ${id !== telaInicial ? `<button onclick="voltar()">⬅ Voltar</button>` : ""}
             ${(data.buttons || []).map(btn =>
               `<button onclick="mostrarTela('${btn.next}')">${btn.label}</button>`
             ).join("")}
@@ -162,7 +219,18 @@
       `;
     }
 
-    // Alternar editor de tabulação
+    // Voltar
+    function voltar() {
+      historico.pop();
+      const anterior = historico.pop();
+      if (anterior) {
+        mostrarTela(anterior);
+      } else {
+        mostrarTela(telaInicial);
+      }
+    }
+
+    // Alternar editor
     function toggleEditor(id) {
       const editor = document.getElementById("editor_" + id);
       if (editor) {
@@ -175,19 +243,20 @@
       const input = document.getElementById("tab_" + id);
       if (!input) return;
       const novoValor = input.value.trim();
-
       await setDoc(doc(db, "roteiros", id), { tab: novoValor }, { merge: true });
       roteiros[id].tab = novoValor;
       alert("✅ Tabulação salva para " + id);
-      mostrarTela(id); // recarregar tela pra atualizar tooltip
+      mostrarTela(id);
     }
 
-    // Expor funções globais
+    // Expor globais
     window.mostrarTela = mostrarTela;
     window.toggleEditor = toggleEditor;
     window.salvarTabulacao = salvarTabulacao;
+    window.voltar = voltar;
 
-    carregarRoteiros();
+    // Inicializa cards
+    initCampanhas();
   </script>
 </body>
 </html>

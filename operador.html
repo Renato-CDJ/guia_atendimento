@@ -621,6 +621,17 @@ function updateAllTabIconsTitles(){
   };
 })();
 
+// Atalho de teclado: ESC = Voltar
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    const voltarBtn = document.querySelector("button.voltar-btn");
+    if (voltarBtn) {
+      voltarBtn.click();
+    }
+  }
+});
+
+
 /** Escuta o Firestore e aplica em tempo real */
 function observarTabulacoes(){
   const colRef = collection(db, "roteiros");
