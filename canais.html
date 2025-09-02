@@ -1,222 +1,274 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="icon" type="image/png" href="img/operador-de-telemarketing.png">
   <title>Canais de Atendimento</title>
-  <link rel="stylesheet" href="roteiro.css" />
   <style>
-    /* layout da página (usa variáveis/estética do roteiro.css) */
-    .sidebar{
-      position: fixed; inset: 0 auto 0 0; width:70px; border-right:2px solid var(--accent);
+    :root{
+      --bg:#0f1113; --panel:#15181b; --panel-2:#1b2024; --text:#f5f7fa; --muted:#aab0b6;
+      --border:#22292f; --badge-bg:#21272d; --badge-border:#2a3138;
+      --accent:#ff6d00; --accent-2:#ffa000; --shadow:0 10px 28px rgba(0,0,0,.35);
+    }
+    body[data-theme="light"]{
+      --bg:#fff; --panel:#fff; --panel-2:#f7f7f8; --text:#1b1f24; --muted:#666;
+      --border:#e5e7eb; --badge-bg:#f3f4f6; --badge-border:#e5e7eb;
+      --accent:#ff6d00; --accent-2:#ffa000; --shadow:0 6px 18px rgba(0,0,0,.12);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0; font-family:system-ui,Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--text);
+      min-height:100vh; padding:20px;
+      transition:background .3s,color .3s;
+    }
+    .container{ max-width:1100px; margin:auto; }
+
+    header{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px }
+    header h1{ margin:0; font-size:22px; color:var(--accent) }
+
+    .badge{
+      border:1px solid var(--badge-border); background:var(--panel-2); color:var(--text);
+      padding:8px 14px; border-radius:10px; cursor:pointer; font-weight:600;
+      transition:.25s;
+    }
+    .badge:hover{ background:var(--accent); color:#fff; }
+
+    /* Pesquisa */
+    #searchWrapper{
+      display:flex; justify-content:center; margin:12px 0 20px;
+    }
+    #searchInput{
+      flex:0 1 480px;
+      border:1px solid var(--badge-border);
+      background:var(--panel-2);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      font-size:15px;
+    }
+
+    /* Grid responsivo */
+    #canaisList{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+      gap:20px;
+    }
+
+    /* Card */
+    .canal-card{
+      background:var(--panel-2);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:18px 20px;
+      box-shadow:var(--shadow);
+      transition:all .3s ease;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      cursor:pointer;
+    }
+    .canal-card:hover{
+      transform:translateY(-4px);
+      border-color:var(--accent);
+      box-shadow:0 12px 28px rgba(0,0,0,.45);
+    }
+
+    .canal-header{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .canal-icon{
+      width:42px; height:42px; flex-shrink:0;
+      border-radius:50%;
+      background:var(--badge-bg);
       display:flex; align-items:center; justify-content:center;
+      font-size:20px; color:var(--accent);
+      border:1px solid var(--badge-border);
     }
-    .sidebar a{ writing-mode:vertical-rl; transform:rotate(180deg); text-decoration:none; color:var(--accent); font-weight:700; font-size:18px; }
-    .container{ margin-left:90px; max-width:1100px; padding:20px; flex:1; }
-    header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-    header h1{ font-size:22px; color:var(--accent); }
-
-    /* bloco principal em “cartão” do site */
-    .panel{ background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%); border:1px solid #22292f;
-            border-radius:16px; box-shadow: var(--shadow); padding:18px 16px; }
-
-    /* grid 2 colunas como na imagem */
-    .grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:28px; }
-    @media (max-width: 900px){ .grid-2{ grid-template-columns:1fr; } }
-
-    /* grupos (tópicos) */
-    .group + .group{ margin-top:18px; }
-    .group h3{ font-size:18px; font-weight:800; margin-bottom:10px; }
-    .group ul{ list-style:none; padding-left:0; }
-    .group li{ margin:6px 0; line-height:1.55; color:#dce3ea; }
-    .muted{ color:var(--muted); }
-
-    /* tema claro: usa os mesmos tokens do roteiro.css automaticamente */
-    body[data-theme="light"] .panel{
-      background: linear-gradient(180deg, #fff 0%, #fafafa 100%); border:1px solid #ddd; color:#333;
+    .canal-title{
+      font-size:18px; font-weight:700; color:var(--accent); margin:0;
     }
-    body[data-theme="light"] .group li{ color:#444; }
+    .canal-desc{
+      font-size:15px; line-height:1.5; color:var(--text); white-space:pre-wrap;
+    }
 
-    /* >>> Botão Voltar no mesmo estilo dos botões do operador.html */
+    /* Modal */
+    #canalModal{
+      display:none;
+      position:fixed;
+      z-index:4000;
+      inset:0;
+      background:rgba(0,0,0,0.7);
+      backdrop-filter:blur(3px);
+      justify-content:center;
+      align-items:center;
+    }
+    #canalModal .modal-content{
+      background:var(--panel);
+      border:2px solid var(--accent);
+      border-radius:20px;
+      width:90%;
+      max-width:700px;
+      max-height:85vh;
+      overflow-y:auto;
+      padding:24px;
+      box-shadow:0 20px 50px rgba(0,0,0,.6);
+      animation:scaleIn .25s ease;
+      position:relative;
+    }
+    #canalModal h3{
+      margin:0 0 16px;
+      padding-bottom:10px;
+      font-size:22px;
+      font-weight:800;
+      color:var(--accent);
+      border-bottom:1.5px solid var(--border);
+      text-align:center;
+    }
+    #canalModal p{
+      margin:0;
+      font-size:16px;
+      line-height:1.6;
+      color:var(--text);
+      white-space:pre-wrap;
+    }
+    #canalModal .close-btn{
+      position:absolute;
+      top:14px;
+      right:16px;
+      font-size:24px;
+      font-weight:bold;
+      background:none;
+      border:none;
+      cursor:pointer;
+      color:var(--text);
+      transition:transform .2s;
+    }
+    #canalModal .close-btn:hover{ transform:scale(1.2); color:var(--accent); }
+    @keyframes scaleIn{
+      from{ transform:scale(0.9); opacity:0; }
+      to{ transform:scale(1); opacity:1; }
+    }
+
+    /* Botão voltar */
     .bottom-back{
       position: fixed;
       left: 50%;
       bottom: 20px;
       transform: translateX(-50%);
-      z-index: 1900;
+      z-index: 1000;
     }
-
     .bottom-back a{
       display: inline-block;
       background: var(--panel);
       border: 2px solid var(--accent);
       color: var(--accent);
-      padding: 14px 28px;
+      padding: 12px 22px;
       border-radius: 20px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       text-decoration: none;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,.25);
       transition: all 0.25s ease;
     }
-
     .bottom-back a:hover{
       background: linear-gradient(90deg,var(--accent),var(--accent-2));
       color: #fff;
       border-color: transparent;
       transform: translateY(-3px);
     }
-
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <nav class="sidebar"><a href="#">Canais</a></nav>
-
-  <!-- Conteúdo -->
   <div class="container">
     <header>
-      <div>
-        <h1>Canais de Atendimento CAIXA</h1>
-        <p class="muted">Formas oficiais de contato</p>
-      </div>
-      <div>
-        <button id="btnToggleTheme" class="badge">🌗 Tema</button>
-      </div>
+      <h1>☎️ Canais de Atendimento</h1>
+      <button id="btnToggleTheme" class="badge">🌗 Tema</button>
     </header>
 
-    <!-- Cartão com duas colunas e os tópicos/descrições -->
-    <section class="panel">
-      <div class="grid-2">
-        <!-- COLUNA ESQUERDA -->
-        <div>
-          <div class="group">
-            <h3>Alô CAIXA</h3>
-            <ul>
-              <li>📞 4004 0104 – Capitais e Regiões Metropolitanas</li>
-              <li>📞 0800 104 0104 – Demais regiões</li>
-              <li>Pessoa Física, Jurídica e Ente Público</li>
-              <li>Conta corrente, poupança e empréstimos comerciais</li>
-              <li>Cartão de Crédito</li>
-              <li>Habitação</li>
-              <li>Suporte nos sites, aplicativos e CAIXA Eletrônico</li>
-              <li>Negociação de dívidas, penhor e contratos cedidos</li>
-              <li>Resultado de Loterias</li>
-              <li>De Olho na Qualidade (Minha Casa Minha Vida)</li>
-            </ul>
-          </div>
+    <!-- Pesquisa -->
+    <div id="searchWrapper">
+      <input id="searchInput" type="text" placeholder="🔍 Pesquisar canal..." />
+    </div>
 
-          <div class="group">
-            <h3>Atendimento CAIXA Cidadão</h3>
-            <ul>
-              <li>📞 0800 726 0207</li>
-              <li>Atendimento sobre PIS, Benefícios Sociais, FGTS e Cartão Social</li>
-              <li>Atendimento eletrônico: 24h</li>
-              <li>Atendimento humano: seg a sex 8h às 21h, sábado 10h às 16h</li>
-            </ul>
-          </div>
-
-          <div class="group">
-            <h3>Agência Digital</h3>
-            <ul>
-              <li>📞 4004 0104 – Capitais e regiões metropolitanas</li>
-              <li>📞 0800 104 0104 – Demais regiões</li>
-              <li>Serviços e consultoria financeira personalizada</li>
-              <li>Atendimento: 8h às 18h (exceto finais de semana e feriados)</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- COLUNA DIREITA -->
-        <div>
-          <div class="group">
-            <h3>Atendimento para Pessoas Surdas</h3>
-            <ul>
-              <li>Para esclarecer dúvidas sobre produtos e serviços, suporte tecnológico, informações, reclamações, sugestões e elogios.</li>
-              <li>O atendimento ocorre 24 horas por dia, 7 dias por semana.</li>
-              <li>Atendimento com Intérprete de Libras:</li>
-              <li>Acesse <a href="https://icom.app/8AG8Z" target="_blank" rel="noopener noreferrer">icom.app/8AG8Z</a> para ser direcionado ao site da ICOM, parceiro da CAIXA.</li>
-              <li>Para saber mais, acesse <a href="https://www.caixa.gov.br/libras" target="_blank" rel="noopener noreferrer">caixa.gov.br/libras</a>.</li>
-            </ul>
-          </div>
-
-          <div class="group">
-            <h3>SAC CAIXA</h3>
-            <ul>
-              <li>📞 0800 726 0101</li>
-              <li>Reclamações, sugestões, elogios, cancelamentos</li>
-              <li>Atendimento 24h, todos os dias</li>
-            </ul>
-          </div>
-
-          <div class="group">
-            <h3>Ouvidoria CAIXA</h3>
-            <ul>
-              <li>📞 0800 725 7474</li>
-              <li>Reclamações não solucionadas</li>
-              <li>Atendimento: dias úteis, das 9h às 18h</li>
-            </ul>
-          </div>
-
-          <div class="group">
-            <h3>Canal de Denúncias</h3>
-            <ul>
-              <li>📞 0800 721 0738</li>
-              <li>Fatos irregulares contra a CAIXA e empresas do conglomerado</li>
-              <li>Atendimento especializado 24h, todos os dias</li>
-              <li>Página de denúncia: <a href="https://www.caixa.gov.br/denuncia" target="_blank" rel="noopener noreferrer">caixa.gov.br/denuncia</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
+    <main id="canaisList"></main>
   </div>
 
-  <!-- >>> ADIÇÃO: Botão Voltar -->
-<div class="bottom-back">
-  <a href="operador.html" class="btn">⬅️ Voltar</a>
-</div>
+  <!-- Modal -->
+  <div id="canalModal">
+    <div class="modal-content">
+      <button class="close-btn" id="closeCanalModal">✕</button>
+      <h3 id="modalTitle"></h3>
+      <p id="modalDesc"></p>
+    </div>
+  </div>
 
+  <div class="bottom-back">
+    <a href="operador.html">⬅️ Voltar</a>
+  </div>
 
-  <!-- Tema (compatível com o site) -->
-  <script>
-    const themeBtn = document.getElementById("btnToggleTheme");
-    if (localStorage.getItem("theme")) {
-      document.body.setAttribute("data-theme", localStorage.getItem("theme"));
-    }
-    themeBtn?.addEventListener("click", () => {
-      const current = document.body.getAttribute("data-theme");
-      const next = current === "light" ? "dark" : "light";
-      document.body.setAttribute("data-theme", next);
-      localStorage.setItem("theme", next);
+  <script type="module">
+    import { db } from "./firebase.js";
+    import { collection, query, orderBy, onSnapshot } 
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    const list=document.getElementById("canaisList");
+    const searchInput=document.getElementById("searchInput");
+    const modal=document.getElementById("canalModal");
+    const modalTitle=document.getElementById("modalTitle");
+    const modalDesc=document.getElementById("modalDesc");
+    const closeBtn=document.getElementById("closeCanalModal");
+
+    let cacheDocs=[];
+
+    const q=query(collection(db,"canais"),orderBy("titulo"));
+    onSnapshot(q,snap=>{
+      cacheDocs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      render();
     });
 
-    onAuthStateChanged(auth, user=>{
-  if(!user){
-    // se realmente não tiver login, volta pro login.html
-    window.location.href = "login.html";
-    return;
-  }
+    function render(){
+      const term=searchInput.value.toLowerCase();
+      list.innerHTML="";
+      cacheDocs
+        .filter(c=>c.titulo?.toLowerCase().includes(term)||c.descricao?.toLowerCase().includes(term))
+        .forEach(canal=>{
+          const div=document.createElement("div");
+          div.className="canal-card";
+          div.innerHTML=`
+            <div class="canal-header">
+              <div class="canal-icon">📞</div>
+              <h3 class="canal-title">${canal.titulo||"(sem título)"}</h3>
+            </div>
+            <p class="canal-desc">${(canal.descricao||"").slice(0,120)}${canal.descricao?.length>120?"...":""}</p>
+          `;
+          div.addEventListener("click",()=>{
+            modalTitle.textContent=canal.titulo||"(sem título)";
+            modalDesc.textContent=canal.descricao||"";
+            modal.style.display="flex";
+          });
+          list.appendChild(div);
+        });
+    }
 
-  // aqui ainda tem usuário → checa se é admin
-  // supondo que no login você já define displayName ou claim
-  if(user.email && user.email.endsWith("@admin.com")){ 
-    // ADMIN → pode editar
-    isAdmin = true;
-    btnToggleAdm.style.display = "";
-    btnCategorias.style.display = "";
-    btnEditFromModal.style.display = "";
-  } else {
-    // OPERADOR → apenas leitura
-    isAdmin = false;
-    btnToggleAdm.style.display = "none";
-    btnCategorias.style.display = "none";
-    btnEditFromModal.style.display = "none";
-  }
-});
+    searchInput.addEventListener("input",render);
 
+    closeBtn.onclick=()=>modal.style.display="none";
+    modal.addEventListener("click",e=>{ if(e.target===modal) modal.style.display="none"; });
+
+    // alternar tema
+    const btn=document.getElementById("btnToggleTheme");
+    btn.onclick=()=>{
+      if(document.body.getAttribute("data-theme")==="light"){
+        document.body.removeAttribute("data-theme");
+      }else{
+        document.body.setAttribute("data-theme","light");
+      }
+    };
   </script>
 </body>
 </html>
